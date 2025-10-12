@@ -7,8 +7,15 @@ from datetime import datetime, timedelta
 import os
 
 app = Flask(__name__)
-CORS(app)
-
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "http://localhost:3000",  # Local development
+            "https://resumatch-frontend.onrender.com",  # Production
+            "https://resumatch-frontend-*.onrender.com"  # Any Render preview
+        ]
+    }
+})
 # Configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://localhost/resume_optimizer')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
