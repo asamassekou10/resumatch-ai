@@ -20,6 +20,7 @@ function App() {
   const [optimizedResume, setOptimizedResume] = useState(null);
   const [coverLetter, setCoverLetter] = useState(null);
   const [generatingAI, setGeneratingAI] = useState(false);
+  const [landingResumeFile, setLandingResumeFile] = useState(null);
 
   useEffect(() => {
     if (token) {
@@ -225,30 +226,34 @@ function App() {
 
   if (view === 'landing') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         {/* Navigation */}
-        <nav className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">R</span>
-              </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                ResuMatch AI
+        <nav className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <img 
+                src="/logo192.png" 
+                alt="ResumeAnalyzer AI Logo" 
+                className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+              />
+              <h1 className="text-xl sm:text-2xl font-bold text-white">
+                ResumeAnalyzer AI
               </h1>
             </div>
-            <div className="flex gap-4">
+            
+            
+            <div className="flex gap-3">
               <button
                 onClick={() => setView('login')}
-                className="text-gray-700 hover:text-blue-600 transition font-medium"
+                className="border border-slate-600 text-slate-300 hover:border-cyan-400 hover:text-cyan-400 transition px-4 py-2 rounded-lg font-medium"
               >
-                Login
+                Log In
               </button>
               <button
                 onClick={() => setView('register')}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-6 py-2 rounded-lg font-medium transition shadow-lg hover:shadow-cyan-500/25"
               >
-                Get Started
+                Sign Up
               </button>
             </div>
           </div>
@@ -257,192 +262,145 @@ function App() {
         {/* Hero Section */}
         <div className="max-w-7xl mx-auto px-4 py-20">
           <div className="text-center mb-16">
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Optimize Your Resume with
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"> AI Power</span>
-            </h2>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Stop guessing if your resume matches the job. Get instant AI-powered analysis, 
-              discover missing keywords, and increase your chances of landing interviews.
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+              Elevate Your Resume with
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent block mt-2">
+                AI-Powered Insights
+              </span>
+            </h1>
+            <p className="text-xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Get instant feedback, keyword optimization, and tailored suggestions to land your dream job with cutting-edge AI technology.
             </p>
-            <button
-              onClick={() => setView('register')}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:shadow-lg transition transform hover:scale-105"
-            >
-              Start Optimizing - It's Free
-            </button>
-          </div>
-
-          {/* Feature Cards */}
-          <div className="grid md:grid-cols-3 gap-8 mb-20">
-            <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition">
-              <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-3xl">🎯</span>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Instant Match Score</h3>
-              <p className="text-gray-600">
-                Get a percentage match between your resume and any job description in seconds. 
-                Know exactly where you stand.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition">
-              <div className="w-16 h-16 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-3xl">🔍</span>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Keyword Analysis</h3>
-              <p className="text-gray-600">
-                Discover which keywords you have and which ones you're missing. 
-                ATS systems love the right keywords!
-              </p>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition">
-              <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-3xl">📊</span>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Track Your Progress</h3>
-              <p className="text-gray-600">
-                Visual dashboard shows your improvement over time and identifies skill gaps 
-                across all your applications.
-              </p>
-            </div>
-          </div>
-
-          {/* How It Works */}
-          <div className="bg-white rounded-2xl shadow-xl p-12 mb-20">
-            <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">
-              How It Works
-            </h2>
-            <div className="grid md:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-2xl">
-                  1
-                </div>
-                <h4 className="text-xl font-semibold mb-2">Upload Resume</h4>
-                <p className="text-gray-600">Upload your resume in PDF, DOCX, or TXT format</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-2xl">
-                  2
-                </div>
-                <h4 className="text-xl font-semibold mb-2">Paste Job Description</h4>
-                <p className="text-gray-600">Copy the job posting you're interested in</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-2xl">
-                  3
-                </div>
-                <h4 className="text-xl font-semibold mb-2">Get AI Analysis</h4>
-                <p className="text-gray-600">Our AI analyzes the match in seconds</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-2xl">
-                  4
-                </div>
-                <h4 className="text-xl font-semibold mb-2">Optimize & Apply</h4>
-                <p className="text-gray-600">Update your resume and apply with confidence</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Why Use ResuMatch */}
-          <div className="grid md:grid-cols-2 gap-12 mb-20">
-            <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                Why Use ResuMatch AI?
-              </h2>
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white font-bold">✓</span>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-lg mb-1">Beat the ATS Systems</h4>
-                    <p className="text-gray-600">90% of companies use ATS to filter resumes. Make sure yours gets through.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white font-bold">✓</span>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-lg mb-1">Save Time</h4>
-                    <p className="text-gray-600">No more guessing. Know exactly what to add or remove in seconds.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white font-bold">✓</span>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-lg mb-1">Data-Driven Insights</h4>
-                    <p className="text-gray-600">Track which skills are most in-demand across all your job applications.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white font-bold">✓</span>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-lg mb-1">Privacy First</h4>
-                    <p className="text-gray-600">Your data is secure and never shared. You own your information.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 text-white">
-              <h3 className="text-3xl font-bold mb-4">Ready to Get More Interviews?</h3>
-              <p className="text-blue-100 mb-6 text-lg">
-                Join thousands of job seekers who have improved their resume match scores 
-                and landed their dream jobs.
-              </p>
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">📈</span>
-                  <span className="text-lg">Average 35% increase in match scores</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">⚡</span>
-                  <span className="text-lg">Results in under 10 seconds</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">🎯</span>
-                  <span className="text-lg">Unlimited analyses</span>
-                </div>
-              </div>
-              <button
-                onClick={() => setView('register')}
-                className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition w-full"
+            
+            {/* Drag & Drop Upload Area */}
+            <div className="max-w-2xl mx-auto mb-12">
+              <div 
+                className="border-2 border-dashed border-slate-600 bg-slate-800/50 backdrop-blur-sm rounded-2xl p-12 hover:border-cyan-400 hover:bg-slate-800/70 transition-all duration-300 group cursor-pointer"
+                onClick={() => document.getElementById('landing-file-input').click()}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.classList.add('border-cyan-400', 'bg-slate-800/70');
+                }}
+                onDragLeave={(e) => {
+                  e.currentTarget.classList.remove('border-cyan-400', 'bg-slate-800/70');
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.classList.remove('border-cyan-400', 'bg-slate-800/70');
+                  const files = e.dataTransfer.files;
+                  if (files.length > 0) {
+                    setLandingResumeFile(files[0]);
+                  }
+                }}
               >
-                Create Free Account
-              </button>
+                <input
+                  id="landing-file-input"
+                  type="file"
+                  accept=".pdf,.docx,.txt"
+                  onChange={(e) => setLandingResumeFile(e.target.files[0])}
+                  className="hidden"
+                />
+                <div className="flex flex-col items-center gap-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    {landingResumeFile ? (
+                      <>
+                        <h3 className="text-xl font-semibold text-green-400 mb-2">✓ File Selected</h3>
+                        <p className="text-slate-300">{landingResumeFile.name}</p>
+                        <p className="text-sm text-slate-500 mt-2">Click "Start Analyzing" to continue</p>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className="text-xl font-semibold text-white mb-2">Drag & Drop Your Resume Here</h3>
+                        <p className="text-slate-400">or click to browse files</p>
+                        <p className="text-sm text-slate-500 mt-2">Supports PDF, DOCX, TXT files</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => {
+                if (landingResumeFile) {
+                  // Store the file for later use and redirect to register
+                  setResumeFile(landingResumeFile);
+                  setView('register');
+                } else {
+                  setView('register');
+                }
+              }}
+              className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:shadow-2xl hover:shadow-cyan-500/25 transition-all duration-300 transform hover:scale-105"
+            >
+              {landingResumeFile ? 'Continue to Sign Up' : 'Start Analyzing - It\'s Free'}
+            </button>
+          </div>
+
+          {/* Key Features Section */}
+          <div className="mb-32">
+            <h2 className="text-4xl font-bold text-center text-white mb-16">How It Works</h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 hover:border-cyan-400 hover:bg-slate-800/70 transition-all duration-300 group">
+                <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-4">AI Analysis</h3>
+                <p className="text-slate-300 leading-relaxed">
+                  Advanced artificial intelligence scans your resume and identifies strengths, weaknesses, and optimization opportunities with precision.
+                </p>
+              </div>
+
+              <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 hover:border-cyan-400 hover:bg-slate-800/70 transition-all duration-300 group">
+                <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-4">Smart Formatting</h3>
+                <p className="text-slate-300 leading-relaxed">
+                  Get intelligent formatting suggestions and structure optimization to ensure your resume passes ATS systems and impresses recruiters.
+                </p>
+              </div>
+
+              <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 hover:border-cyan-400 hover:bg-slate-800/70 transition-all duration-300 group">
+                <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keyword Optimization</h3>
+                <p className="text-slate-300 leading-relaxed">
+                  Target the right keywords and phrases that recruiters and ATS systems are looking for to maximize your application success rate.
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Final CTA */}
-          <div className="text-center bg-gray-900 rounded-2xl p-12">
-            <h2 className="text-4xl font-bold text-white mb-4">
-              Stop Applying Blindly
-            </h2>
-            <p className="text-gray-300 text-xl mb-8 max-w-2xl mx-auto">
-              Start using AI to optimize your resume for every job application. 
-              It's free, fast, and proven to work.
-            </p>
-            <button
-              onClick={() => setView('register')}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:shadow-lg transition"
-            >
-              Get Started Now →
-            </button>
-          </div>
         </div>
 
         {/* Footer */}
-        <footer className="bg-gray-900 text-gray-400 py-8">
-          <div className="max-w-7xl mx-auto px-4 text-center">
-            <p>&copy; 2025 ResuMatch AI. Built for job seekers.</p>
-            <p className="text-sm mt-2">ITAI 2277 - AI Project by Alhassane Samassekou</p>
+        <footer className="bg-slate-900 border-t border-slate-700 py-8">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="flex items-center gap-3 mb-4 md:mb-0">
+                <img 
+                  src="/logo192.png" 
+                  alt="ResumeAnalyzer AI Logo" 
+                  className="w-6 h-6 object-contain"
+                />
+                <h3 className="text-lg font-bold text-white">ResumeAnalyzer AI</h3>
+              </div>
+              <p className="text-slate-500 text-sm">
+                &copy; 2025 ResumeAnalyzer AI. ITAI 2277 - AI Project by Alhassane Samassekou
+              </p>
+            </div>
           </div>
         </footer>
       </div>
@@ -508,26 +466,36 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">AI Resume Optimizer</h1>
-          <div className="flex gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <img 
+              src="/logo192.png" 
+              alt="ResumeAnalyzer AI Logo" 
+              className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
+            />
+            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">ResumeAnalyzer AI</h1>
+          </div>
+          <div className="flex gap-1 sm:gap-2 lg:gap-4">
             <button
               onClick={() => setView('dashboard')}
-              className="text-gray-700 hover:text-blue-600 transition"
+              className="text-gray-700 hover:text-blue-600 transition text-xs sm:text-sm lg:text-base px-1 sm:px-2"
             >
-              Dashboard
+              <span className="hidden sm:inline">Dashboard</span>
+              <span className="sm:hidden">Dash</span>
             </button>
             <button
               onClick={() => setView('analyze')}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+              className="bg-blue-600 text-white px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 lg:py-2 rounded-lg hover:bg-blue-700 transition text-xs sm:text-sm lg:text-base"
             >
-              New Analysis
+              <span className="hidden sm:inline">New Analysis</span>
+              <span className="sm:hidden">New</span>
             </button>
             <button
               onClick={handleLogout}
-              className="text-gray-700 hover:text-red-600 transition"
+              className="text-gray-700 hover:text-red-600 transition text-xs sm:text-sm lg:text-base px-1 sm:px-2"
             >
-              Logout
+              <span className="hidden sm:inline">Logout</span>
+              <span className="sm:hidden">Exit</span>
             </button>
           </div>
         </div>
