@@ -1,6 +1,6 @@
 import google.generativeai as genai
 
-API_KEY = "AIzaSyCHWxD9xDklPZ5JaibfEO4tf2gJHq3FJ9I"  # Your actual key
+API_KEY = "AIza..."  
 
 print("Testing Gemini 2.5 Flash...")
 
