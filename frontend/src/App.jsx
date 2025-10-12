@@ -441,7 +441,7 @@ function App() {
         {/* Footer */}
         <footer className="bg-gray-900 text-gray-400 py-8">
           <div className="max-w-7xl mx-auto px-4 text-center">
-            <p>&copy; 2025 ResuMatch AI. Built with ❤️ for job seekers.</p>
+            <p>&copy; 2025 ResuMatch AI. Built for job seekers.</p>
             <p className="text-sm mt-2">ITAI 2277 - AI Project by Alhassane Samassekou</p>
           </div>
         </footer>
