@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://resumatch-backend-7qdb.onrender.com/api';
 
 function App() {
   const [view, setView] = useState('landing');
