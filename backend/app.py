@@ -291,9 +291,6 @@ def google_callback():
         traceback.print_exc()
         
         frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
-
-        error_message = str(e).replace(' ', '%20')
-        return redirect(f"{frontend_url}/auth/error?message={error_message}")
         from urllib.parse import quote
         error_message = str(e).replace('\n', ' ')[:200]
         return redirect(f"{frontend_url}/auth/error?message={quote(error_message)}")
