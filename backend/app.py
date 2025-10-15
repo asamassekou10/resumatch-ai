@@ -171,7 +171,8 @@ def google_login():
     """Initiate Google OAuth login"""
     try:
         # Use the full URL including protocol
-        redirect_uri = url_for('google_callback', _external=True, _scheme='http')
+        redirect_uri = url_for('google_callback', _external=True)
+
         print(f"Redirect URI: {redirect_uri}")
         print(f"Google Client ID: {app.config.get('GOOGLE_CLIENT_ID', 'NOT SET')}")
         
