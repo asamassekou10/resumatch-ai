@@ -293,7 +293,6 @@ def google_callback():
 
         error_message = str(e).replace(' ', '%20')
         return redirect(f"{frontend_url}/auth/error?message={error_message}")
-Stashed changes
         from urllib.parse import quote
         error_message = str(e).replace('\n', ' ')[:200]
         return redirect(f"{frontend_url}/auth/error?message={quote(error_message)}")
