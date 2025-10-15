@@ -109,6 +109,29 @@ def init_db():
 # Call init_db when module is loaded (works with gunicorn)
 init_db()
 
+# Auto-migrate missing columns on startup (production)
+def auto_migrate():
+    """Automatically add missing columns if they don't exist"""
+    with app.app_context():
+        try:
+            from sqlalchemy import text
+            commands = [
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS name VARCHAR(100);',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS google_id VARCHAR(100);',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(500);',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS auth_provider VARCHAR(20) DEFAULT \'email\';',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;',
+                'ALTER TABLE "user" ALTER COLUMN password_hash DROP NOT NULL;'
+            ]
+            for command in commands:
+                db.session.execute(text(command))
+            db.session.commit()
+            print("✅ Auto-migration completed")
+        except Exception as e:
+            print(f"⚠️ Auto-migration warning: {str(e)}")
+            db.session.rollback()
+
+auto_migrate()
 
 # Routes
 @app.route('/api/health', methods=['GET'])
