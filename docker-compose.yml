@@ -26,7 +26,7 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       SENDGRID_API_KEY: ${SENDGRID_API_KEY}
-      FROM_EMAIL: ${FROM_EMAIL:-noreply@resumatch-ai.com}
+      FROM_EMAIL: ${FROM_EMAIL:-alhassane.samassekou@gmail.com}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       RATELIMIT_ENABLED: "true"
       LOG_LEVEL: INFO
