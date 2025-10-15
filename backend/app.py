@@ -20,8 +20,13 @@ CORS(app, resources={
         "origins": [
             "http://localhost:3000",  # Local development
             "https://resumatch-frontend.onrender.com",  # Production
-            "https://resumatch-frontend-*.onrender.com"  # Any Render preview
+            "https://resumatch-frontend-*.onrender.com" # Any Render preview
+            "https://resumeanalyzerai.com"  #Production domain
+            "https://www.resumeanalyzerai.com"  
         ]
+        "methods": ["GET", "POST", "PUT", "DELETE","OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True,
     }
 })
 # Configuration
@@ -287,8 +292,7 @@ def google_callback():
 
         error_message = str(e).replace(' ', '%20')
         return redirect(f"{frontend_url}/auth/error?message={error_message}")
-
-
+Stashed changes
         from urllib.parse import quote
         error_message = str(e).replace('\n', ' ')[:200]
         return redirect(f"{frontend_url}/auth/error?message={quote(error_message)}")
