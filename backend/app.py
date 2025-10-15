@@ -183,8 +183,6 @@ def google_callback():
     try:
         print("=== Google Callback Started ===")
         
-<<<<<<< HEAD
-=======
         # Check for OAuth errors first
         error = request.args.get('error')
         if error:
@@ -201,7 +199,6 @@ def google_callback():
             frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
             return redirect(f"{frontend_url}/auth/error?message=No authorization code received")
         
->>>>>>> f49ac50
         # Get the token
         token = google.authorize_access_token()
         print(f"Token received: {token is not None}")
@@ -287,14 +284,13 @@ def google_callback():
         traceback.print_exc()
         
         frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
-<<<<<<< HEAD
+
         error_message = str(e).replace(' ', '%20')
         return redirect(f"{frontend_url}/auth/error?message={error_message}")
-=======
+
         from urllib.parse import quote
         error_message = str(e).replace('\n', ' ')[:200]
         return redirect(f"{frontend_url}/auth/error?message={quote(error_message)}")
->>>>>>> f49ac50
 
 
 @app.route('/api/auth/logout', methods=['POST'])
