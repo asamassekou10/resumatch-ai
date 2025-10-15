@@ -8,7 +8,10 @@ A full-stack web application that helps job seekers optimize their resumes for s
 - **Keyword Extraction**: Identify which keywords are present and missing from your resume
 - **Career Dashboard**: Track your application history and progress over time
 - **Skill Gap Analysis**: Visualize the most commonly requested skills you're missing
-- **Secure Authentication**: User accounts with JWT-based authentication
+- **Google OAuth Authentication**: Sign in with Google for quick and secure access
+- **Email Delivery**: Automatically receive analysis results, AI feedback, and generated content via email
+- **AI-Powered Enhancement**: Get personalized feedback, optimized resume versions, and tailored cover letters
+- **Secure Authentication**: User accounts with JWT-based authentication and password hashing
 - **Resume Version Management**: Store and compare multiple resume versions
 
 ## 📋 Prerequisites
@@ -122,12 +125,29 @@ ai-resume-optimizer/
 
 ## 🔧 Configuration
 
+### Environment Setup
+
+**⚠️ IMPORTANT**: See [SETUP_GUIDE.md](SETUP_GUIDE.md) for detailed configuration instructions including Google OAuth and email setup.
+
 ### Backend Configuration
 
-Edit these environment variables in `docker-compose.yml` or export them:
+Edit these environment variables in `docker-compose.yml` or create a `.env` file:
 
+**Required for Basic Setup:**
 - `DATABASE_URL`: PostgreSQL connection string
 - `JWT_SECRET_KEY`: Secret key for JWT tokens (change in production!)
+- `SECRET_KEY`: Secret key for Flask sessions
+
+**Required for Google OAuth:**
+- `GOOGLE_CLIENT_ID`: Google OAuth client ID
+- `GOOGLE_CLIENT_SECRET`: Google OAuth client secret
+
+**Required for Email Delivery:**
+- `SENDGRID_API_KEY`: SendGrid API key for email sending
+- `FROM_EMAIL`: Email address for sending notifications
+
+**Required for AI Features:**
+- `GEMINI_API_KEY`: Google Gemini API key for AI-powered features
 
 ### Frontend Configuration
 
@@ -149,11 +169,21 @@ const API_URL = 'http://localhost:5000/api';  // Change for production
 ### Authentication
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
+- `GET /api/auth/google` - Initiate Google OAuth login
+- `GET /api/auth/callback` - Handle Google OAuth callback
+- `POST /api/auth/logout` - Logout user
 
 ### Analysis
 - `POST /api/analyze` - Analyze resume (requires auth)
 - `GET /api/analyses` - Get all user's analyses (requires auth)
 - `GET /api/analyses/<id>` - Get specific analysis (requires auth)
+- `POST /api/analyses/<id>/resend-email` - Resend analysis results via email
+
+### AI Features
+- `POST /api/analyze/feedback/<id>` - Generate personalized AI feedback
+- `POST /api/analyze/optimize/<id>` - Generate optimized resume version
+- `POST /api/analyze/cover-letter/<id>` - Generate tailored cover letter
+- `POST /api/analyze/skill-suggestions/<id>` - Get skill development suggestions
 
 ### Dashboard
 - `GET /api/dashboard/stats` - Get dashboard statistics (requires auth)
@@ -162,9 +192,12 @@ const API_URL = 'http://localhost:5000/api';  // Change for production
 
 - Password hashing with bcrypt
 - JWT-based authentication
+- Google OAuth 2.0 integration
 - CORS protection
 - SQL injection prevention via SQLAlchemy ORM
 - Input validation
+- Environment variable security
+- Rate limiting
 
 ## 🧪 Testing
 
@@ -249,11 +282,12 @@ class Analysis(db.Model):
 - [ ] PDF parsing improvements
 - [ ] Resume version management
 
-### Phase 3 (Weeks 9-12)
-- [ ] Advanced dashboard visualizations
-- [ ] Word cloud for skills
-- [ ] Export reports as PDF
-- [ ] Email notifications
+### Phase 3 (Weeks 9-12) ✅
+- [x] Advanced dashboard visualizations
+- [x] Email notifications with SendGrid
+- [x] Google OAuth authentication
+- [x] AI-powered resume optimization
+- [x] Cover letter generation
 
 ### Phase 4 (Weeks 13-14)
 - [ ] Performance optimization

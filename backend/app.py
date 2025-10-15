@@ -1,10 +1,18 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect, url_for, session
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from datetime import datetime, timedelta
 import os
+from dotenv import load_dotenv
+from authlib.integrations.flask_client import OAuth
+from email_service import email_service
+import logging
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app, resources={
@@ -19,20 +27,43 @@ CORS(app, resources={
 # Configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://localhost/resume_optimizer')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'my-super-secret-key-12345'  # Fixed secret
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'my-super-secret-key-12345')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=7)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-for-sessions')
+
+# OAuth Configuration
+app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID')
+app.config['GOOGLE_CLIENT_SECRET'] = os.getenv('GOOGLE_CLIENT_SECRET')
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
+oauth = OAuth(app)
+
+# Configure Google OAuth
+google = oauth.register(
+    name='google',
+    client_id=app.config['GOOGLE_CLIENT_ID'],
+    client_secret=app.config['GOOGLE_CLIENT_SECRET'],
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={
+        'scope': 'openid email profile',
+    }
+)
 
 
 # Database Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=True)  # Nullable for OAuth users
+    name = db.Column(db.String(100), nullable=True)
+    google_id = db.Column(db.String(100), unique=True, nullable=True)
+    profile_picture = db.Column(db.String(500), nullable=True)
+    auth_provider = db.Column(db.String(20), default='email')  # 'email' or 'google'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime, default=datetime.utcnow)
     analyses = db.relationship('Analysis', backref='user', lazy=True, cascade='all, delete-orphan')
 
 class Analysis(db.Model):
@@ -113,11 +144,144 @@ def login():
     if not user or not bcrypt.check_password_hash(user.password_hash, data['password']):
         return jsonify({'error': 'Invalid credentials'}), 401
     
+    # Update last login
+    user.last_login = datetime.utcnow()
+    db.session.commit()
+    
     access_token = create_access_token(identity=str(user.id))
     return jsonify({
         'access_token': access_token,
-        'user': {'id': user.id, 'email': user.email}
+        'user': {
+            'id': user.id, 
+            'email': user.email,
+            'name': user.name,
+            'auth_provider': user.auth_provider
+        }
     }), 200
+
+# Google OAuth Routes
+@app.route('/api/auth/google')
+def google_login():
+    """Initiate Google OAuth login"""
+    try:
+        # Use the full URL including protocol
+        redirect_uri = url_for('google_callback', _external=True, _scheme='http')
+        print(f"Redirect URI: {redirect_uri}")
+        print(f"Google Client ID: {app.config.get('GOOGLE_CLIENT_ID', 'NOT SET')}")
+        
+        return google.authorize_redirect(redirect_uri)
+    except Exception as e:
+        logging.error(f"Google login error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'OAuth initialization failed: {str(e)}'}), 500
+
+
+@app.route('/api/auth/callback')
+def google_callback():
+    """Handle Google OAuth callback"""
+    try:
+        print("=== Google Callback Started ===")
+        
+        # Get the token
+        token = google.authorize_access_token()
+        print(f"Token received: {token is not None}")
+        
+        # Get user info
+        user_info = token.get('userinfo')
+        print(f"User info: {user_info}")
+        
+        if not user_info:
+            print("ERROR: No user_info in token")
+            print(f"Token keys: {token.keys() if token else 'No token'}")
+            # Try alternative method to get user info
+            try:
+                resp = google.get('userinfo')
+                user_info = resp.json()
+                print(f"User info from API: {user_info}")
+            except Exception as e:
+                print(f"Failed to get user info from API: {str(e)}")
+                frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+                return redirect(f"{frontend_url}/auth/error?message=Failed to get user information")
+        
+        # Extract user information
+        google_id = user_info.get('sub')
+        email = user_info.get('email')
+        name = user_info.get('name')
+        picture = user_info.get('picture')
+        
+        print(f"Google ID: {google_id}")
+        print(f"Email: {email}")
+        print(f"Name: {name}")
+        
+        if not email:
+            print("ERROR: No email provided by Google")
+            frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+            return redirect(f"{frontend_url}/auth/error?message=Email not provided by Google")
+        
+        # Check if user exists
+        user = User.query.filter_by(email=email).first()
+        print(f"Existing user found: {user is not None}")
+        
+        if user:
+            # Update existing user with Google info if not already set
+            if not user.google_id:
+                user.google_id = google_id
+                user.auth_provider = 'google'
+            if not user.name and name:
+                user.name = name
+            if not user.profile_picture and picture:
+                user.profile_picture = picture
+            user.last_login = datetime.utcnow()
+        else:
+            # Create new user
+            print("Creating new user")
+            user = User(
+                email=email,
+                google_id=google_id,
+                name=name,
+                profile_picture=picture,
+                auth_provider='google',
+                last_login=datetime.utcnow()
+            )
+            db.session.add(user)
+        
+        db.session.commit()
+        print(f"User saved with ID: {user.id}")
+        
+        # Create JWT token
+        access_token = create_access_token(identity=str(user.id))
+        print(f"JWT token created: {access_token[:20]}...")
+        
+        # Return success response with redirect URL for frontend
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+        redirect_url = f"{frontend_url}/auth/success?token={access_token}&user={user.id}"
+        print(f"Redirecting to: {redirect_url}")
+        return redirect(redirect_url)
+        
+    except Exception as e:
+        logging.error(f"Google OAuth error: {str(e)}")
+        print(f"=== EXCEPTION in google_callback ===")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+        error_message = str(e).replace(' ', '%20')
+        return redirect(f"{frontend_url}/auth/error?message={error_message}")
+
+
+@app.route('/api/auth/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    """Logout user (client-side token removal)"""
+    # In JWT, logout is typically handled client-side by removing the token
+    # But we can log the logout event
+    user_id = get_jwt_identity()
+    logging.info(f"User {user_id} logged out")
+    
+    return jsonify({'message': 'Logged out successfully'}), 200
 
 @app.route('/api/analyze', methods=['POST'])
 @jwt_required()
@@ -167,6 +331,35 @@ def analyze_resume():
         
         db.session.add(analysis)
         db.session.commit()
+        
+        # Send email with analysis results
+        try:
+            user = User.query.get(user_id)
+            if user and user.email:
+                analysis_data = {
+                    'match_score': result['match_score'],
+                    'keywords_found': result['keywords_found'],
+                    'keywords_missing': result['keywords_missing'],
+                    'suggestions': result['suggestions'],
+                    'job_title': job_title,
+                    'company_name': company_name,
+                    'analysis_id': analysis.id
+                }
+                
+                email_sent = email_service.send_analysis_results(
+                    recipient_email=user.email,
+                    recipient_name=user.name or user.email.split('@')[0],
+                    analysis_data=analysis_data
+                )
+                
+                if email_sent:
+                    logging.info(f"Analysis results email sent to {user.email}")
+                else:
+                    logging.warning(f"Failed to send analysis results email to {user.email}")
+                    
+        except Exception as e:
+            logging.error(f"Error sending analysis results email: {str(e)}")
+            # Don't fail the request if email fails
         
         return jsonify({
             'analysis_id': analysis.id,
@@ -281,6 +474,33 @@ def generate_feedback(analysis_id):
         analysis.ai_feedback = feedback
         db.session.commit()
         
+        # Send email with AI feedback
+        try:
+            user = User.query.get(user_id)
+            if user and user.email:
+                feedback_data = {
+                    'match_score': analysis.match_score,
+                    'keywords_found': analysis.keywords_found,
+                    'keywords_missing': analysis.keywords_missing,
+                    'suggestions': analysis.suggestions,
+                    'ai_feedback': feedback,
+                    'job_title': analysis.job_title,
+                    'company_name': analysis.company_name,
+                    'analysis_id': analysis_id
+                }
+                
+                email_sent = email_service.send_analysis_results(
+                    recipient_email=user.email,
+                    recipient_name=user.name or user.email.split('@')[0],
+                    analysis_data=feedback_data
+                )
+                
+                if email_sent:
+                    logging.info(f"AI feedback email sent to {user.email}")
+                    
+        except Exception as e:
+            logging.error(f"Error sending AI feedback email: {str(e)}")
+        
         return jsonify({
             'feedback': feedback,
             'analysis_id': analysis_id
@@ -318,6 +538,23 @@ def optimize_resume(analysis_id):
         analysis.optimized_resume = optimized_resume
         db.session.commit()
         
+        # Send email with optimized resume
+        try:
+            user = User.query.get(user_id)
+            if user and user.email:
+                email_sent = email_service.send_optimized_resume(
+                    recipient_email=user.email,
+                    recipient_name=user.name or user.email.split('@')[0],
+                    optimized_resume=optimized_resume,
+                    job_title=analysis.job_title or "this position"
+                )
+                
+                if email_sent:
+                    logging.info(f"Optimized resume email sent to {user.email}")
+                    
+        except Exception as e:
+            logging.error(f"Error sending optimized resume email: {str(e)}")
+        
         return jsonify({
             'optimized_resume': optimized_resume,
             'analysis_id': analysis_id
@@ -351,6 +588,24 @@ def generate_cover_letter_route(analysis_id):
         
         if not cover_letter:
             return jsonify({'error': 'Failed to generate cover letter'}), 500
+        
+        # Send email with cover letter
+        try:
+            user = User.query.get(user_id)
+            if user and user.email:
+                email_sent = email_service.send_cover_letter(
+                    recipient_email=user.email,
+                    recipient_name=user.name or user.email.split('@')[0],
+                    cover_letter=cover_letter,
+                    job_title=analysis.job_title or "this position",
+                    company_name=analysis.company_name or "the company"
+                )
+                
+                if email_sent:
+                    logging.info(f"Cover letter email sent to {user.email}")
+                    
+        except Exception as e:
+            logging.error(f"Error sending cover letter email: {str(e)}")
         
         return jsonify({
             'cover_letter': cover_letter,
@@ -395,6 +650,55 @@ def get_skill_suggestions(analysis_id):
         traceback.print_exc()
         return jsonify({'error': f'Failed to generate suggestions: {str(e)}'}), 500
 
+@app.route('/api/analyses/<int:analysis_id>/resend-email', methods=['POST'])
+@jwt_required()
+def resend_analysis_email(analysis_id):
+    """Manually resend analysis results via email"""
+    user_id = int(get_jwt_identity())
+    analysis = Analysis.query.filter_by(id=analysis_id, user_id=user_id).first()
+    
+    if not analysis:
+        return jsonify({'error': 'Analysis not found'}), 404
+    
+    try:
+        user = User.query.get(user_id)
+        if not user or not user.email:
+            return jsonify({'error': 'User email not found'}), 400
+        
+        # Prepare analysis data
+        analysis_data = {
+            'match_score': analysis.match_score,
+            'keywords_found': analysis.keywords_found,
+            'keywords_missing': analysis.keywords_missing,
+            'suggestions': analysis.suggestions,
+            'ai_feedback': analysis.ai_feedback,
+            'job_title': analysis.job_title,
+            'company_name': analysis.company_name,
+            'analysis_id': analysis_id
+        }
+        
+        email_sent = email_service.send_analysis_results(
+            recipient_email=user.email,
+            recipient_name=user.name or user.email.split('@')[0],
+            analysis_data=analysis_data
+        )
+        
+        if email_sent:
+            return jsonify({'message': 'Email sent successfully'}), 200
+        else:
+            return jsonify({'error': 'Failed to send email'}), 500
+            
+    except Exception as e:
+        logging.error(f"Error resending analysis email: {str(e)}")
+        return jsonify({'error': f'Failed to resend email: {str(e)}'}), 500
+
+@app.route('/api/auth/google/test', methods=['GET'])
+def test_google_config():
+    return jsonify({
+        'client_id_set': bool(app.config.get('GOOGLE_CLIENT_ID')),
+        'client_secret_set': bool(app.config.get('GOOGLE_CLIENT_SECRET')),
+        'redirect_uri': url_for('google_callback', _external=True)
+    }), 200
 
 if __name__ == '__main__':
     with app.app_context():
