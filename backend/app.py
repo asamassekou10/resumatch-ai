@@ -20,13 +20,14 @@ CORS(app, resources={
         "origins": [
             "http://localhost:3000",  # Local development
             "https://resumatch-frontend.onrender.com",  # Production
-            "https://resumatch-frontend-*.onrender.com" # Any Render preview
-            "https://resumeanalyzerai.com"  #Production domain
+            "https://resumatch-frontend-*.onrender.com", # Any Render preview
+            "https://resumeanalyzerai.com",  #Production domain
             "https://www.resumeanalyzerai.com"  
         ]
         "methods": ["GET", "POST", "PUT", "DELETE","OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"],
         "supports_credentials": True,
+        
     }
 })
 # Configuration
