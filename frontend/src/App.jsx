@@ -69,20 +69,33 @@ function App() {
     window.location.href = `${API_URL}/auth/google`;
   };
 
-  // Handle OAuth callback success
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    const userId = urlParams.get('user');
-    
-    if (token && userId) {
-      setToken(token);
-      localStorage.setItem('token', token);
-      setView('dashboard');
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, []);
+// Handle OAuth callback success
+useEffect(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+  const userId = urlParams.get('user');
+  const errorMessage = urlParams.get('message');
+  
+  // Check if we're on auth success or error page
+  const path = window.location.pathname;
+  
+  if (token && userId && (path === '/auth/success' || urlParams.has('token'))) {
+    // Successfully authenticated via Google OAuth
+    console.log('OAuth success - setting token and redirecting to dashboard');
+    setToken(token);
+    localStorage.setItem('token', token);
+    setView('dashboard');
+    // Clean up URL
+    window.history.replaceState({}, document.title, '/');
+  } else if (errorMessage || path === '/auth/error') {
+    // Authentication failed
+    console.log('OAuth error:', errorMessage);
+    setError(decodeURIComponent(errorMessage || 'Authentication failed'));
+    setView('login');
+    // Clean up URL
+    window.history.replaceState({}, document.title, '/');
+  }
+}, []);
 
   const fetchAnalyses = async () => {
     try {
