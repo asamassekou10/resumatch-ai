@@ -301,7 +301,7 @@ def google_callback():
         
         # Return success response with redirect URL for frontend
         frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
-        redirect_url = f"{frontend_url}/auth/success?token={access_token}&user={user.id}"
+        redirect_url = f"{frontend_url}?token={access_token}&user={user.id}"
         print(f"Redirecting to: {redirect_url}")
         return redirect(redirect_url)
         
