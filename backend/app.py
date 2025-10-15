@@ -22,12 +22,12 @@ CORS(app, resources={
             "https://resumatch-frontend.onrender.com",  # Production
             "https://resumatch-frontend-*.onrender.com", # Any Render preview
             "https://resumeanalyzerai.com",  #Production domain
-            "https://www.resumeanalyzerai.com"  
-        ]
+            "https://www.resumeanalyzerai.com"
+        ],
         "methods": ["GET", "POST", "PUT", "DELETE","OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"],
-        "supports_credentials": True,
-        
+        "supports_credentials": True
+
     }
 })
 # Configuration
