@@ -96,42 +96,6 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     }
   };
 
-    // useEffect to handle email verification
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('user');
-    const verifyToken = urlParams.get('token');
-    const path = window.location.pathname;
-    
-    if (path === '/verify-email' && userId && verifyToken) {
-      // Verify email
-      fetch(`${API_URL}/auth/verify-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, token: verifyToken })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.access_token) {
-          setToken(data.access_token);
-          localStorage.setItem('token', data.access_token);
-          alert('Email verified successfully! Welcome to ResuMatch AI!');
-          setView('dashboard');
-          window.history.replaceState({}, document.title, '/');
-        } else {
-          setError(data.error || 'Verification failed');
-          setView('login');
-          window.history.replaceState({}, document.title, '/');
-        }
-      })
-      .catch(err => {
-        setError('Verification failed. Please try again or contact support.');
-        setView('login');
-        window.history.replaceState({}, document.title, '/');
-      });
-    }
-  }, []);
-
   const handleLogout = () => {
     setToken(null);
     localStorage.removeItem('token');
@@ -145,78 +109,78 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     window.location.href = `${API_URL}/auth/google`;
   };
 
-  // Handle OAuth callback success AND email verification
+  // Handle OAuth callback AND email verification - ONLY ONE useEffect
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const path = window.location.pathname;
     
     // Handle OAuth callback (Google login)
-    const token = urlParams.get('token');
+    const oauthToken = urlParams.get('token');
     const userId = urlParams.get('user');
     const errorMessage = urlParams.get('message');
     
-    if (token && userId && (path === '/auth/success' || urlParams.has('token'))) {
-      // Successfully authenticated via Google OAuth
+    // Handle Email Verification
+    const verifyUserId = urlParams.get('user');
+    const verifyToken = urlParams.get('token');
+    
+    // Check if this is email verification (has both user and token, but no path like /auth/success)
+    if ((path === '/verify-email' || path === '/') && verifyUserId && verifyToken && !path.includes('/auth/')) {
+      console.log('Verifying email...');
+      setLoading(true);
+      
+      fetch(`${API_URL}/auth/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          user_id: verifyUserId, 
+          token: verifyToken 
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        setLoading(false);
+        if (data.access_token) {
+          // Email verified successfully
+          setToken(data.access_token);
+          localStorage.setItem('token', data.access_token);
+          setError('');
+          alert('✅ Email verified successfully! Welcome to ResuMatch AI!');
+          setView('dashboard');
+          window.history.replaceState({}, document.title, '/');
+        } else {
+          // Verification failed
+          setError(data.error || 'Verification failed');
+          alert('❌ ' + (data.error || 'Verification failed. Please try again or contact support.'));
+          setView('login');
+          window.history.replaceState({}, document.title, '/');
+        }
+      })
+      .catch(err => {
+        setLoading(false);
+        console.error('Verification error:', err);
+        setError('Verification failed. Please try again or contact support.');
+        alert('❌ Verification failed. Please try again or contact support.');
+        setView('login');
+        window.history.replaceState({}, document.title, '/');
+      });
+    }
+    // Handle Google OAuth callback
+    else if (oauthToken && userId && (path === '/auth/success' || path.includes('auth'))) {
       console.log('OAuth success - setting token and redirecting to dashboard');
-      setToken(token);
-      localStorage.setItem('token', token);
+      setToken(oauthToken);
+      localStorage.setItem('token', oauthToken);
       setView('dashboard');
       window.history.replaceState({}, document.title, '/');
-    } else if (errorMessage || path === '/auth/error') {
-      // Authentication failed
+    } 
+    // Handle OAuth error
+    else if (errorMessage || path === '/auth/error') {
       console.log('OAuth error:', errorMessage);
       setError(decodeURIComponent(errorMessage || 'Authentication failed'));
       setView('login');
       window.history.replaceState({}, document.title, '/');
     }
-    
-    // Handle Email Verification
-    if (path === '/verify-email' || urlParams.has('user') && urlParams.has('token')) {
-      const verifyUserId = urlParams.get('user');
-      const verifyToken = urlParams.get('token');
-      
-      if (verifyUserId && verifyToken) {
-        console.log('Verifying email...');
-        setLoading(true);
-        
-        fetch(`${API_URL}/auth/verify-email`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            user_id: verifyUserId, 
-            token: verifyToken 
-          })
-        })
-        .then(res => res.json())
-        .then(data => {
-          setLoading(false);
-          if (data.access_token) {
-            // Email verified successfully
-            setToken(data.access_token);
-            localStorage.setItem('token', data.access_token);
-            setError('');
-            alert('✅ Email verified successfully! Welcome to ResuMatch AI!');
-            setView('dashboard');
-            window.history.replaceState({}, document.title, '/');
-          } else {
-            // Verification failed
-            setError(data.error || 'Verification failed');
-            alert('❌ ' + (data.error || 'Verification failed. Please try again or contact support.'));
-            setView('login');
-            window.history.replaceState({}, document.title, '/');
-          }
-        })
-        .catch(err => {
-          setLoading(false);
-          console.error('Verification error:', err);
-          setError('Verification failed. Please try again or contact support.');
-          alert('❌ Verification failed. Please try again or contact support.');
-          setView('login');
-          window.history.replaceState({}, document.title, '/');
-        });
-      }
-    }
-  }, []);
+  }, []); // Empty dependency array - runs once on mount
+
 
   const fetchAnalyses = async () => {
     try {
