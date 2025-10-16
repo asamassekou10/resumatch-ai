@@ -195,7 +195,7 @@ def generate_verification_token():
 def create_verification_link(user_id, token):
     """Create verification link"""
     frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
-    return f"{frontend_url}/verify-email?user={user_id}&token={token}"
+    return f"{frontend_url}?verify=true&user={user_id}&token={token}"
 
 # Routes
 @app.route('/api/health', methods=['GET'])

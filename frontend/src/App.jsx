@@ -114,17 +114,16 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     const urlParams = new URLSearchParams(window.location.search);
     const path = window.location.pathname;
     
-    // Handle OAuth callback (Google login)
-    const oauthToken = urlParams.get('token');
     const userId = urlParams.get('user');
+    const token = urlParams.get('token');
+    const verify = urlParams.get('verify'); // NEW: Check for verify flag
     const errorMessage = urlParams.get('message');
     
-    // Handle Email Verification
-    const verifyUserId = urlParams.get('user');
-    const verifyToken = urlParams.get('token');
+    console.log('Current path:', path);
+    console.log('URL params:', { userId, token, verify, errorMessage });
     
-    // Check if this is email verification (has both user and token, but no path like /auth/success)
-    if ((path === '/verify-email' || path === '/') && verifyUserId && verifyToken && !path.includes('/auth/')) {
+    // Check if this is email verification (has verify=true, user and token)
+    if (verify === 'true' && userId && token) {
       console.log('Verifying email...');
       setLoading(true);
       
@@ -132,15 +131,14 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          user_id: verifyUserId, 
-          token: verifyToken 
+          user_id: userId, 
+          token: token 
         })
       })
       .then(res => res.json())
       .then(data => {
         setLoading(false);
         if (data.access_token) {
-          // Email verified successfully
           setToken(data.access_token);
           localStorage.setItem('token', data.access_token);
           setError('');
@@ -148,7 +146,6 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
           setView('dashboard');
           window.history.replaceState({}, document.title, '/');
         } else {
-          // Verification failed
           setError(data.error || 'Verification failed');
           alert('❌ ' + (data.error || 'Verification failed. Please try again or contact support.'));
           setView('login');
@@ -164,6 +161,14 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
         window.history.replaceState({}, document.title, '/');
       });
     }
+    // Handle OAuth error
+    else if (errorMessage) {
+      console.log('OAuth error:', errorMessage);
+      setError(decodeURIComponent(errorMessage));
+      setView('login');
+      window.history.replaceState({}, document.title, '/');
+    }
+  }, []);
     // Handle Google OAuth callback
     else if (oauthToken && userId && (path === '/auth/success' || path.includes('auth'))) {
       console.log('OAuth success - setting token and redirecting to dashboard');
