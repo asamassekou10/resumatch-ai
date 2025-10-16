@@ -145,33 +145,78 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     window.location.href = `${API_URL}/auth/google`;
   };
 
-// Handle OAuth callback success
-useEffect(() => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get('token');
-  const userId = urlParams.get('user');
-  const errorMessage = urlParams.get('message');
-  
-  // Check if we're on auth success or error page
-  const path = window.location.pathname;
-  
-  if (token && userId && (path === '/auth/success' || urlParams.has('token'))) {
-    // Successfully authenticated via Google OAuth
-    console.log('OAuth success - setting token and redirecting to dashboard');
-    setToken(token);
-    localStorage.setItem('token', token);
-    setView('dashboard');
-    // Clean up URL
-    window.history.replaceState({}, document.title, '/');
-  } else if (errorMessage || path === '/auth/error') {
-    // Authentication failed
-    console.log('OAuth error:', errorMessage);
-    setError(decodeURIComponent(errorMessage || 'Authentication failed'));
-    setView('login');
-    // Clean up URL
-    window.history.replaceState({}, document.title, '/');
-  }
-}, []);
+  // Handle OAuth callback success AND email verification
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const path = window.location.pathname;
+    
+    // Handle OAuth callback (Google login)
+    const token = urlParams.get('token');
+    const userId = urlParams.get('user');
+    const errorMessage = urlParams.get('message');
+    
+    if (token && userId && (path === '/auth/success' || urlParams.has('token'))) {
+      // Successfully authenticated via Google OAuth
+      console.log('OAuth success - setting token and redirecting to dashboard');
+      setToken(token);
+      localStorage.setItem('token', token);
+      setView('dashboard');
+      window.history.replaceState({}, document.title, '/');
+    } else if (errorMessage || path === '/auth/error') {
+      // Authentication failed
+      console.log('OAuth error:', errorMessage);
+      setError(decodeURIComponent(errorMessage || 'Authentication failed'));
+      setView('login');
+      window.history.replaceState({}, document.title, '/');
+    }
+    
+    // Handle Email Verification
+    if (path === '/verify-email' || urlParams.has('user') && urlParams.has('token')) {
+      const verifyUserId = urlParams.get('user');
+      const verifyToken = urlParams.get('token');
+      
+      if (verifyUserId && verifyToken) {
+        console.log('Verifying email...');
+        setLoading(true);
+        
+        fetch(`${API_URL}/auth/verify-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            user_id: verifyUserId, 
+            token: verifyToken 
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          setLoading(false);
+          if (data.access_token) {
+            // Email verified successfully
+            setToken(data.access_token);
+            localStorage.setItem('token', data.access_token);
+            setError('');
+            alert('✅ Email verified successfully! Welcome to ResuMatch AI!');
+            setView('dashboard');
+            window.history.replaceState({}, document.title, '/');
+          } else {
+            // Verification failed
+            setError(data.error || 'Verification failed');
+            alert('❌ ' + (data.error || 'Verification failed. Please try again or contact support.'));
+            setView('login');
+            window.history.replaceState({}, document.title, '/');
+          }
+        })
+        .catch(err => {
+          setLoading(false);
+          console.error('Verification error:', err);
+          setError('Verification failed. Please try again or contact support.');
+          alert('❌ Verification failed. Please try again or contact support.');
+          setView('login');
+          window.history.replaceState({}, document.title, '/');
+        });
+      }
+    }
+  }, []);
 
   const fetchAnalyses = async () => {
     try {
@@ -541,7 +586,31 @@ useEffect(() => {
                   {error}
                 </div>
               )}
-              
+
+              {error && error.includes('verify your email') && (
+                <div className="bg-blue-900/50 border border-blue-500 text-blue-300 px-4 py-3 rounded-lg mb-6 text-center">
+                  <p className="mb-2">Didn't receive the verification email?</p>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const response = await fetch(`${API_URL}/auth/resend-verification`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ email: formData.email })
+                        });
+                        const data = await response.json();
+                        alert(data.message || 'Verification email sent!');
+                      } catch (err) {
+                        alert('Failed to resend email. Please try again.');
+                      }
+                    }}
+                    className="text-cyan-400 hover:text-cyan-300 font-medium underline"
+                  >
+                    Resend Verification Email
+                  </button>
+                </div>
+              )}
+
               <div className="space-y-6">
                 {/* Google Sign-in Button */}
                 <button
@@ -658,6 +727,17 @@ useEffect(() => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading && view !== 'analyze' && view !== 'dashboard') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-500 mb-4"></div>
+          <p className="text-white text-xl">Verifying your email...</p>
         </div>
       </div>
     );
