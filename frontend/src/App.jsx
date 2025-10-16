@@ -5,24 +5,6 @@ import Breadcrumb from './components/Breadcrumb';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-function App() {
-  const [view, setView] = useState('landing');
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [analyses, setAnalyses] = useState([]);
-  const [currentAnalysis, setCurrentAnalysis] = useState(null);
-  const [dashboardStats, setDashboardStats] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [resumeFile, setResumeFile] = useState(null);
-  const [jobDescription, setJobDescription] = useState('');
-  const [jobTitle, setJobTitle] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [aiFeedback, setAiFeedback] = useState(null);
-  const [optimizedResume, setOptimizedResume] = useState(null);
-  const [coverLetter, setCoverLetter] = useState(null);
-  const [generatingAI, setGeneratingAI] = useState(false);
-  const [landingResumeFile, setLandingResumeFile] = useState(null);
 
   function App() {
     const [view, setView] = useState('landing');
