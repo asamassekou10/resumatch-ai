@@ -4,38 +4,62 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from datetime import datetime, timedelta
 import os
+import secrets
 from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
 from email_service import email_service
+from security_config import (
+    validate_email,
+    validate_password,
+    validate_file_upload,
+    sanitize_text_input
+)
 import logging
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
+
+
+# Security: Require secrets in production
+JWT_SECRET = os.getenv('JWT_SECRET_KEY')
+SESSION_SECRET = os.getenv('SECRET_KEY')
+
+if not JWT_SECRET or not SESSION_SECRET:
+    if not app.debug:
+        raise ValueError("JWT_SECRET_KEY and SECRET_KEY environment variables must be set!")
+    # Only use defaults in development
+    JWT_SECRET = 'dev-jwt-secret-change-in-production'
+    SESSION_SECRET = 'dev-session-secret-change-in-production'
+    logging.warning("⚠️ Using default secrets - DO NOT use in production!")
+
+# CORS - Strict origins only
 CORS(app, resources={
     r"/api/*": {
         "origins": [
-            "http://localhost:3000",  # Local development
-            "https://resumatch-frontend.onrender.com",  # Production
-            "https://resumatch-frontend-*.onrender.com", # Any Render preview
-            "https://resumeanalyzerai.com",  #Production domain
+            "http://localhost:3000",
+            "https://resumatch-frontend.onrender.com",
+            "https://resumeanalyzerai.com",
             "https://www.resumeanalyzerai.com"
         ],
-        "methods": ["GET", "POST", "PUT", "DELETE","OPTIONS"],
+        "methods": ["GET", "POST", "PUT", "DELETE"],
         "allow_headers": ["Content-Type", "Authorization"],
         "supports_credentials": True
-
     }
 })
+
 # Configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://localhost/resume_optimizer')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'my-super-secret-key-12345')
+app.config['JWT_SECRET_KEY'] = JWT_SECRET
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=7)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-for-sessions')
+app.config['SECRET_KEY'] = SESSION_SECRET
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB max request size
 
 # OAuth Configuration
 app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID')
@@ -47,6 +71,14 @@ bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 oauth = OAuth(app)
 
+# Rate Limiting
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
+
 # Configure Google OAuth
 google = oauth.register(
     name='google',
@@ -57,6 +89,22 @@ google = oauth.register(
         'scope': 'openid email profile',
     }
 )
+
+# Security: Enforce HTTPS in production
+@app.before_request
+def enforce_https():
+    if request.headers.get('X-Forwarded-Proto') == 'http' and not app.debug:
+        url = request.url.replace('http://', 'https://', 1)
+        return redirect(url, code=301)
+
+# Security: Add security headers
+@app.after_request
+def set_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
 
 
 # Database Models
@@ -70,7 +118,10 @@ class User(db.Model):
     auth_provider = db.Column(db.String(20), default='email')  # 'email' or 'google'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime, default=datetime.utcnow)
+    email_verified = db.Column(db.Boolean, default=False, nullable=False)
+    verification_token = db.Column(db.String(255), nullable=True)
     analyses = db.relationship('Analysis', backref='user', lazy=True, cascade='all, delete-orphan')
+
 
 class Analysis(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -109,7 +160,6 @@ def init_db():
 # Call init_db when module is loaded (works with gunicorn)
 init_db()
 
-# Auto-migrate missing columns on startup (production)
 def auto_migrate():
     """Automatically add missing columns if they don't exist"""
     with app.app_context():
@@ -122,6 +172,10 @@ def auto_migrate():
                 'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS auth_provider VARCHAR(20) DEFAULT \'email\';',
                 'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;',
                 'ALTER TABLE "user" ALTER COLUMN password_hash DROP NOT NULL;'
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE;',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);',
+                # Set Google OAuth users as verified
+                'UPDATE "user" SET email_verified = TRUE WHERE auth_provider = \'google\';'
             ]
             for command in commands:
                 db.session.execute(text(command))
@@ -133,49 +187,128 @@ def auto_migrate():
 
 auto_migrate()
 
+
+def generate_verification_token():
+    """Generate a secure verification token"""
+    return secrets.token_urlsafe(32)
+
+def create_verification_link(user_id, token):
+    """Create verification link"""
+    frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+    return f"{frontend_url}/verify-email?user={user_id}&token={token}"
+
 # Routes
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({'status': 'healthy', 'message': 'AI Resume Optimizer API is running'}), 200
 
 @app.route('/api/auth/register', methods=['POST'])
+@limiter.limit("3 per hour")
 def register():
     data = request.json
     
-    if not data.get('email') or not data.get('password'):
+    # Validate required fields
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    
+    if not email or not password:
         return jsonify({'error': 'Email and password required'}), 400
     
-    if User.query.filter_by(email=data['email']).first():
+    # Validate email format
+    if not validate_email(email):
+        return jsonify({'error': 'Invalid email format'}), 400
+    
+    # Validate password strength
+    is_valid, error_message = validate_password(password)
+    if not is_valid:
+        return jsonify({'error': error_message}), 400
+    
+    # Check if user exists
+    if User.query.filter_by(email=email).first():
         return jsonify({'error': 'Email already registered'}), 400
     
-    hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
-    user = User(email=data['email'], password_hash=hashed_password)
+    # Generate verification token
+    verification_token = generate_verification_token()
     
-    db.session.add(user)
-    db.session.commit()
+    # Create user (NOT verified yet)
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    user = User(
+        email=email, 
+        password_hash=hashed_password,
+        auth_provider='email',
+        email_verified=False,  # Not verified yet
+        verification_token=verification_token
+    )
     
-    access_token = create_access_token(identity=str(user.id))
-    return jsonify({
-        'message': 'User created successfully',
-        'access_token': access_token,
-        'user': {'id': user.id, 'email': user.email}
-    }), 201
+    try:
+        db.session.add(user)
+        db.session.commit()
+        
+        # Generate verification link
+        verification_link = create_verification_link(user.id, verification_token)
+        
+        # Send verification email
+        email_sent = email_service.send_verification_email(
+            recipient_email=email,
+            recipient_name=email.split('@')[0],
+            verification_link=verification_link
+        )
+        
+        if email_sent:
+            logging.info(f"New user registered: {email}, verification email sent")
+        else:
+            logging.warning(f"User registered but verification email failed: {email}")
+        
+        return jsonify({
+            'message': 'Registration successful! Please check your email to verify your account.',
+            'email': email,
+            'verification_required': True
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Registration error: {str(e)}")
+        return jsonify({'error': 'Registration failed'}), 500
 
 @app.route('/api/auth/login', methods=['POST'])
+@limiter.limit("5 per minute")
 def login():
     data = request.json
     
-    if not data.get('email') or not data.get('password'):
+    # Validate input
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    
+    if not email or not password:
         return jsonify({'error': 'Email and password required'}), 400
     
-    user = User.query.filter_by(email=data['email']).first()
+    if not validate_email(email):
+        return jsonify({'error': 'Invalid email format'}), 400
     
-    if not user or not bcrypt.check_password_hash(user.password_hash, data['password']):
-        return jsonify({'error': 'Invalid credentials'}), 401
+    # Find user
+    user = User.query.filter_by(email=email).first()
+    
+    if not user or not user.password_hash or not bcrypt.check_password_hash(user.password_hash, password):
+        logging.warning(f"Failed login attempt for: {email}")
+        return jsonify({'error': 'Invalid email or password'}), 401
+    
+    # Check if email is verified (only for email auth, not Google OAuth)
+    if user.auth_provider == 'email' and not user.email_verified:
+        logging.warning(f"Login attempt with unverified email: {email}")
+        return jsonify({
+            'error': 'Please verify your email before logging in',
+            'email_verified': False
+        }), 403
+    
+    # Check if user is OAuth user trying to login with password
+    if user.auth_provider == 'google' and not user.password_hash:
+        return jsonify({'error': 'Please login with Google'}), 401
     
     # Update last login
     user.last_login = datetime.utcnow()
     db.session.commit()
+    
+    logging.info(f"Successful login: {email}")
     
     access_token = create_access_token(identity=str(user.id))
     return jsonify({
@@ -184,7 +317,8 @@ def login():
             'id': user.id, 
             'email': user.email,
             'name': user.name,
-            'auth_provider': user.auth_provider
+            'auth_provider': user.auth_provider,
+            'email_verified': user.email_verified
         }
     }), 200
 
@@ -206,6 +340,90 @@ def google_login():
         traceback.print_exc()
         return jsonify({'error': f'OAuth initialization failed: {str(e)}'}), 500
 
+@app.route('/api/auth/verify-email', methods=['POST'])
+def verify_email():
+    """Verify user email with token"""
+    data = request.json
+    
+    user_id = data.get('user_id')
+    token = data.get('token')
+    
+    if not user_id or not token:
+        return jsonify({'error': 'Invalid verification link'}), 400
+    
+    try:
+        user = User.query.get(int(user_id))
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if user.email_verified:
+            return jsonify({'message': 'Email already verified'}), 200
+        
+        # Verify token matches
+        if user.verification_token != token:
+            logging.warning(f"Invalid verification token for user {user.email}")
+            return jsonify({'error': 'Invalid or expired verification link'}), 400
+        
+        # Mark as verified
+        user.email_verified = True
+        user.verification_token = None  # Clear token
+        db.session.commit()
+        
+        logging.info(f"Email verified successfully for user: {user.email}")
+        
+        # Create access token so they can login immediately
+        access_token = create_access_token(identity=str(user.id))
+        
+        return jsonify({
+            'message': 'Email verified successfully!',
+            'access_token': access_token,
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'email_verified': True
+            }
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Email verification error: {str(e)}")
+        return jsonify({'error': 'Verification failed'}), 500
+
+@app.route('/api/auth/resend-verification', methods=['POST'])
+@limiter.limit("3 per hour")
+def resend_verification():
+    """Resend verification email"""
+    data = request.json
+    email = data.get('email', '').strip().lower()
+    
+    if not email or not validate_email(email):
+        return jsonify({'error': 'Valid email required'}), 400
+    
+    user = User.query.filter_by(email=email).first()
+    
+    if not user:
+        # Don't reveal if user exists
+        return jsonify({'message': 'If this email is registered, a verification email has been sent'}), 200
+    
+    if user.email_verified:
+        return jsonify({'message': 'Email already verified'}), 200
+    
+    # Generate new token
+    user.verification_token = generate_verification_token()
+    db.session.commit()
+    
+    # Send email
+    verification_link = create_verification_link(user.id, user.verification_token)
+    email_sent = email_service.send_verification_email(
+        recipient_email=email,
+        recipient_name=user.name or email.split('@')[0],
+        verification_link=verification_link
+    )
+    
+    if email_sent:
+        logging.info(f"Verification email resent to: {email}")
+    
+    return jsonify({'message': 'Verification email sent'}), 200
 
 @app.route('/api/auth/callback')
 def google_callback():
@@ -288,7 +506,8 @@ def google_callback():
                 name=name,
                 profile_picture=picture,
                 auth_provider='google',
-                last_login=datetime.utcnow()
+                last_login=datetime.utcnow(),
+                email_verified=True
             )
             db.session.add(user)
         
@@ -304,7 +523,7 @@ def google_callback():
         redirect_url = f"{frontend_url}?token={access_token}&user={user.id}"
         print(f"Redirecting to: {redirect_url}")
         return redirect(redirect_url)
-        
+
     except Exception as e:
         logging.error(f"Google OAuth error: {str(e)}")
         print(f"=== EXCEPTION in google_callback ===")
@@ -332,32 +551,43 @@ def logout():
 
 @app.route('/api/analyze', methods=['POST'])
 @jwt_required()
+@limiter.limit("10 per hour")  # Limit resume analyses
 def analyze_resume():
     try:
         user_id = int(get_jwt_identity())
-        print(f"User ID from token: {user_id}")
+        logging.info(f"Analysis request from user: {user_id}")
     except Exception as e:
-        print(f"JWT Error: {str(e)}")
-        return jsonify({'error': f'Authentication error: {str(e)}'}), 401
+        logging.error(f"JWT Error: {str(e)}")
+        return jsonify({'error': 'Authentication error'}), 401
     
+    # Validate file upload
     if 'resume' not in request.files:
         return jsonify({'error': 'Resume file required'}), 400
     
     resume_file = request.files['resume']
-    job_description = request.form.get('job_description', '')
-    job_title = request.form.get('job_title', '')
-    company_name = request.form.get('company_name', '')
+    
+    # Validate file
+    is_valid, error_message = validate_file_upload(resume_file)
+    if not is_valid:
+        return jsonify({'error': error_message}), 400
+    
+    # Sanitize text inputs
+    job_description = sanitize_text_input(request.form.get('job_description', ''), max_length=10000)
+    job_title = sanitize_text_input(request.form.get('job_title', ''), max_length=200)
+    company_name = sanitize_text_input(request.form.get('company_name', ''), max_length=200)
     
     if not job_description:
         return jsonify({'error': 'Job description required'}), 400
     
+    if len(job_description) < 50:
+        return jsonify({'error': 'Job description too short (minimum 50 characters)'}), 400
+    
     # Import AI processing module
     try:
         from ai_processor import process_resume_analysis
-        print("AI processor imported successfully")
     except ImportError as e:
-        print(f"Failed to import ai_processor: {str(e)}")
-        return jsonify({'error': f'AI processing module not available: {str(e)}'}), 500
+        logging.error(f"Failed to import ai_processor: {str(e)}")
+        return jsonify({'error': 'AI processing module not available'}), 500
     
     try:
         # Process the analysis
@@ -372,12 +602,14 @@ def analyze_resume():
             keywords_found=result['keywords_found'],
             keywords_missing=result['keywords_missing'],
             suggestions=result['suggestions'],
-            resume_text=result['resume_text'],
+            resume_text=result['resume_text'][:50000],  # Limit stored text
             job_description=job_description
         )
         
         db.session.add(analysis)
         db.session.commit()
+        
+        logging.info(f"Analysis completed for user {user_id}, analysis_id: {analysis.id}")
         
         # Send email with analysis results
         try:
@@ -401,12 +633,9 @@ def analyze_resume():
                 
                 if email_sent:
                     logging.info(f"Analysis results email sent to {user.email}")
-                else:
-                    logging.warning(f"Failed to send analysis results email to {user.email}")
                     
         except Exception as e:
             logging.error(f"Error sending analysis results email: {str(e)}")
-            # Don't fail the request if email fails
         
         return jsonify({
             'analysis_id': analysis.id,
@@ -418,7 +647,8 @@ def analyze_resume():
         }), 200
         
     except Exception as e:
-        return jsonify({'error': f'Analysis failed: {str(e)}'}), 500
+        logging.error(f"Analysis failed for user {user_id}: {str(e)}")
+        return jsonify({'error': 'Analysis failed. Please try again.'}), 500
 
 @app.route('/api/analyses', methods=['GET'])
 @jwt_required()
@@ -498,6 +728,7 @@ def get_dashboard_stats():
 
 @app.route('/api/analyze/feedback/<int:analysis_id>', methods=['POST'])
 @jwt_required()
+@limiter.limit("5 per hour")  # Limit AI feedback generation
 def generate_feedback(analysis_id):
     """Generate personalized feedback for an existing analysis"""
     user_id = int(get_jwt_identity())
@@ -561,6 +792,7 @@ def generate_feedback(analysis_id):
 
 @app.route('/api/analyze/optimize/<int:analysis_id>', methods=['POST'])
 @jwt_required()
+@limiter.limit("5 per hour")  # Limit Resume Optimization
 def optimize_resume(analysis_id):
     """Generate optimized resume version"""
     user_id = int(get_jwt_identity())
@@ -615,6 +847,7 @@ def optimize_resume(analysis_id):
 
 @app.route('/api/analyze/cover-letter/<int:analysis_id>', methods=['POST'])
 @jwt_required()
+@limiter.limit("5 per hour")  # Limit cover letter generation
 def generate_cover_letter_route(analysis_id):
     """Generate tailored cover letter"""
     user_id = int(get_jwt_identity())
@@ -667,6 +900,7 @@ def generate_cover_letter_route(analysis_id):
 
 @app.route('/api/analyze/skill-suggestions/<int:analysis_id>', methods=['POST'])
 @jwt_required()
+@limiter.limit("5 per hour")  # Limit for skill suggestion
 def get_skill_suggestions(analysis_id):
     """Get suggestions for acquiring missing skills"""
     user_id = int(get_jwt_identity())
@@ -746,6 +980,7 @@ def test_google_config():
         'client_secret_set': bool(app.config.get('GOOGLE_CLIENT_SECRET')),
         'redirect_uri': url_for('google_callback', _external=True)
     }), 200
+
 
 if __name__ == '__main__':
     with app.app_context():

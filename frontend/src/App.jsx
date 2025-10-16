@@ -24,13 +24,54 @@ function App() {
   const [generatingAI, setGeneratingAI] = useState(false);
   const [landingResumeFile, setLandingResumeFile] = useState(null);
 
-  useEffect(() => {
-    if (token) {
-      fetchAnalyses();
-      fetchDashboardStats();
-      setView('dashboard');
-    }
-  }, [token]);
+  function App() {
+    const [view, setView] = useState('landing');
+    const [token, setToken] = useState(localStorage.getItem('token'));
+    const [formData, setFormData] = useState({ email: '', password: '' });
+    const [analyses, setAnalyses] = useState([]);
+    const [currentAnalysis, setCurrentAnalysis] = useState(null);
+    const [dashboardStats, setDashboardStats] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [resumeFile, setResumeFile] = useState(null);
+    const [jobDescription, setJobDescription] = useState('');
+    const [jobTitle, setJobTitle] = useState('');
+    const [companyName, setCompanyName] = useState('');
+    const [aiFeedback, setAiFeedback] = useState(null);
+    const [optimizedResume, setOptimizedResume] = useState(null);
+    const [coverLetter, setCoverLetter] = useState(null);
+    const [generatingAI, setGeneratingAI] = useState(false);
+    const [landingResumeFile, setLandingResumeFile] = useState(null);
+    //Password validation state
+    const [passwordError, setPasswordError] = useState('');
+    const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+    //Password validation function
+    const validatePassword = (password) => {
+      if (password.length < 8) {
+        return 'Password must be at least 8 characters';
+      }
+      if (!/[A-Z]/.test(password)) {
+        return 'Password must contain an uppercase letter';
+      }
+      if (!/[a-z]/.test(password)) {
+        return 'Password must contain a lowercase letter';
+      }
+      if (!/[0-9]/.test(password)) {
+        return 'Password must contain a number';
+      }
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        return 'Password must contain a special character';
+      }
+      return '';
+    };
+  
+    useEffect(() => {
+      if (token) {
+        fetchAnalyses();
+        fetchDashboardStats();
+        setView('dashboard');
+      }
+    }, [token]);
 
   const handleAuth = async (isLogin) => {
     setLoading(true);
@@ -44,8 +85,25 @@ function App() {
       });
       const data = await response.json();
       
-      if (!response.ok) throw new Error(data.error);
+      if (!response.ok) {
+        // Handle unverified email error
+        if (response.status === 403 && !data.email_verified) {
+          setError(data.error + '. Check your email for the verification link.');
+          return;
+        }
+        throw new Error(data.error);
+      }
       
+      // Handle registration success
+      if (!isLogin && data.verification_required) {
+        setError('');
+        alert('Registration successful! Please check your email to verify your account before logging in.');
+        setView('login');
+        setFormData({ email: '', password: '' });
+        return;
+      }
+      
+      // Handle login success
       setToken(data.access_token);
       localStorage.setItem('token', data.access_token);
       setView('dashboard');
@@ -55,6 +113,42 @@ function App() {
       setLoading(false);
     }
   };
+
+    // useEffect to handle email verification
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('user');
+    const verifyToken = urlParams.get('token');
+    const path = window.location.pathname;
+    
+    if (path === '/verify-email' && userId && verifyToken) {
+      // Verify email
+      fetch(`${API_URL}/auth/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, token: verifyToken })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.access_token) {
+          setToken(data.access_token);
+          localStorage.setItem('token', data.access_token);
+          alert('Email verified successfully! Welcome to ResuMatch AI!');
+          setView('dashboard');
+          window.history.replaceState({}, document.title, '/');
+        } else {
+          setError(data.error || 'Verification failed');
+          setView('login');
+          window.history.replaceState({}, document.title, '/');
+        }
+      })
+      .catch(err => {
+        setError('Verification failed. Please try again or contact support.');
+        setView('login');
+        window.history.replaceState({}, document.title, '/');
+      });
+    }
+  }, []);
 
   const handleLogout = () => {
     setToken(null);
@@ -507,13 +601,62 @@ useEffect(() => {
                     placeholder="Password"
                     className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
                     value={formData.password}
-                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    onChange={(e) => {
+                      setFormData({...formData, password: e.target.value});
+                      if (view === 'register') {
+                        const error = validatePassword(e.target.value);
+                        setPasswordError(error);
+                        setShowPasswordRequirements(true);
+                      }
+                    }}
+                    onFocus={() => view === 'register' && setShowPasswordRequirements(true)}
                   />
+                  
+                  {/* Password Requirements - Only show on register */}
+                  {view === 'register' && showPasswordRequirements && (
+                    <div className="mt-3 p-4 bg-slate-700/30 rounded-lg border border-slate-600">
+                      <p className="text-sm font-medium text-slate-300 mb-2">Password must contain:</p>
+                      <ul className="space-y-1 text-sm">
+                        <li className={`flex items-center gap-2 ${formData.password.length >= 8 ? 'text-green-400' : 'text-slate-400'}`}>
+                          <span>{formData.password.length >= 8 ? '✓' : '○'}</span>
+                          At least 8 characters
+                        </li>
+                        <li className={`flex items-center gap-2 ${/[A-Z]/.test(formData.password) ? 'text-green-400' : 'text-slate-400'}`}>
+                          <span>{/[A-Z]/.test(formData.password) ? '✓' : '○'}</span>
+                          One uppercase letter
+                        </li>
+                        <li className={`flex items-center gap-2 ${/[a-z]/.test(formData.password) ? 'text-green-400' : 'text-slate-400'}`}>
+                          <span>{/[a-z]/.test(formData.password) ? '✓' : '○'}</span>
+                          One lowercase letter
+                        </li>
+                        <li className={`flex items-center gap-2 ${/[0-9]/.test(formData.password) ? 'text-green-400' : 'text-slate-400'}`}>
+                          <span>{/[0-9]/.test(formData.password) ? '✓' : '○'}</span>
+                          One number
+                        </li>
+                        <li className={`flex items-center gap-2 ${/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? 'text-green-400' : 'text-slate-400'}`}>
+                          <span>{/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? '✓' : '○'}</span>
+                          One special character (!@#$%^&*)
+                        </li>
+                      </ul>
+                      {passwordError && (
+                        <p className="text-red-400 text-sm mt-3 font-medium">{passwordError}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
-                
                 <button
-                  onClick={() => handleAuth(view === 'login')}
-                  disabled={loading}
+                  onClick={() => {
+                    // Validate password on register
+                    if (view === 'register') {
+                      const error = validatePassword(formData.password);
+                      if (error) {
+                        setError(error);
+                        return;
+                      }
+                    }
+                    handleAuth(view === 'login');
+                  }}
+                  disabled={loading || (view === 'register' && passwordError)}
                   className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Processing...' : (view === 'login' ? 'Sign In with Email' : 'Create Account')}
