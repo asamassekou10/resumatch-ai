@@ -112,18 +112,17 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   // Handle OAuth callback AND email verification - ONLY ONE useEffect
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const path = window.location.pathname;
-    
+
+    // Get all possible params
+    const tokenParam = urlParams.get('token');
     const userId = urlParams.get('user');
-    const token = urlParams.get('token');
-    const verify = urlParams.get('verify'); // NEW: Check for verify flag
+    const verify = urlParams.get('verify');
     const errorMessage = urlParams.get('message');
     
-    console.log('Current path:', path);
-    console.log('URL params:', { userId, token, verify, errorMessage });
-    
-    // Check if this is email verification (has verify=true, user and token)
-    if (verify === 'true' && userId && token) {
+    // --- Logic Priority ---
+
+    // 1. Check for email verification first
+    if (verify === 'true' && userId && tokenParam) {
       console.log('Verifying email...');
       setLoading(true);
       
@@ -132,7 +131,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           user_id: userId, 
-          token: token 
+          token: tokenParam // The token from the URL is the verification token
         })
       })
       .then(res => res.json())
@@ -144,13 +143,13 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
           setError('');
           alert('✅ Email verified successfully! Welcome to ResuMatch AI!');
           setView('dashboard');
-          window.history.replaceState({}, document.title, '/');
         } else {
           setError(data.error || 'Verification failed');
           alert('❌ ' + (data.error || 'Verification failed. Please try again or contact support.'));
           setView('login');
-          window.history.replaceState({}, document.title, '/');
         }
+        // Clean the URL
+        window.history.replaceState({}, document.title, '/');
       })
       .catch(err => {
         setLoading(false);
@@ -161,30 +160,24 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
         window.history.replaceState({}, document.title, '/');
       });
     }
-    // Handle OAuth error
-    else if (errorMessage) {
-      console.log('OAuth error:', errorMessage);
-      setError(decodeURIComponent(errorMessage));
-      setView('login');
-      window.history.replaceState({}, document.title, '/');
-    }
-  }, []);
-    // Handle Google OAuth callback
-    else if (oauthToken && userId && (path === '/auth/success' || path.includes('auth'))) {
+    // 2. Check for Google OAuth success
+    else if (tokenParam && userId) {
       console.log('OAuth success - setting token and redirecting to dashboard');
-      setToken(oauthToken);
-      localStorage.setItem('token', oauthToken);
+      setToken(tokenParam);
+      localStorage.setItem('token', tokenParam); // This token is the access_token from Google
       setView('dashboard');
+      // Clean the URL
       window.history.replaceState({}, document.title, '/');
     } 
-    // Handle OAuth error
-    else if (errorMessage || path === '/auth/error') {
-      console.log('OAuth error:', errorMessage);
-      setError(decodeURIComponent(errorMessage || 'Authentication failed'));
+    // 3. Check for any error message
+    else if (errorMessage) {
+      console.log('OAuth or other error:', errorMessage);
+      setError(decodeURIComponent(errorMessage));
       setView('login');
+      // Clean the URL
       window.history.replaceState({}, document.title, '/');
     }
-  }, []); // Empty dependency array - runs once on mount
+  }, []); // Empty dependency array ensures this runs only once on mount
 
 
   const fetchAnalyses = async () => {
