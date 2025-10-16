@@ -128,6 +128,179 @@ class EmailService:
             logger.error(f"Error sending cover letter email to {recipient_email}: {str(e)}")
             return False
 
+            
+    class EmailService:
+    def __init__(self):
+        self.sendgrid_api_key = os.getenv('SENDGRID_API_KEY')
+        self.from_email = os.getenv('FROM_EMAIL', 'noreply@resumatch-ai.com')
+        
+        if self.sendgrid_api_key:
+            self.sg = SendGridAPIClient(api_key=self.sendgrid_api_key)
+        else:
+            self.sg = None
+            logger.warning("SendGrid API key not found. Email functionality will be disabled.")
+
+
+    def send_verification_email(self, recipient_email: str, recipient_name: str, verification_link: str) -> bool:
+        """Send email verification link to new user"""
+        if not self.sg:
+            logger.error("SendGrid not configured. Cannot send email.")
+            return False
+
+        try:
+            subject = "Welcome to ResuMatch AI - Verify Your Email"
+            
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Verify Your Email</title>
+                <style>
+                    body {{ 
+                        font-family: Arial, sans-serif; 
+                        line-height: 1.6; 
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                        background-color: #f4f4f4;
+                    }}
+                    .container {{ 
+                        max-width: 600px; 
+                        margin: 20px auto; 
+                        background: white;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }}
+                    .header {{ 
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white; 
+                        padding: 40px 20px; 
+                        text-align: center;
+                    }}
+                    .header h1 {{
+                        margin: 0 0 10px 0;
+                        font-size: 28px;
+                    }}
+                    .content {{ 
+                        padding: 40px 30px;
+                    }}
+                    .welcome-text {{
+                        font-size: 18px;
+                        color: #333;
+                        margin-bottom: 20px;
+                    }}
+                    .cta-button {{
+                        display: inline-block;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white !important;
+                        padding: 16px 40px;
+                        text-decoration: none;
+                        border-radius: 25px;
+                        font-weight: bold;
+                        font-size: 16px;
+                        margin: 30px 0;
+                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                    }}
+                    .cta-container {{
+                        text-align: center;
+                        margin: 30px 0;
+                    }}
+                    .info-box {{
+                        background: #f8f9fa;
+                        padding: 20px;
+                        border-radius: 8px;
+                        margin: 20px 0;
+                        border-left: 4px solid #667eea;
+                    }}
+                    .footer {{ 
+                        text-align: center; 
+                        padding: 20px;
+                        background: #f8f9fa;
+                        color: #6c757d; 
+                        font-size: 13px;
+                        border-top: 1px solid #dee2e6;
+                    }}
+                    .link-text {{
+                        word-break: break-all;
+                        color: #667eea;
+                        font-size: 12px;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Welcome to ResuMatch AI!</h1>
+                        <p style="margin: 0; opacity: 0.9;">Your AI-Powered Career Assistant</p>
+                    </div>
+                    
+                    <div class="content">
+                        <p class="welcome-text">Hi {recipient_name},</p>
+                        
+                        <p>Thank you for signing up! We're excited to help you optimize your resume and land your dream job.</p>
+                        
+                        <p><strong>To get started, please verify your email address by clicking the button below:</strong></p>
+                        
+                        <div class="cta-container">
+                            <a href="{verification_link}" class="cta-button">
+                                Verify Email Address
+                            </a>
+                        </div>
+                        
+                        <div class="info-box">
+                            <p style="margin: 0 0 10px 0;"><strong>What you'll get:</strong></p>
+                            <ul style="margin: 0; padding-left: 20px;">
+                                <li>AI-powered resume analysis</li>
+                                <li>Keyword optimization for ATS systems</li>
+                                <li>Personalized improvement suggestions</li>
+                                <li>Cover letter generation</li>
+                                <li>Resume optimization tools</li>
+                            </ul>
+                        </div>
+                        
+                        <p style="margin-top: 30px; font-size: 14px; color: #666;">
+                            If the button doesn't work, copy and paste this link into your browser:
+                        </p>
+                        <p class="link-text">{verification_link}</p>
+                        
+                        <p style="margin-top: 30px; font-size: 14px; color: #666;">
+                            This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.
+                        </p>
+                    </div>
+                    
+                    <div class="footer">
+                        <p><strong>ResuMatch AI</strong></p>
+                        <p>This is an automated message, please do not reply to this email.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            message = Mail(
+                from_email=self.from_email,
+                to_emails=recipient_email,
+                subject=subject,
+                html_content=html_content
+            )
+            
+            response = self.sg.send(message)
+            
+            if response.status_code in [200, 201, 202]:
+                logger.info(f"Verification email sent successfully to {recipient_email}")
+                return True
+            else:
+                logger.error(f"Failed to send verification email. Status code: {response.status_code}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Error sending verification email to {recipient_email}: {str(e)}")
+            return False
+
+
     def send_optimized_resume(
         self,
         recipient_email: str,
@@ -678,164 +851,7 @@ class EmailService:
         
         return keyword_html
 
-def send_verification_email(self, recipient_email: str, recipient_name: str, verification_link: str) -> bool:
-    """Send email verification link to new user"""
-    if not self.sg:
-        logger.error("SendGrid not configured. Cannot send email.")
-        return False
 
-    try:
-        subject = "Welcome to ResuMatch AI - Verify Your Email"
-        
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Verify Your Email</title>
-            <style>
-                body {{ 
-                    font-family: Arial, sans-serif; 
-                    line-height: 1.6; 
-                    color: #333;
-                    margin: 0;
-                    padding: 0;
-                    background-color: #f4f4f4;
-                }}
-                .container {{ 
-                    max-width: 600px; 
-                    margin: 20px auto; 
-                    background: white;
-                    border-radius: 8px;
-                    overflow: hidden;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                }}
-                .header {{ 
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white; 
-                    padding: 40px 20px; 
-                    text-align: center;
-                }}
-                .header h1 {{
-                    margin: 0 0 10px 0;
-                    font-size: 28px;
-                }}
-                .content {{ 
-                    padding: 40px 30px;
-                }}
-                .welcome-text {{
-                    font-size: 18px;
-                    color: #333;
-                    margin-bottom: 20px;
-                }}
-                .cta-button {{
-                    display: inline-block;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white !important;
-                    padding: 16px 40px;
-                    text-decoration: none;
-                    border-radius: 25px;
-                    font-weight: bold;
-                    font-size: 16px;
-                    margin: 30px 0;
-                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-                }}
-                .cta-container {{
-                    text-align: center;
-                    margin: 30px 0;
-                }}
-                .info-box {{
-                    background: #f8f9fa;
-                    padding: 20px;
-                    border-radius: 8px;
-                    margin: 20px 0;
-                    border-left: 4px solid #667eea;
-                }}
-                .footer {{ 
-                    text-align: center; 
-                    padding: 20px;
-                    background: #f8f9fa;
-                    color: #6c757d; 
-                    font-size: 13px;
-                    border-top: 1px solid #dee2e6;
-                }}
-                .link-text {{
-                    word-break: break-all;
-                    color: #667eea;
-                    font-size: 12px;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>Welcome to ResuMatch AI!</h1>
-                    <p style="margin: 0; opacity: 0.9;">Your AI-Powered Career Assistant</p>
-                </div>
-                
-                <div class="content">
-                    <p class="welcome-text">Hi {recipient_name},</p>
-                    
-                    <p>Thank you for signing up! We're excited to help you optimize your resume and land your dream job.</p>
-                    
-                    <p><strong>To get started, please verify your email address by clicking the button below:</strong></p>
-                    
-                    <div class="cta-container">
-                        <a href="{verification_link}" class="cta-button">
-                            Verify Email Address
-                        </a>
-                    </div>
-                    
-                    <div class="info-box">
-                        <p style="margin: 0 0 10px 0;"><strong>What you'll get:</strong></p>
-                        <ul style="margin: 0; padding-left: 20px;">
-                            <li>AI-powered resume analysis</li>
-                            <li>Keyword optimization for ATS systems</li>
-                            <li>Personalized improvement suggestions</li>
-                            <li>Cover letter generation</li>
-                            <li>Resume optimization tools</li>
-                        </ul>
-                    </div>
-                    
-                    <p style="margin-top: 30px; font-size: 14px; color: #666;">
-                        If the button doesn't work, copy and paste this link into your browser:
-                    </p>
-                    <p class="link-text">{verification_link}</p>
-                    
-                    <p style="margin-top: 30px; font-size: 14px; color: #666;">
-                        This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.
-                    </p>
-                </div>
-                
-                <div class="footer">
-                    <p><strong>ResuMatch AI</strong></p>
-                    <p>This is an automated message, please do not reply to this email.</p>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-        
-        message = Mail(
-            from_email=self.from_email,
-            to_emails=recipient_email,
-            subject=subject,
-            html_content=html_content
-        )
-        
-        response = self.sg.send(message)
-        
-        if response.status_code in [200, 201, 202]:
-            logger.info(f"Verification email sent successfully to {recipient_email}")
-            return True
-        else:
-            logger.error(f"Failed to send verification email. Status code: {response.status_code}")
-            return False
-            
-    except Exception as e:
-        logger.error(f"Error sending verification email to {recipient_email}: {str(e)}")
-        return False
 # Global email service instance
 email_service = EmailService()
  
