@@ -128,19 +128,6 @@ class EmailService:
             logger.error(f"Error sending cover letter email to {recipient_email}: {str(e)}")
             return False
 
-            
-    class EmailService:
-    def __init__(self):
-        self.sendgrid_api_key = os.getenv('SENDGRID_API_KEY')
-        self.from_email = os.getenv('FROM_EMAIL', 'noreply@resumatch-ai.com')
-        
-        if self.sendgrid_api_key:
-            self.sg = SendGridAPIClient(api_key=self.sendgrid_api_key)
-        else:
-            self.sg = None
-            logger.warning("SendGrid API key not found. Email functionality will be disabled.")
-
-
     def send_verification_email(self, recipient_email: str, recipient_name: str, verification_link: str) -> bool:
         """Send email verification link to new user"""
         if not self.sg:
