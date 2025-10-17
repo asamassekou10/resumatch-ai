@@ -567,6 +567,8 @@ class EmailService:
         """
         return html
 
+# In email_service.py
+
     def _generate_analysis_email_html(self, recipient_name: str, analysis_data: dict) -> str:
         """Generate HTML content for analysis results email"""
         match_score = analysis_data.get('match_score', 0)
@@ -575,7 +577,8 @@ class EmailService:
         analysis_id = analysis_data.get('analysis_id', '')
         
         # Color coding for match score
-        score_color = "#28a745" if match_score >= 70 else "#ffc107" if match_score >= 50 else "#dc3545"
+        score_color = "#10B981" if match_score >= 70 else "#F59E0B" if match_score >= 50 else "#EF4444"
+        score_text_color = "#ffffff" # White text for better contrast on colored backgrounds
         
         # Website URL
         website_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
@@ -587,209 +590,83 @@ class EmailService:
         <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>AI Resume Analysis Results</title>
+            <title>Your AI Resume Analysis Results</title>
             <style>
-                body {{ 
-                    font-family: Arial, sans-serif; 
-                    line-height: 1.6; 
-                    color: #333; 
-                    margin: 0;
-                    padding: 0;
-                    background-color: #f4f4f4;
-                }}
-                .container {{ 
-                    max-width: 600px; 
-                    margin: 20px auto; 
-                    background: white;
-                    border-radius: 8px;
-                    overflow: hidden;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                }}
-                .header {{ 
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white; 
-                    padding: 30px 20px; 
-                    text-align: center;
-                }}
-                .header h1 {{
-                    margin: 0 0 10px 0;
-                    font-size: 24px;
-                }}
-                .header p {{
-                    margin: 0;
-                    opacity: 0.9;
-                }}
-                .content {{ 
-                    padding: 30px 20px;
-                }}
-                .score {{ 
-                    font-size: 48px; 
-                    font-weight: bold; 
-                    color: {score_color}; 
-                    text-align: center; 
-                    margin: 20px 0;
-                    padding: 20px;
-                    background: #f8f9fa;
-                    border-radius: 8px;
-                }}
-                .score-label {{
-                    font-size: 14px;
-                    color: #666;
-                    display: block;
-                    margin-bottom: 10px;
-                }}
-                .section {{ 
-                    margin: 20px 0; 
-                    padding: 20px; 
-                    background: #f8f9fa; 
-                    border-radius: 8px;
-                    border-left: 4px solid #667eea;
-                }}
-                .section h3 {{
-                    margin-top: 0;
-                    color: #333;
-                    font-size: 18px;
-                }}
-                .keywords {{ 
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-                    gap: 8px;
-                    margin-top: 10px;
-                }}
-                .keyword {{ 
-                    background: #e9ecef; 
-                    padding: 8px 12px; 
-                    border-radius: 6px; 
-                    font-size: 13px;
-                    text-align: center;
-                    word-break: break-word;
-                }}
-                .missing {{ 
-                    background: #f8d7da; 
-                    color: #721c24; 
-                    border: 1px solid #f5c6cb;
-                }}
-                .found {{ 
-                    background: #d4edda; 
-                    color: #155724; 
-                    border: 1px solid #c3e6cb;
-                }}
-                .cta-button {{
-                    display: inline-block;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white !important;
-                    padding: 15px 40px;
-                    text-decoration: none;
-                    border-radius: 25px;
-                    font-weight: bold;
-                    font-size: 16px;
-                    margin: 20px 0;
-                    text-align: center;
-                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-                }}
-                .cta-container {{
-                    text-align: center;
-                    margin: 30px 0;
-                    padding: 20px;
-                    background: #f8f9fa;
-                    border-radius: 8px;
-                }}
-                .footer {{ 
-                    text-align: center; 
-                    padding: 20px;
-                    background: #f8f9fa;
-                    color: #6c757d; 
-                    font-size: 13px;
-                    border-top: 1px solid #dee2e6;
-                }}
-                .footer p {{
-                    margin: 5px 0;
-                }}
-                @media only screen and (max-width: 600px) {{
-                    .container {{
-                        margin: 0;
-                        border-radius: 0;
-                    }}
-                    .content {{
-                        padding: 20px 15px;
-                    }}
-                    .score {{
-                        font-size: 36px;
-                    }}
-                    .keywords {{
-                        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-                    }}
-                    .keyword {{
-                        font-size: 12px;
-                        padding: 6px 10px;
-                    }}
-                }}
+                body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc; }}
+                .container {{ max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }}
+                .header {{ background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; padding: 40px 20px; text-align: center; }}
+                .header h1 {{ margin: 0 0 10px 0; font-size: 28px; font-weight: 700; }}
+                .header p {{ margin: 0; opacity: 0.9; font-size: 16px; }}
+                .content {{ padding: 30px 25px; }}
+                .score-card {{ text-align: center; margin: 20px 0; padding: 25px; background-color: #f1f5f9; border-radius: 10px; }}
+                .score-label {{ font-size: 16px; color: #64748b; font-weight: 500; margin-bottom: 10px; }}
+                .score-value {{ font-size: 64px; font-weight: 800; color: {score_color}; line-height: 1; }}
+                .section {{ margin: 30px 0; }}
+                .section h3 {{ margin-top: 0; margin-bottom: 15px; color: #1e293b; font-size: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }}
+                .keywords-grid {{ display: flex; flex-wrap: wrap; gap: 8px; }}
+                .keyword {{ padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: 500; }}
+                .found {{ background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }}
+                .missing {{ background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }}
+                .suggestions-box {{ background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; border-left: 4px solid #4f46e5; }}
+                .suggestions-box p {{ margin: 0; color: #334155; }}
+                .cta-section {{ margin: 40px 0; padding: 25px; background-color: #4f46e5; color: white; border-radius: 10px; text-align: center; }}
+                .cta-section h3 {{ margin-top: 0; margin-bottom: 10px; font-size: 22px; }}
+                .cta-section p {{ margin: 0 0 20px 0; opacity: 0.9; }}
+                .cta-button {{ display: inline-block; background: #ffffff; color: #4f46e5 !important; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }}
+                .footer {{ text-align: center; padding: 25px; color: #94a3b8; font-size: 12px; }}
             </style>
         </head>
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>AI Resume Analysis Complete</h1>
-                    <p>Your personalized resume analysis for {job_title}</p>
-                    {f'<p>at {company_name}</p>' if company_name and company_name != 'Company' else ''}
+                    <h1>Your AI Resume Analysis is Ready</h1>
+                    <p>Analysis for: <strong>{job_title}</strong></p>
                 </div>
                 
                 <div class="content">
-                    <div class="score">
-                        <span class="score-label">Match Score</span>
-                        {match_score}%
+                    <div class="score-card">
+                        <div class="score-label">Resume Match Score</div>
+                        <div class="score-value">{match_score}%</div>
                     </div>
                     
                     <div class="section">
-                        <h3>Analysis Summary</h3>
-                        <p><strong>Job Title:</strong> {job_title}</p>
-                        {f'<p><strong>Company:</strong> {company_name}</p>' if company_name and company_name != 'Company' else ''}
-                        <p><strong>Match Score:</strong> <span style="color: {score_color}; font-weight: bold;">{match_score}%</span></p>
-                    </div>
-                    
-                    <div class="section">
-                        <h3>Keywords Found ({len(analysis_data.get('keywords_found', []))})</h3>
-                        <div class="keywords">
+                        <h3>Keyword Analysis</h3>
+                        <p style="color: #475569; margin-bottom: 20px;">Your resume was scanned for crucial keywords from the job description. Here’s how you stack up:</p>
+                        
+                        <strong><span style="color: #16a34a;">Keywords Found ({len(analysis_data.get('keywords_found', []))}):</span></strong>
+                        <div class="keywords-grid" style="margin-top: 10px; margin-bottom: 20px;">
                             {self._format_keywords_grid(analysis_data.get('keywords_found', []), 'found')}
                         </div>
-                    </div>
-                    
-                    <div class="section">
-                        <h3>Missing Keywords ({len(analysis_data.get('keywords_missing', []))})</h3>
-                        <div class="keywords">
+
+                        <strong><span style="color: #d97706;">Missing Keywords ({len(analysis_data.get('keywords_missing', []))}):</span></strong>
+                        <div class="keywords-grid" style="margin-top: 10px;">
                             {self._format_keywords_grid(analysis_data.get('keywords_missing', []), 'missing')}
                         </div>
                     </div>
                     
                     <div class="section">
-                        <h3>AI Suggestions</h3>
-                        <p style="margin: 0;">{analysis_data.get('suggestions', 'No specific suggestions available.')}</p>
+                        <h3>AI-Powered Suggestions</h3>
+                        <div class="suggestions-box">
+                            <p>{analysis_data.get('suggestions', 'No specific suggestions available.')}</p>
+                        </div>
                     </div>
-                    
-                    {f'''<div class="section">
-                        <h3>AI Feedback</h3>
-                        <p style="margin: 0; white-space: pre-line;">{analysis_data.get('ai_feedback', '')}</p>
-                    </div>''' if analysis_data.get('ai_feedback') else ''}
-                    
-                    <div class="cta-container">
-                        <p style="margin-bottom: 15px; font-size: 16px; color: #333;">
-                            <strong>View detailed insights and unlock more AI-powered features</strong>
-                        </p>
+
+                    <div class="cta-section">
+                        <h3>Take the Next Step to Get Hired</h3>
+                        <p>Your analysis is a great start. Now, let our AI do the hard work for you. Unlock premium tools to land your dream job.</p>
                         <a href="{dashboard_url}" class="cta-button">
-                            View Full Analysis Dashboard
+                            Upgrade to Pro
                         </a>
-                        <p style="margin-top: 15px; font-size: 13px; color: #666;">
-                            Get personalized feedback, optimized resume, and cover letter
-                        </p>
+                        <ul style="text-align: left; margin-top: 20px; padding-left: 20px; font-size: 14px; opacity: 0.9;">
+                            <li><strong>Get Personalized Feedback:</strong> Detailed, line-by-line advice on how to improve.</li>
+                            <li><strong>Optimize Your Resume:</strong> Let AI rewrite sections to include missing keywords naturally.</li>
+                            <li><strong>Generate a Cover Letter:</strong> Create a compelling, tailored cover letter in seconds.</li>
+                        </ul>
                     </div>
                 </div>
                 
                 <div class="footer">
-                    <p><strong>ResuMatch AI</strong> - Your AI-Powered Career Assistant</p>
-                    <p>This analysis was generated using advanced AI technology</p>
-                    <p style="margin-top: 10px;">
-                        <a href="{website_url}" style="color: #667eea; text-decoration: none;">Visit Website</a>
-                    </p>
+                    <p>ResuMatch AI &copy; 2025</p>
                 </div>
             </div>
         </body>
