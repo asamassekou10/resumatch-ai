@@ -695,13 +695,15 @@ class EmailService:
         
         return keyword_html
 
+# In email_service.py
+
     def _format_keywords_grid(self, keywords: List[str], keyword_type: str) -> str:
         """Format keywords in a grid layout"""
         if not keywords:
             return f"<div class='keyword {keyword_type}'>None found</div>"
         
-        # Limit to 21 keywords (3 rows of 7)
-        display_keywords = keywords[:21]
+        # Limit to 20 keywords
+        display_keywords = keywords[:20]
         keyword_html = ""
         
         for keyword in display_keywords:
@@ -709,12 +711,11 @@ class EmailService:
             display_keyword = keyword if len(keyword) <= 25 else keyword[:22] + "..."
             keyword_html += f"<div class='keyword {keyword_type}'>{display_keyword}</div>"
         
-        if len(keywords) > 21:
-            remaining = len(keywords) - 21
-            keyword_html += f"<div class='keyword {keyword_type}' style='font-weight: bold;'>+{remaining} more</div>"
+        if len(keywords) > 20:
+            remaining = len(keywords) - 20
+            keyword_html += f"<div class='keyword' style='background-color: #e2e8f0; color: #475569;'>+{remaining} more</div>"
         
         return keyword_html
-
 
 # Global email service instance
 email_service = EmailService()
