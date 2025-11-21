@@ -698,7 +698,7 @@ class EmailService:
 # In email_service.py
 
     def _format_keywords_grid(self, keywords: List[str], keyword_type: str) -> str:
-        """Format keywords in a grid layout"""
+        """Format keywords in a grid layout with 5 keywords per line"""
         if not keywords:
             return f"<div class='keyword {keyword_type}'>None found</div>"
         
@@ -706,10 +706,14 @@ class EmailService:
         display_keywords = keywords[:20]
         keyword_html = ""
         
-        for keyword in display_keywords:
+        for i, keyword in enumerate(display_keywords):
             # Truncate very long keywords
             display_keyword = keyword if len(keyword) <= 25 else keyword[:22] + "..."
             keyword_html += f"<div class='keyword {keyword_type}'>{display_keyword}</div>"
+            
+            # Add line break after every 5 keywords (but not after the last one)
+            if (i + 1) % 5 == 0 and (i + 1) < len(display_keywords):
+                keyword_html += "<div style='width: 100%; height: 0;'></div>"
         
         if len(keywords) > 20:
             remaining = len(keywords) - 20

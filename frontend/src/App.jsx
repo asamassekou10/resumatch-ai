@@ -21,12 +21,15 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     const [companyName, setCompanyName] = useState('');
     const [aiFeedback, setAiFeedback] = useState(null);
     const [optimizedResume, setOptimizedResume] = useState(null);
-    const [coverLetter, setCoverLetter] = useState(null);
-    const [generatingAI, setGeneratingAI] = useState(false);
-    const [landingResumeFile, setLandingResumeFile] = useState(null);
-    //Password validation state
-    const [passwordError, setPasswordError] = useState('');
-    const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+  const [coverLetter, setCoverLetter] = useState(null);
+  const [generatingAI, setGeneratingAI] = useState(false);
+  const [landingResumeFile, setLandingResumeFile] = useState(null);
+  //Password validation state
+  const [passwordError, setPasswordError] = useState('');
+  const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+  // User profile and subscription state
+  const [userProfile, setUserProfile] = useState(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     //Password validation function
     const validatePassword = (password) => {
       if (password.length < 8) {
@@ -51,6 +54,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       if (token) {
         fetchAnalyses();
         fetchDashboardStats();
+        fetchUserProfile();
         setView('dashboard');
       }
     }, [token]);
@@ -118,6 +122,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     const userId = urlParams.get('user');
     const verify = urlParams.get('verify');
     const errorMessage = urlParams.get('message');
+    const payment = urlParams.get('payment');
     
     // --- Logic Priority ---
 
@@ -169,7 +174,23 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       // Clean the URL
       window.history.replaceState({}, document.title, '/');
     } 
-    // 3. Check for any error message
+    // 3. Check for payment success/cancel
+    else if (payment) {
+      console.log('Payment result:', payment);
+      if (payment === 'success') {
+        alert('🎉 Payment successful! Welcome to Pro! Your credits have been added.');
+        // Refresh user profile to get updated subscription and credits
+        if (token) {
+          fetchUserProfile();
+        }
+      } else if (payment === 'cancel') {
+        alert('Payment cancelled. You can upgrade anytime from your dashboard.');
+      }
+      setView('dashboard');
+      // Clean the URL
+      window.history.replaceState({}, document.title, '/');
+    }
+    // 4. Check for any error message
     else if (errorMessage) {
       console.log('OAuth or other error:', errorMessage);
       setError(decodeURIComponent(errorMessage));
@@ -213,6 +234,38 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
         score_trend: [],
         top_missing_skills: []
       });
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch(`${API_URL}/user/profile`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      setUserProfile(data);
+    } catch (err) {
+      console.error('Failed to fetch user profile:', err);
+    }
+  };
+
+  const handleUpgradeToPro = async () => {
+    try {
+      const response = await fetch(`${API_URL}/payments/create-checkout-session`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.error);
+      
+      // Redirect to Stripe checkout
+      window.location.href = data.checkout_url;
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -285,9 +338,18 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       });
       const data = await response.json();
       
-      if (!response.ok) throw new Error(data.error);
+      if (!response.ok) {
+        if (response.status === 402) {
+          // Insufficient credits - show upgrade modal
+          setShowUpgradeModal(true);
+          return;
+        }
+        throw new Error(data.error);
+      }
       
       setAiFeedback(data.feedback);
+      // Refresh user profile to update credits
+      fetchUserProfile();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -306,9 +368,18 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       });
       const data = await response.json();
       
-      if (!response.ok) throw new Error(data.error);
+      if (!response.ok) {
+        if (response.status === 402) {
+          // Insufficient credits - show upgrade modal
+          setShowUpgradeModal(true);
+          return;
+        }
+        throw new Error(data.error);
+      }
       
       setOptimizedResume(data.optimized_resume);
+      // Refresh user profile to update credits
+      fetchUserProfile();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -327,9 +398,18 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       });
       const data = await response.json();
       
-      if (!response.ok) throw new Error(data.error);
+      if (!response.ok) {
+        if (response.status === 402) {
+          // Insufficient credits - show upgrade modal
+          setShowUpgradeModal(true);
+          return;
+        }
+        throw new Error(data.error);
+      }
       
       setCoverLetter(data.cover_letter);
+      // Refresh user profile to update credits
+      fetchUserProfile();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -357,6 +437,174 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       setError(err.message);
     }
   };
+
+  // Upgrade Modal Component
+  const UpgradeModal = () => {
+    if (!showUpgradeModal) return null;
+    
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-slate-800 rounded-2xl p-8 max-w-md w-full border border-slate-700">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-4">Upgrade to Pro</h3>
+            <p className="text-slate-300 mb-6">
+              This feature requires Pro credits. Get unlimited access to all AI-powered tools with our Pro plan.
+            </p>
+            <div className="space-y-4">
+              <button
+                onClick={handleUpgradeToPro}
+                className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-cyan-500/25"
+              >
+                Upgrade to Pro - $19.99/month
+              </button>
+              <button
+                onClick={() => setShowUpgradeModal(false)}
+                className="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-semibold transition"
+              >
+                Maybe Later
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (view === 'pricing') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {/* Navigation */}
+        <Navigation 
+          view={view}
+          setView={setView}
+          token={token}
+          handleLogout={handleLogout}
+          showBackButton={true}
+          backButtonText="Back to Dashboard"
+          onBackClick={() => setView('dashboard')}
+        />
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-white mb-4">Choose Your Plan</h1>
+            <p className="text-slate-300 text-lg">Unlock the full potential of AI-powered resume optimization</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-white mb-2">Free</h3>
+                <div className="text-4xl font-bold text-slate-300 mb-2">$0</div>
+                <p className="text-slate-400">Perfect for getting started</p>
+              </div>
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Basic resume analysis
+                </li>
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Keyword matching
+                </li>
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Basic suggestions
+                </li>
+                <li className="flex items-center text-slate-400">
+                  <svg className="w-5 h-5 text-slate-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  No AI credits
+                </li>
+              </ul>
+              <button
+                onClick={() => setView('dashboard')}
+                className="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-semibold transition"
+              >
+                Current Plan
+              </button>
+            </div>
+
+            {/* Pro Plan */}
+            <div className="bg-gradient-to-br from-cyan-500/10 to-purple-600/10 backdrop-blur-sm border-2 border-cyan-500/50 rounded-2xl p-8 relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                  Most Popular
+                </span>
+              </div>
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-white mb-2">Pro</h3>
+                <div className="text-4xl font-bold text-cyan-400 mb-2">$19.99</div>
+                <p className="text-slate-400">per month</p>
+              </div>
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Everything in Free
+                </li>
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  20 AI credits per month
+                </li>
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  AI-powered feedback
+                </li>
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Resume optimization
+                </li>
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Cover letter generation
+                </li>
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Priority email support
+                </li>
+              </ul>
+              <button
+                onClick={handleUpgradeToPro}
+                className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-cyan-500/25"
+              >
+                Upgrade to Pro
+              </button>
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-slate-400 text-sm">
+              All plans include secure payment processing via Stripe. Cancel anytime.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (view === 'landing') {
     return (
@@ -728,7 +976,39 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
         {view === 'dashboard' && (
           <div className="space-y-6">
             <Breadcrumb view={view} setView={setView} token={token} />
-            <h2 className="text-3xl font-bold text-white">Your Career Dashboard</h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-3xl font-bold text-white">Your Career Dashboard</h2>
+              {userProfile && (
+                <div className="flex items-center gap-4">
+                  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg px-4 py-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                      <span className="text-slate-300 text-sm">
+                        {userProfile.subscription_tier === 'pro' ? 'Pro Plan' : 'Free Plan'}
+                      </span>
+                    </div>
+                  </div>
+                  {userProfile.subscription_tier === 'pro' && (
+                    <div className="bg-gradient-to-r from-cyan-500/20 to-purple-600/20 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-4 py-2">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span className="text-cyan-400 font-semibold">{userProfile.credits} Credits</span>
+                      </div>
+                    </div>
+                  )}
+                  {userProfile.subscription_tier === 'free' && (
+                    <button
+                      onClick={() => setView('pricing')}
+                      className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg hover:shadow-cyan-500/25"
+                    >
+                      Upgrade to Pro
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
             
             {dashboardStats && dashboardStats.total_analyses > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1072,6 +1352,9 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
           </div>
         )}
       </div>
+      
+      {/* Upgrade Modal */}
+      <UpgradeModal />
     </div>
   );
 }

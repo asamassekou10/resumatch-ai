@@ -19,6 +19,7 @@ from security_config import (
     sanitize_text_input
 )
 import logging
+import stripe
 
 # Load environment variables
 load_dotenv()
@@ -64,6 +65,10 @@ app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB max request size
 # OAuth Configuration
 app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID')
 app.config['GOOGLE_CLIENT_SECRET'] = os.getenv('GOOGLE_CLIENT_SECRET')
+
+# Stripe Configuration
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -120,6 +125,11 @@ class User(db.Model):
     last_login = db.Column(db.DateTime, default=datetime.utcnow)
     email_verified = db.Column(db.Boolean, default=False, nullable=False)
     verification_token = db.Column(db.String(255), nullable=True)
+    # Subscription and credit fields
+    subscription_tier = db.Column(db.String(50), default='free', nullable=False)
+    credits = db.Column(db.Integer, default=0, nullable=False)
+    stripe_customer_id = db.Column(db.String(255), nullable=True, unique=True)
+    subscription_id = db.Column(db.String(255), nullable=True, unique=True)
     analyses = db.relationship('Analysis', backref='user', lazy=True, cascade='all, delete-orphan')
 
 
@@ -146,16 +156,13 @@ def init_db():
         try:
             # Create all tables
             db.create_all()
-            print("✅ Database tables created successfully")
             
             # Check if tables exist
             from sqlalchemy import inspect
             inspector = inspect(db.engine)
             tables = inspector.get_table_names()
-            print(f"📊 Available tables: {tables}")
             
         except Exception as e:
-            print(f"❌ Database initialization error: {str(e)}")
 
 # Call init_db when module is loaded (works with gunicorn)
 init_db()
@@ -171,18 +178,21 @@ def auto_migrate():
                 'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(500);',
                 'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS auth_provider VARCHAR(20) DEFAULT \'email\';',
                 'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;',
-                'ALTER TABLE "user" ALTER COLUMN password_hash DROP NOT NULL;'
+                'ALTER TABLE "user" ALTER COLUMN password_hash DROP NOT NULL;',
                 'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE;',
                 'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);',
+                # Subscription and credit fields
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS subscription_tier VARCHAR(50) DEFAULT \'free\';',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS credits INTEGER DEFAULT 0;',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(255);',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS subscription_id VARCHAR(255);',
                 # Set Google OAuth users as verified
                 'UPDATE "user" SET email_verified = TRUE WHERE auth_provider = \'google\';'
             ]
             for command in commands:
                 db.session.execute(text(command))
             db.session.commit()
-            print("✅ Auto-migration completed")
         except Exception as e:
-            print(f"⚠️ Auto-migration warning: {str(e)}")
             db.session.rollback()
 
 auto_migrate()
@@ -318,7 +328,9 @@ def login():
             'email': user.email,
             'name': user.name,
             'auth_provider': user.auth_provider,
-            'email_verified': user.email_verified
+            'email_verified': user.email_verified,
+            'subscription_tier': user.subscription_tier,
+            'credits': user.credits
         }
     }), 200
 
@@ -330,8 +342,6 @@ def google_login():
         # Use the full URL including protocol
         redirect_uri = url_for('google_callback', _external=True)
 
-        print(f"Redirect URI: {redirect_uri}")
-        print(f"Google Client ID: {app.config.get('GOOGLE_CLIENT_ID', 'NOT SET')}")
         
         return google.authorize_redirect(redirect_uri)
     except Exception as e:
@@ -425,47 +435,45 @@ def resend_verification():
     
     return jsonify({'message': 'Verification email sent'}), 200
 
+def get_frontend_url():
+    """Determine the correct frontend URL based on the request context"""
+    # Check if we're in development mode (localhost backend)
+    if request.host.startswith('localhost') or request.host.startswith('127.0.0.1'):
+        return 'http://localhost:3000'
+    else:
+        return os.getenv('FRONTEND_URL', 'http://localhost:3000')
+
 @app.route('/api/auth/callback')
 def google_callback():
     """Handle Google OAuth callback"""
     try:
-        print("=== Google Callback Started ===")
         
         # Check for OAuth errors first
         error = request.args.get('error')
         if error:
-            print(f"OAuth Error: {error}")
             error_description = request.args.get('error_description', 'Authentication failed')
-            frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+            frontend_url = get_frontend_url()
             from urllib.parse import quote
             return redirect(f"{frontend_url}/auth/error?message={quote(error_description)}")
         
         # Check if authorization code is present
         if 'code' not in request.args:
-            print("ERROR: No authorization code in callback")
-            print(f"Request args: {request.args}")
-            frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+            frontend_url = get_frontend_url()
             return redirect(f"{frontend_url}/auth/error?message=No authorization code received")
         
         # Get the token
         token = google.authorize_access_token()
-        print(f"Token received: {token is not None}")
         
         # Get user info
         user_info = token.get('userinfo')
-        print(f"User info: {user_info}")
         
         if not user_info:
-            print("ERROR: No user_info in token")
-            print(f"Token keys: {token.keys() if token else 'No token'}")
             # Try alternative method to get user info
             try:
                 resp = google.get('userinfo')
                 user_info = resp.json()
-                print(f"User info from API: {user_info}")
             except Exception as e:
-                print(f"Failed to get user info from API: {str(e)}")
-                frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+                frontend_url = get_frontend_url()
                 return redirect(f"{frontend_url}/auth/error?message=Failed to get user information")
         
         # Extract user information
@@ -474,18 +482,13 @@ def google_callback():
         name = user_info.get('name')
         picture = user_info.get('picture')
         
-        print(f"Google ID: {google_id}")
-        print(f"Email: {email}")
-        print(f"Name: {name}")
         
         if not email:
-            print("ERROR: No email provided by Google")
-            frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+            frontend_url = get_frontend_url()
             return redirect(f"{frontend_url}/auth/error?message=Email not provided by Google")
         
         # Check if user exists
         user = User.query.filter_by(email=email).first()
-        print(f"Existing user found: {user is not None}")
         
         if user:
             # Update existing user with Google info if not already set
@@ -499,7 +502,6 @@ def google_callback():
             user.last_login = datetime.utcnow()
         else:
             # Create new user
-            print("Creating new user")
             user = User(
                 email=email,
                 google_id=google_id,
@@ -512,27 +514,21 @@ def google_callback():
             db.session.add(user)
         
         db.session.commit()
-        print(f"User saved with ID: {user.id}")
         
         # Create JWT token
         access_token = create_access_token(identity=str(user.id))
-        print(f"JWT token created: {access_token[:20]}...")
         
         # Return success response with redirect URL for frontend
-        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+        frontend_url = get_frontend_url()
         redirect_url = f"{frontend_url}?token={access_token}&user={user.id}"
-        print(f"Redirecting to: {redirect_url}")
         return redirect(redirect_url)
 
     except Exception as e:
         logging.error(f"Google OAuth error: {str(e)}")
-        print(f"=== EXCEPTION in google_callback ===")
-        print(f"Error type: {type(e).__name__}")
-        print(f"Error message: {str(e)}")
         import traceback
         traceback.print_exc()
         
-        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+        frontend_url = get_frontend_url()
         from urllib.parse import quote
         error_message = str(e).replace('\n', ' ')[:200]
         return redirect(f"{frontend_url}/auth/error?message={quote(error_message)}")
@@ -684,6 +680,25 @@ def get_analysis(analysis_id):
         'created_at': analysis.created_at.isoformat()
     }), 200
 
+@app.route('/api/user/profile', methods=['GET'])
+@jwt_required()
+def get_user_profile():
+    """Get user profile including subscription and credit info"""
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    return jsonify({
+        'id': user.id,
+        'email': user.email,
+        'name': user.name,
+        'subscription_tier': user.subscription_tier,
+        'credits': user.credits,
+        'email_verified': user.email_verified
+    }), 200
+
 @app.route('/api/dashboard/stats', methods=['GET'])
 @jwt_required()
 def get_dashboard_stats():
@@ -732,10 +747,20 @@ def get_dashboard_stats():
 def generate_feedback(analysis_id):
     """Generate personalized feedback for an existing analysis"""
     user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
     analysis = Analysis.query.filter_by(id=analysis_id, user_id=user_id).first()
     
     if not analysis:
         return jsonify({'error': 'Analysis not found'}), 404
+    
+    # Check credits for AI feedback (1 credit)
+    required_credits = 1
+    if user.credits < required_credits:
+        return jsonify({
+            'error': 'Insufficient credits. Please upgrade your plan.',
+            'required_credits': required_credits,
+            'current_credits': user.credits
+        }), 402
     
     try:
         from gemini_service import generate_personalized_feedback
@@ -748,7 +773,8 @@ def generate_feedback(analysis_id):
             keywords_missing=analysis.keywords_missing
         )
         
-        # Save feedback to analysis
+        # Deduct credits and save feedback
+        user.credits -= required_credits
         analysis.ai_feedback = feedback
         db.session.commit()
         
@@ -785,7 +811,6 @@ def generate_feedback(analysis_id):
         }), 200
         
     except Exception as e:
-        print(f"❌ Error generating feedback: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': f'Failed to generate feedback: {str(e)}'}), 500
@@ -796,10 +821,20 @@ def generate_feedback(analysis_id):
 def optimize_resume(analysis_id):
     """Generate optimized resume version"""
     user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
     analysis = Analysis.query.filter_by(id=analysis_id, user_id=user_id).first()
     
     if not analysis:
         return jsonify({'error': 'Analysis not found'}), 404
+    
+    # Check credits for resume optimization (2 credits)
+    required_credits = 2
+    if user.credits < required_credits:
+        return jsonify({
+            'error': 'Insufficient credits. Please upgrade your plan.',
+            'required_credits': required_credits,
+            'current_credits': user.credits
+        }), 402
     
     try:
         from gemini_service import generate_optimized_resume
@@ -813,7 +848,8 @@ def optimize_resume(analysis_id):
         if not optimized_resume:
             return jsonify({'error': 'Failed to generate optimized resume'}), 500
         
-        # Save optimized version
+        # Deduct credits and save optimized version
+        user.credits -= required_credits
         analysis.optimized_resume = optimized_resume
         db.session.commit()
         
@@ -840,7 +876,6 @@ def optimize_resume(analysis_id):
         }), 200
         
     except Exception as e:
-        print(f"❌ Error optimizing resume: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': f'Failed to optimize resume: {str(e)}'}), 500
@@ -851,10 +886,20 @@ def optimize_resume(analysis_id):
 def generate_cover_letter_route(analysis_id):
     """Generate tailored cover letter"""
     user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
     analysis = Analysis.query.filter_by(id=analysis_id, user_id=user_id).first()
     
     if not analysis:
         return jsonify({'error': 'Analysis not found'}), 404
+    
+    # Check credits for cover letter generation (2 credits)
+    required_credits = 2
+    if user.credits < required_credits:
+        return jsonify({
+            'error': 'Insufficient credits. Please upgrade your plan.',
+            'required_credits': required_credits,
+            'current_credits': user.credits
+        }), 402
     
     try:
         from gemini_service import generate_cover_letter
@@ -868,6 +913,10 @@ def generate_cover_letter_route(analysis_id):
         
         if not cover_letter:
             return jsonify({'error': 'Failed to generate cover letter'}), 500
+        
+        # Deduct credits
+        user.credits -= required_credits
+        db.session.commit()
         
         # Send email with cover letter
         try:
@@ -893,7 +942,6 @@ def generate_cover_letter_route(analysis_id):
         }), 200
         
     except Exception as e:
-        print(f"❌ Error generating cover letter: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': f'Failed to generate cover letter: {str(e)}'}), 500
@@ -926,7 +974,6 @@ def get_skill_suggestions(analysis_id):
         }), 200
         
     except Exception as e:
-        print(f"❌ Error generating suggestions: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': f'Failed to generate suggestions: {str(e)}'}), 500
@@ -980,6 +1027,112 @@ def test_google_config():
         'client_secret_set': bool(app.config.get('GOOGLE_CLIENT_SECRET')),
         'redirect_uri': url_for('google_callback', _external=True)
     }), 200
+
+# Stripe Payment Routes
+
+@app.route('/api/payments/create-checkout-session', methods=['POST'])
+@jwt_required()
+def create_checkout_session():
+    """Create Stripe checkout session for Pro subscription"""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Create or get Stripe customer
+        if not user.stripe_customer_id:
+            customer = stripe.Customer.create(
+                email=user.email,
+                name=user.name or user.email.split('@')[0]
+            )
+            user.stripe_customer_id = customer.id
+            db.session.commit()
+        
+        # Create checkout session
+        checkout_session = stripe.checkout.Session.create(
+            customer=user.stripe_customer_id,
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': 'ResuMatch AI Pro',
+                        'description': 'Monthly subscription with 20 AI credits',
+                    },
+                    'unit_amount': 1999,  # $19.99
+                    'recurring': {
+                        'interval': 'month',
+                    },
+                },
+                'quantity': 1,
+            }],
+            mode='subscription',
+            success_url='https://resumeanalyzerai.com/dashboard?payment=success',
+            cancel_url='https://resumeanalyzerai.com/dashboard?payment=cancel',
+            metadata={
+                'user_id': str(user_id)
+            }
+        )
+        
+        return jsonify({
+            'checkout_url': checkout_session.url
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error creating checkout session: {str(e)}")
+        return jsonify({'error': 'Failed to create checkout session'}), 500
+
+@app.route('/api/payments/webhook', methods=['POST'])
+def stripe_webhook():
+    """Handle Stripe webhook events"""
+    payload = request.get_data()
+    sig_header = request.headers.get('Stripe-Signature')
+    
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, STRIPE_WEBHOOK_SECRET
+        )
+    except ValueError:
+        logging.error("Invalid payload")
+        return jsonify({'error': 'Invalid payload'}), 400
+    except stripe.error.SignatureVerificationError:
+        logging.error("Invalid signature")
+        return jsonify({'error': 'Invalid signature'}), 400
+    
+    # Handle the event
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        user_id = session['metadata'].get('user_id')
+        
+        if user_id:
+            user = User.query.get(int(user_id))
+            if user:
+                # Update user to Pro tier
+                user.subscription_tier = 'pro'
+                user.credits = 20  # Grant monthly credits
+                user.subscription_id = session.get('subscription')
+                db.session.commit()
+                
+                logging.info(f"User {user.email} upgraded to Pro tier")
+    
+    elif event['type'] == 'customer.subscription.deleted':
+        subscription = event['data']['object']
+        subscription_id = subscription['id']
+        
+        # Find user by subscription ID
+        user = User.query.filter_by(subscription_id=subscription_id).first()
+        if user:
+            # Downgrade to free tier
+            user.subscription_tier = 'free'
+            user.credits = 0
+            user.subscription_id = None
+            db.session.commit()
+            
+            logging.info(f"User {user.email} downgraded to free tier")
+    
+    return jsonify({'status': 'success'}), 200
 
 
 if __name__ == '__main__':

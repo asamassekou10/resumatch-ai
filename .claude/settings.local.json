@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m pytest:*)",
+      "Bash(docker-compose config:*)",
+      "Bash(docker-compose build:*)",
+      "Bash($env:PYTHONIOENCODING='utf-8')",
+      "Bash(python run_tests.py:*)",
+      "Bash(cat:*)",
+      "Bash(python cleanup_debug_code.py:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
