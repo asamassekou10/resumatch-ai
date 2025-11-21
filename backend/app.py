@@ -161,8 +161,9 @@ def init_db():
             from sqlalchemy import inspect
             inspector = inspect(db.engine)
             tables = inspector.get_table_names()
-            
+
         except Exception as e:
+            logging.error(f"Database initialization error: {str(e)}")
 
 # Call init_db when module is loaded (works with gunicorn)
 init_db()
