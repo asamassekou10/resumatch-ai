@@ -19,7 +19,6 @@ from security_config import (
     sanitize_text_input
 )
 import logging
-import stripe
 
 # Load environment variables
 load_dotenv()
@@ -65,10 +64,6 @@ app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB max request size
 # OAuth Configuration
 app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID')
 app.config['GOOGLE_CLIENT_SECRET'] = os.getenv('GOOGLE_CLIENT_SECRET')
-
-# Stripe Configuration
-stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
-STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
