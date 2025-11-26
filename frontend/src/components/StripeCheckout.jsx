@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 // Tier information
 const TIER_INFO = {
   pro: {
@@ -175,7 +177,7 @@ const StripeCheckout = () => {
   const [clientSecret, setClientSecret] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const token = localStorage.getItem('resume_analyzer_token');
+  const token = localStorage.getItem('token');
 
   const tierInfo = TIER_INFO[tier];
 
@@ -184,7 +186,7 @@ const StripeCheckout = () => {
       try {
         // Get publishable key and client secret from backend
         const response = await fetch(
-          `/api/payments/create-payment-intent?tier=${tier}`,
+          `${API_URL}/payments/create-payment-intent?tier=${tier}`,
           {
             method: 'POST',
             headers: {
@@ -223,7 +225,7 @@ const StripeCheckout = () => {
   const handlePaymentSuccess = async () => {
     // Create the subscription with the saved payment method
     try {
-      const response = await fetch('/api/payments/confirm-subscription', {
+      const response = await fetch(`${API_URL}/payments/confirm-subscription`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
