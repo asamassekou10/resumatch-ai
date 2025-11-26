@@ -306,11 +306,12 @@ def register():
     # Create user (NOT verified yet)
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     user = User(
-        email=email, 
+        email=email,
         password_hash=hashed_password,
         auth_provider='email',
         email_verified=False,  # Not verified yet
-        verification_token=verification_token
+        verification_token=verification_token,
+        credits=5  # Free users get 5 initial credits
     )
     
     try:
@@ -570,7 +571,8 @@ def google_callback():
                 profile_picture=picture,
                 auth_provider='google',
                 last_login=datetime.utcnow(),
-                email_verified=True
+                email_verified=True,
+                credits=5  # Free users get 5 initial credits
             )
             db.session.add(user)
         
@@ -1175,9 +1177,9 @@ def create_checkout_session():
                     'currency': 'usd',
                     'product_data': {
                         'name': 'ResuMatch AI Pro',
-                        'description': 'Monthly subscription with 20 AI credits',
+                        'description': 'Monthly subscription - unlimited AI features',
                     },
-                    'unit_amount': 1999,  # $19.99
+                    'unit_amount': 999,  # $9.99/month
                     'recurring': {
                         'interval': 'month',
                     },
@@ -1221,16 +1223,16 @@ def stripe_webhook():
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
         user_id = session['metadata'].get('user_id')
-        
+
         if user_id:
             user = User.query.get(int(user_id))
             if user:
-                # Update user to Pro tier
+                # Update user to Pro tier (unlimited features)
                 user.subscription_tier = 'pro'
-                user.credits = 20  # Grant monthly credits
+                user.credits = 1000  # Unlimited monthly credits for Pro
                 user.subscription_id = session.get('subscription')
                 db.session.commit()
-                
+
                 logging.info(f"User {user_id} upgraded to Pro tier")
     
     elif event['type'] == 'customer.subscription.deleted':
