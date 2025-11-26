@@ -31,6 +31,7 @@ services:
       FROM_EMAIL: ${FROM_EMAIL:-alhassane.samassekou@gmail.com}
       BACKEND_URL: ${BACKEND_URL:-http://localhost:5000}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       RATELIMIT_ENABLED: "true"

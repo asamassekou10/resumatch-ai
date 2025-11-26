@@ -32,7 +32,35 @@ const Breadcrumb = ({ view, setView, token, currentAnalysis }) => {
         active: true
       });
     }
-    
+
+    if (view === 'market-dashboard') {
+      items.push({
+        label: 'Market Intelligence',
+        active: true
+      });
+    }
+
+    if (view === 'skill-gap') {
+      items.push({
+        label: 'Skill Gap Analysis',
+        active: true
+      });
+    }
+
+    if (view === 'job-stats') {
+      items.push({
+        label: 'Job Market Statistics',
+        active: true
+      });
+    }
+
+    if (view === 'skill-relationships') {
+      items.push({
+        label: 'Skill Relationships',
+        active: true
+      });
+    }
+
     return items;
   };
 

@@ -11,6 +11,7 @@ import SkillRelationships from './components/SkillRelationships';
 import JobSeekerInsights from './components/JobSeekerInsights';
 import PreferenceQuestionnaire from './components/PreferenceQuestionnaire';
 import RepersonalizeButton from './components/RepersonalizeButton';
+import StripeCheckout from './components/StripeCheckout';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -28,6 +29,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       '/analyze': 'analyze',
       '/result': 'result',
       '/pricing': 'pricing',
+      '/checkout': 'checkout',
       '/admin': 'admin',
       '/auth/callback': 'auth-callback',
       '/market/dashboard': 'market-dashboard',
@@ -51,6 +53,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       'analyze': '/analyze',
       'result': '/result',
       'pricing': '/pricing',
+      'checkout': '/checkout',
       'admin': '/admin',
       'auth-callback': '/auth/callback',
       'market-dashboard': '/market/dashboard',
@@ -408,24 +411,9 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     }
   };
 
-  const handleUpgrade = async (tier = 'pro') => {
-    try {
-      const response = await fetch(`${API_URL}/payments/create-checkout-session?tier=${tier}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error);
-
-      // Redirect to Stripe checkout
-      window.location.href = data.checkout_url;
-    } catch (err) {
-      setError(err.message);
-    }
+  const handleUpgrade = (tier = 'pro') => {
+    // Navigate to custom checkout page
+    navigate(`/checkout?tier=${tier}`);
   };
 
   const handleUpgradeToPro = () => handleUpgrade('pro');
@@ -990,6 +978,14 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
             </p>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (view === 'checkout') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <StripeCheckout />
       </div>
     );
   }

@@ -1,0 +1,393 @@
+/**
+ * JobMarket.css - Job Market Statistics Styling
+ * Uses unified theme variables for consistency
+ */
+
+.job-market-stats {
+  background: var(--bg-primary, #0f172a);
+  min-height: 100vh;
+  padding: 2rem;
+  color: var(--text-primary, #ffffff);
+}
+
+/* Header */
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem 2rem;
+  background: var(--bg-card, rgba(30, 41, 59, 0.5));
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-primary, #334155);
+  border-radius: var(--radius-2xl, 1.5rem);
+}
+
+.stats-header .header-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stats-header .header-title svg {
+  color: var(--primary-400, #22d3ee);
+}
+
+.stats-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-lg, 0.75rem);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--transition-normal, 200ms ease);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--bg-card, rgba(30, 41, 59, 0.5));
+  color: var(--text-secondary, #cbd5e1);
+  border: 1px solid var(--border-primary, #334155);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-card-hover, rgba(51, 65, 85, 0.5));
+  border-color: var(--border-secondary, #475569);
+}
+
+/* Error Alert */
+.error-alert {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--error-400, #f87171);
+  padding: 1rem;
+  border-radius: var(--radius-lg, 0.75rem);
+  margin-bottom: 1.5rem;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+  color: var(--text-tertiary, #94a3b8);
+}
+
+.spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid var(--border-primary, #334155);
+  border-top-color: var(--primary-500, #06b6d4);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Stats Content */
+.stats-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: var(--bg-card, rgba(30, 41, 59, 0.5));
+  backdrop-filter: blur(12px);
+  padding: 1.5rem;
+  border-radius: var(--radius-xl, 1rem);
+  border: 1px solid var(--border-primary, #334155);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: all var(--transition-normal, 200ms ease);
+}
+
+.metric-card:hover {
+  border-color: var(--primary-500, #06b6d4);
+  box-shadow: var(--shadow-glow-primary, 0 0 20px rgba(6, 182, 212, 0.3));
+  transform: translateY(-2px);
+}
+
+.metric-card.large {
+  grid-column: span 2;
+  padding: 2rem;
+}
+
+.metric-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg, 0.75rem);
+  background: var(--gradient-primary, linear-gradient(135deg, #06b6d4 0%, #2563eb 100%));
+  color: white;
+  flex-shrink: 0;
+}
+
+.metric-body h3 {
+  margin: 0;
+  color: var(--text-tertiary, #94a3b8);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.metric-value {
+  margin: 0.5rem 0 0 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+}
+
+/* Section Cards */
+.section {
+  background: var(--bg-card, rgba(30, 41, 59, 0.5));
+  backdrop-filter: blur(12px);
+  padding: 1.5rem;
+  border-radius: var(--radius-2xl, 1.5rem);
+  border: 1px solid var(--border-primary, #334155);
+  margin-bottom: 1.5rem;
+}
+
+.section h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+}
+
+.section h2 svg {
+  color: var(--primary-400, #22d3ee);
+}
+
+/* Industries List */
+.industries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.industry-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.industry-name {
+  font-weight: 500;
+  color: var(--text-secondary, #cbd5e1);
+  min-width: 140px;
+  font-size: 0.875rem;
+}
+
+.industry-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--slate-700, #334155);
+  border-radius: var(--radius-full, 9999px);
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--gradient-primary, linear-gradient(135deg, #06b6d4 0%, #2563eb 100%));
+  border-radius: var(--radius-full, 9999px);
+  transition: width 0.5s ease;
+}
+
+.industry-count {
+  font-weight: 700;
+  color: var(--primary-400, #22d3ee);
+  min-width: 40px;
+  text-align: right;
+  font-size: 0.875rem;
+}
+
+/* Sources Grid */
+.sources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.source-card {
+  background: var(--bg-tertiary, rgba(30, 41, 59, 0.5));
+  padding: 1.25rem;
+  border-radius: var(--radius-lg, 0.75rem);
+  border: 1px solid var(--border-primary, #334155);
+  text-align: center;
+  transition: all var(--transition-normal, 200ms ease);
+}
+
+.source-card:hover {
+  border-color: var(--secondary-500, #3b82f6);
+  background: var(--bg-card-hover, rgba(51, 65, 85, 0.5));
+}
+
+.source-name {
+  display: block;
+  font-weight: 500;
+  color: var(--text-secondary, #cbd5e1);
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.source-count {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--secondary-400, #60a5fa);
+}
+
+/* Salary Grid */
+.salary-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.salary-detail {
+  background: var(--bg-tertiary, rgba(30, 41, 59, 0.5));
+  padding: 1.25rem;
+  border-radius: var(--radius-lg, 0.75rem);
+  border: 1px solid var(--border-primary, #334155);
+  border-left: 3px solid var(--success-500, #10b981);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: all var(--transition-normal, 200ms ease);
+}
+
+.salary-detail:hover {
+  border-color: var(--success-500, #10b981);
+  transform: translateY(-2px);
+}
+
+.salary-detail .label {
+  font-size: 0.75rem;
+  color: var(--text-tertiary, #94a3b8);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.salary-detail .value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--success-400, #34d399);
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--text-tertiary, #94a3b8);
+}
+
+.empty-state svg {
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  margin: 0;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+  .metric-card.large {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .job-market-stats {
+    padding: 1rem;
+  }
+
+  .stats-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+    padding: 1.25rem;
+  }
+
+  .stats-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section {
+    padding: 1.25rem;
+  }
+
+  .sources-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .salary-detail-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .industry-name {
+    min-width: 100px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stats-content > * {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.stats-content > *:nth-child(2) { animation-delay: 0.1s; }
+.stats-content > *:nth-child(3) { animation-delay: 0.2s; }
+.stats-content > *:nth-child(4) { animation-delay: 0.3s; }

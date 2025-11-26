@@ -13,7 +13,7 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('resume_analyzer_token');
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -33,11 +33,11 @@ api.interceptors.response.use(
     // Handle common error cases
     if (error.response?.status === 401) {
       // Token expired or invalid
-      localStorage.removeItem('resume_analyzer_token');
-      localStorage.removeItem('resume_analyzer_user');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
-    
+
     return Promise.reject(error);
   }
 );
@@ -76,6 +76,26 @@ class ApiService {
       current_password: currentPassword,
       new_password: newPassword
     });
+    return response.data;
+  }
+
+  // LinkedIn OAuth endpoints
+  static async getLinkedInStatus() {
+    const response = await api.get(config.api.endpoints.auth.linkedinStatus);
+    return response.data;
+  }
+
+  static getLinkedInLoginUrl() {
+    return `${config.api.baseURL}${config.api.endpoints.auth.linkedinLogin}`;
+  }
+
+  static async getLinkedInProfile() {
+    const response = await api.get(config.api.endpoints.auth.linkedinProfile);
+    return response.data;
+  }
+
+  static async disconnectLinkedIn() {
+    const response = await api.post(config.api.endpoints.auth.linkedinDisconnect);
     return response.data;
   }
 
@@ -137,9 +157,161 @@ class ApiService {
     return response.data;
   }
 
+  // Market Intelligence endpoints
+  static async getTopDemandedSkills(limit = 10, days = 90) {
+    const response = await api.get(config.api.endpoints.market.demandSkills, {
+      params: { limit, days }
+    });
+    return response.data;
+  }
+
+  static async getSkillDemand(skillId) {
+    const response = await api.get(`${config.api.endpoints.market.skillDemand}/${skillId}`);
+    return response.data;
+  }
+
+  static async getSalaryTrends(skillId, days = 180) {
+    const response = await api.get(`${config.api.endpoints.market.salaryTrends}/${skillId}/salary-trends`, {
+      params: { days }
+    });
+    return response.data;
+  }
+
+  static async getSkillGapAnalysis(skills, jobTitle = null) {
+    const response = await api.post(config.api.endpoints.market.gapAnalysis, {
+      skills,
+      job_title: jobTitle
+    });
+    return response.data;
+  }
+
+  static async getIndustrySkills(industry, days = 90) {
+    const response = await api.get(`${config.api.endpoints.market.industrySkills}/${industry}/skills`, {
+      params: { days }
+    });
+    return response.data;
+  }
+
+  static async getLocationSalaries(location, skillId = null) {
+    const endpoint = `${config.api.endpoints.market.locationSalaries}/${location}/salaries`;
+    const response = await api.get(endpoint, {
+      params: skillId ? { skill_id: skillId } : {}
+    });
+    return response.data;
+  }
+
+  static async getMarketSummary() {
+    const response = await api.get(config.api.endpoints.market.summary);
+    return response.data;
+  }
+
+  // Job Posting endpoints
+  static async ingestJobPostings(postings, extractSkills = true) {
+    const response = await api.post(config.api.endpoints.jobs.ingest, {
+      postings,
+      extract_skills: extractSkills
+    });
+    return response.data;
+  }
+
+  static async loadSampleData() {
+    const response = await api.post(config.api.endpoints.jobs.loadSample);
+    return response.data;
+  }
+
+  static async getJobStatistics() {
+    const response = await api.get(config.api.endpoints.jobs.statistics);
+    return response.data;
+  }
+
+  static async getJobSources() {
+    const response = await api.get(config.api.endpoints.jobs.sources);
+    return response.data;
+  }
+
+  static async ingestRealJobs() {
+    const response = await api.post(config.api.endpoints.jobs.ingestReal);
+    return response.data;
+  }
+
+  // Skill endpoints
+  static async getExtractedSkills(analysisId) {
+    const response = await api.get(`${config.api.endpoints.skills.extract}/${analysisId}`);
+    return response.data;
+  }
+
+  static async submitSkillFeedback(extractionId, confirmed, rejected = false) {
+    const response = await api.post(`${config.api.endpoints.skills.feedback}/${extractionId}/feedback`, {
+      confirmed,
+      rejected
+    });
+    return response.data;
+  }
+
+  static async getExtractionQuality(analysisId) {
+    const response = await api.get(`${config.api.endpoints.skills.quality}/${analysisId}/extraction-quality`);
+    return response.data;
+  }
+
+  static async getMethodsAccuracy() {
+    const response = await api.get(config.api.endpoints.skills.methodsAccuracy);
+    return response.data;
+  }
+
+  static async getSkillRelationships(skillId, topN = 10) {
+    const response = await api.get(`${config.api.endpoints.skills.relationships}/skill/${skillId}`, {
+      params: { top_n: topN }
+    });
+    return response.data;
+  }
+
+  static async getRecommendedSkills(skills, topN = 5) {
+    const response = await api.post(config.api.endpoints.skills.recommend, {
+      skills,
+      top_n: topN
+    });
+    return response.data;
+  }
+
+  static async persistSkillRelationships() {
+    const response = await api.post(config.api.endpoints.skills.persist);
+    return response.data;
+  }
+
   // Health check
   static async healthCheck() {
     const response = await api.get(config.api.endpoints.health);
+    return response.data;
+  }
+
+  // Job Seeker Insights endpoints
+  static async getInsightsDashboard() {
+    const response = await api.get('/api/insights/dashboard');
+    return response.data;
+  }
+
+  static async getInsightsLearningRoadmap() {
+    const response = await api.get('/api/insights/learning-roadmap');
+    return response.data;
+  }
+
+  static async getInsightsCompetitiveness() {
+    const response = await api.get('/api/insights/competitiveness-score');
+    return response.data;
+  }
+
+  static async getInsightsSalaryEstimate() {
+    const response = await api.get('/api/insights/salary-estimator');
+    return response.data;
+  }
+
+  static async getInsightsTrendingSkills() {
+    const response = await api.get('/api/insights/trending-skills');
+    return response.data;
+  }
+
+  static async getInsightsLocation() {
+    const response = await api.get('/api/insights/location-intelligence');
     return response.data;
   }
 }

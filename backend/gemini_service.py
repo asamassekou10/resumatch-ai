@@ -2,6 +2,8 @@ import google.generativeai as genai
 import os
 import traceback
 import time
+import html
+import re
 from typing import Optional, Dict, Any
 from errors import AIProcessingError
 import logging
@@ -37,7 +39,26 @@ class GeminiService:
     def _is_model_available(self) -> bool:
         """Check if model is available"""
         return self.model is not None
-    
+
+    def _sanitize_response(self, text: str) -> str:
+        """Clean up HTML entities and formatting issues from AI responses"""
+        if not text:
+            return text
+
+        # Decode HTML entities like &nbsp; &amp; etc.
+        text = html.unescape(text)
+
+        # Replace multiple consecutive spaces with single space
+        text = re.sub(r' {2,}', ' ', text)
+
+        # Replace multiple consecutive newlines with double newline
+        text = re.sub(r'\n{3,}', '\n\n', text)
+
+        # Remove any remaining HTML-like nbsp patterns
+        text = text.replace('\xa0', ' ')  # Non-breaking space character
+
+        return text.strip()
+
     def _call_gemini_with_retry(self, prompt: str, operation_name: str) -> Optional[str]:
         """Call Gemini API with retry logic"""
         if not self._is_model_available():
@@ -50,7 +71,7 @@ class GeminiService:
                 
                 if response and response.text:
                     logger.info(f"Gemini API {operation_name} completed successfully")
-                    return response.text
+                    return self._sanitize_response(response.text)
                 else:
                     logger.warning(f"Empty response from Gemini API for {operation_name}")
                     if attempt < self.max_retries - 1:

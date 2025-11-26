@@ -1199,6 +1199,128 @@ def test_google_config():
 
 # Stripe Payment Routes
 
+@app.route('/api/payments/create-payment-intent', methods=['POST'])
+@jwt_required()
+def create_payment_intent():
+    """Create a payment intent for custom checkout page"""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        # Create or get Stripe customer
+        if not user.stripe_customer_id:
+            customer = stripe.Customer.create(
+                email=user.email,
+                name=user.name or user.email.split('@')[0]
+            )
+            user.stripe_customer_id = customer.id
+            db.session.commit()
+
+        # Determine which tier to upgrade to
+        tier_param = request.args.get('tier', 'pro')  # 'pro' or 'elite'
+
+        if tier_param == 'elite':
+            price = 4999  # $49.99
+            tier_name = 'Elite'
+        else:
+            price = 999   # $9.99
+            tier_name = 'Pro'
+
+        # Create SetupIntent for subscription (handles payment method)
+        setup_intent = stripe.SetupIntent.create(
+            customer=user.stripe_customer_id,
+            usage='off_session'
+        )
+
+        return jsonify({
+            'client_secret': setup_intent.client_secret,
+            'publishable_key': os.getenv('STRIPE_PUBLISHABLE_KEY'),
+            'tier': tier_param,
+            'tier_name': tier_name,
+            'price': price / 100,  # Convert to dollars for display
+            'currency': 'usd'
+        }), 200
+
+    except Exception as e:
+        logging.error(f"Error creating payment intent: {str(e)}")
+        return jsonify({'error': 'Failed to create payment intent'}), 500
+
+@app.route('/api/payments/confirm-subscription', methods=['POST'])
+@jwt_required()
+def confirm_subscription():
+    """Confirm subscription after payment method is saved"""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        # Get tier from request
+        data = request.json
+        tier = data.get('tier', 'pro')
+
+        # Get the customer's saved payment method
+        customer = stripe.Customer.retrieve(user.stripe_customer_id)
+        if not customer.invoice_settings.default_payment_method:
+            return jsonify({'error': 'No payment method found'}), 400
+
+        # Determine price based on tier
+        if tier == 'elite':
+            price = 4999  # $49.99
+            credits = 1000
+            tier_name = 'Elite'
+        else:
+            price = 999   # $9.99
+            credits = 100
+            tier_name = 'Pro'
+
+        # Create a subscription
+        subscription = stripe.Subscription.create(
+            customer=user.stripe_customer_id,
+            items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': f'ResuMatch AI {tier_name}',
+                    },
+                    'unit_amount': price,
+                    'recurring': {
+                        'interval': 'month',
+                    },
+                },
+            }],
+            payment_settings={
+                'payment_method_types': ['card'],
+                'save_default_payment_method': 'on_subscription',
+            },
+        )
+
+        # Update user subscription info
+        user.subscription_id = subscription.id
+        user.subscription_tier = tier
+        user.credits = credits
+        db.session.commit()
+
+        logging.info(f"Subscription created for user {user_id}: {subscription.id}, tier: {tier}")
+
+        return jsonify({
+            'message': 'Subscription confirmed successfully',
+            'subscription_id': subscription.id,
+            'tier': tier,
+            'credits': credits
+        }), 200
+
+    except stripe.error.CardError as e:
+        logging.error(f"Card error: {str(e)}")
+        return jsonify({'error': f'Payment failed: {e.user_message}'}), 402
+    except Exception as e:
+        logging.error(f"Error confirming subscription: {str(e)}")
+        return jsonify({'error': 'Failed to confirm subscription'}), 500
+
 @app.route('/api/payments/create-checkout-session', methods=['POST'])
 @jwt_required()
 def create_checkout_session():

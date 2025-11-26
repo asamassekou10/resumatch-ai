@@ -1,14 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-const Navigation = ({ 
-  view, 
-  setView, 
-  token, 
-  handleLogout, 
-  showBackButton = false, 
+const Navigation = ({
+  view,
+  setView,
+  token,
+  handleLogout,
+  showBackButton = false,
   backButtonText = "Back to Home",
-  onBackClick = null 
+  onBackClick = null
 }) => {
+  const [showMarketMenu, setShowMarketMenu] = useState(false);
+
+  const marketIntelligenceViews = ['market-dashboard', 'skill-gap', 'job-stats', 'skill-relationships'];
+  const isMarketView = marketIntelligenceViews.includes(view);
+
   const handleBackClick = () => {
     if (onBackClick) {
       onBackClick();
@@ -79,7 +84,64 @@ const Navigation = ({
                   <span className="sm:hidden">New</span>
                 </button>
               )}
-              
+
+              {/* Market Intelligence Menu */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowMarketMenu(!showMarketMenu)}
+                  className={`text-slate-300 hover:text-cyan-400 transition text-xs sm:text-sm lg:text-base px-1 sm:px-2 flex items-center gap-1 ${
+                    isMarketView ? 'text-cyan-400' : ''
+                  }`}
+                >
+                  <span className="hidden sm:inline">Market</span>
+                  <span className="sm:hidden">Mkt</span>
+                  <svg className={`w-3 h-3 transition ${showMarketMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                </button>
+
+                {showMarketMenu && (
+                  <div className="absolute right-0 mt-2 w-40 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50">
+                    <button
+                      onClick={() => {
+                        setView('market-dashboard');
+                        setShowMarketMenu(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition first:rounded-t-lg text-xs sm:text-sm"
+                    >
+                      Dashboard
+                    </button>
+                    <button
+                      onClick={() => {
+                        setView('skill-gap');
+                        setShowMarketMenu(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition text-xs sm:text-sm"
+                    >
+                      Skill Gap
+                    </button>
+                    <button
+                      onClick={() => {
+                        setView('job-stats');
+                        setShowMarketMenu(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition text-xs sm:text-sm"
+                    >
+                      Job Stats
+                    </button>
+                    <button
+                      onClick={() => {
+                        setView('skill-relationships');
+                        setShowMarketMenu(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition last:rounded-b-lg text-xs sm:text-sm"
+                    >
+                      Relationships
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <button
                 onClick={handleLogout}
                 className="text-slate-300 hover:text-red-400 transition text-xs sm:text-sm lg:text-base px-1 sm:px-2"
