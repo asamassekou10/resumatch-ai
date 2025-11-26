@@ -266,9 +266,10 @@ def generate_verification_token():
     return secrets.token_urlsafe(32)
 
 def create_verification_link(user_id, token):
-    """Create verification link"""
-    frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
-    return f"{frontend_url}?verify=true&user={user_id}&token={token}"
+    """Create verification link that users can click from email"""
+    # Point to backend verification endpoint which will redirect to frontend
+    backend_url = os.getenv('BACKEND_URL', 'http://localhost:5000')
+    return f"{backend_url}/api/auth/verify-email?user={user_id}&token={token}"
 
 # Routes
 @app.route('/api/health', methods=['GET'])
@@ -412,41 +413,67 @@ def google_login():
         logging.error(f"Google login error: {str(e)}", exc_info=True)
         return jsonify({'error': 'OAuth initialization failed'}), 500
 
-@app.route('/api/auth/verify-email', methods=['POST'])
+@app.route('/api/auth/verify-email', methods=['GET', 'POST'])
 def verify_email():
-    """Verify user email with token"""
-    data = request.json
-    
-    user_id = data.get('user_id')
-    token = data.get('token')
+    """Verify user email with token (GET for email link, POST for API)"""
+    # Handle both GET (from email link) and POST (from API)
+    if request.method == 'GET':
+        user_id = request.args.get('user')
+        token = request.args.get('token')
+    else:
+        data = request.json
+        user_id = data.get('user_id')
+        token = data.get('token')
     
     if not user_id or not token:
-        return jsonify({'error': 'Invalid verification link'}), 400
-    
+        error_msg = 'Invalid verification link'
+        if request.method == 'GET':
+            frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+            return redirect(f"{frontend_url}/verify-error?error={error_msg}")
+        return jsonify({'error': error_msg}), 400
+
     try:
         user = User.query.get(int(user_id))
-        
+
         if not user:
-            return jsonify({'error': 'User not found'}), 404
-        
+            error_msg = 'User not found'
+            if request.method == 'GET':
+                frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+                return redirect(f"{frontend_url}/verify-error?error={error_msg}")
+            return jsonify({'error': error_msg}), 404
+
         if user.email_verified:
+            if request.method == 'GET':
+                frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+                return redirect(f"{frontend_url}/verify-success?already_verified=true")
             return jsonify({'message': 'Email already verified'}), 200
-        
+
         # Verify token matches
         if user.verification_token != token:
             logging.warning(f"Invalid verification token for user {user.email}")
-            return jsonify({'error': 'Invalid or expired verification link'}), 400
+            error_msg = 'Invalid or expired verification link'
+            if request.method == 'GET':
+                frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+                return redirect(f"{frontend_url}/verify-error?error={error_msg}")
+            return jsonify({'error': error_msg}), 400
         
         # Mark as verified
         user.email_verified = True
         user.verification_token = None  # Clear token
         db.session.commit()
-        
+
         logging.info(f"Email verified successfully for user: {user.email}")
-        
+
         # Create access token so they can login immediately
         access_token = create_access_token(identity=str(user.id))
-        
+
+        # Handle GET request from email link - redirect to frontend
+        if request.method == 'GET':
+            frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+            redirect_url = f"{frontend_url}/verify-success?token={access_token}&user_id={user.id}&email={user.email}"
+            return redirect(redirect_url)
+
+        # Handle POST request from API
         return jsonify({
             'message': 'Email verified successfully!',
             'access_token': access_token,
@@ -459,6 +486,9 @@ def verify_email():
         
     except Exception as e:
         logging.error(f"Email verification error: {str(e)}")
+        if request.method == 'GET':
+            frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+            return redirect(f"{frontend_url}/verify-error?error=Verification failed")
         return jsonify({'error': 'Verification failed'}), 500
 
 @app.route('/api/auth/resend-verification', methods=['POST'])

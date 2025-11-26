@@ -29,9 +29,20 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       SENDGRID_API_KEY: ${SENDGRID_API_KEY}
       FROM_EMAIL: ${FROM_EMAIL:-alhassane.samassekou@gmail.com}
+      BACKEND_URL: ${BACKEND_URL:-http://localhost:5000}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       RATELIMIT_ENABLED: "true"
       LOG_LEVEL: INFO
+      # LinkedIn OAuth Configuration
+      LINKEDIN_CLIENT_ID: ${LINKEDIN_CLIENT_ID}
+      LINKEDIN_CLIENT_SECRET: ${LINKEDIN_CLIENT_SECRET}
+      LINKEDIN_REDIRECT_URI: ${LINKEDIN_REDIRECT_URI:-http://localhost:5000/api/auth/linkedin/callback}
+      # Job Board API Keys (optional)
+      RAPIDAPI_KEY: ${RAPIDAPI_KEY:-}
+      ADZUNA_APP_ID: ${ADZUNA_APP_ID:-}
+      ADZUNA_APP_KEY: ${ADZUNA_APP_KEY:-}
     ports:
       - "5000:5000"
     depends_on:
@@ -54,15 +65,18 @@ services:
       start_period: 40s
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:5000/api}
+        REACT_APP_ENV: ${REACT_APP_ENV:-development}
     ports:
       - "3000:3000"
     environment:
-      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:5000/api/v1}
+      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:5000/api}
       REACT_APP_ENV: ${REACT_APP_ENV:-development}
     depends_on:
-      backend:
-        condition: service_healthy
+      - backend
     networks:
       - resumatch-network
     healthcheck:
