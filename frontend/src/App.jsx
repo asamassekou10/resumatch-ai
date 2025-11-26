@@ -985,7 +985,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   if (view === 'checkout') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <StripeCheckout />
+        <StripeCheckout token={token} navigate={navigate} />
       </div>
     );
   }

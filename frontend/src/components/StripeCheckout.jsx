@@ -169,15 +169,16 @@ const CheckoutForm = ({ tier, clientSecret, onSuccess, onError }) => {
   );
 };
 
-const StripeCheckout = () => {
+const StripeCheckout = ({ token, navigate: parentNavigate }) => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const routerNavigate = useNavigate();
+  // Use passed navigate from props, fall back to router navigate if needed
+  const navigate = parentNavigate || routerNavigate;
   const tier = searchParams.get('tier') || 'pro';
   const [stripePromise, setStripePromise] = useState(null);
   const [clientSecret, setClientSecret] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const token = localStorage.getItem('token');
 
   const tierInfo = TIER_INFO[tier];
 
@@ -220,7 +221,7 @@ const StripeCheckout = () => {
     } else {
       navigate('/login');
     }
-  }, [tier, token, navigate]);
+  }, [tier, token, navigate, API_URL]);
 
   const handlePaymentSuccess = async () => {
     // Create the subscription with the saved payment method
