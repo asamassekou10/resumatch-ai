@@ -10,8 +10,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install && npm cache clean --force
+# Install dependencies with legacy-peer-deps for Stripe package compatibility
+RUN npm install --legacy-peer-deps && npm cache clean --force
 
 # Copy application code
 COPY . .
