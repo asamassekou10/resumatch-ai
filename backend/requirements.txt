@@ -42,7 +42,7 @@ google-auth-httplib2==0.1.1
 sendgrid==6.10.0
 
 # Payment processing
-stripe==5.11.0
+stripe==13.0.0
 
 # Production server
 gunicorn==21.2.0
