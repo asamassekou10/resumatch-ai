@@ -614,13 +614,29 @@ def analyze_resume():
     except Exception as e:
         logging.error(f"JWT Error: {str(e)}")
         return jsonify({'error': 'Authentication error'}), 401
-    
+
+    # Check abuse patterns
+    from abuse_prevention import check_abuse_pattern, check_daily_credit_limit, has_sufficient_credits, deduct_credits
+
+    allowed, msg = check_abuse_pattern(user_id, 'analyze')
+    if not allowed:
+        return jsonify({'error': msg}), 429
+
+    allowed, msg = check_daily_credit_limit(user_id, 'analyze')
+    if not allowed:
+        return jsonify({'error': msg}), 429
+
+    # Check if user has sufficient credits
+    has_credits, info = has_sufficient_credits(user_id, 'analyze')
+    if not has_credits:
+        return jsonify(info), 402  # 402 Payment Required
+
     # Validate file upload
     if 'resume' not in request.files:
         return jsonify({'error': 'Resume file required'}), 400
-    
+
     resume_file = request.files['resume']
-    
+
     # Validate file
     is_valid, error_message = validate_file_upload(resume_file)
     if not is_valid:
@@ -665,7 +681,12 @@ def analyze_resume():
         db.session.add(analysis)
         db.session.commit()
 
-        logging.info(f"Analysis completed for user {user_id}, analysis_id: {analysis.id}")
+        # Deduct credits for the analysis
+        success, msg = deduct_credits(user_id, 'analyze')
+        if success:
+            logging.info(f"Analysis completed for user {user_id}, analysis_id: {analysis.id} - {msg}")
+        else:
+            logging.warning(f"Failed to deduct credits for analysis {analysis.id}: {msg}")
 
         # Extract skills from resume using Spacy NER and pattern matching
         extracted_skills = []
@@ -1168,6 +1189,20 @@ def create_checkout_session():
             user.stripe_customer_id = customer.id
             db.session.commit()
         
+        # Determine which tier to upgrade to
+        tier_param = request.args.get('tier', 'pro')  # 'pro' or 'elite'
+
+        if tier_param == 'elite':
+            # Elite tier: 1000 credits/month at $49.99
+            price = 4999
+            description = 'Monthly subscription - 1000 AI credits'
+            tier_name = 'Elite'
+        else:
+            # Pro tier: 100 credits/month at $9.99
+            price = 999
+            description = 'Monthly subscription - 100 AI credits'
+            tier_name = 'Pro'
+
         # Create checkout session
         checkout_session = stripe.checkout.Session.create(
             customer=user.stripe_customer_id,
@@ -1176,10 +1211,10 @@ def create_checkout_session():
                 'price_data': {
                     'currency': 'usd',
                     'product_data': {
-                        'name': 'ResuMatch AI Pro',
-                        'description': 'Monthly subscription - unlimited AI features',
+                        'name': f'ResuMatch AI {tier_name}',
+                        'description': description,
                     },
-                    'unit_amount': 999,  # $9.99/month
+                    'unit_amount': price,
                     'recurring': {
                         'interval': 'month',
                     },
@@ -1190,7 +1225,8 @@ def create_checkout_session():
             success_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/dashboard?payment=success",
             cancel_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/dashboard?payment=cancel",
             metadata={
-                'user_id': str(user_id)
+                'user_id': str(user_id),
+                'tier': tier_param
             }
         )
         
@@ -1223,32 +1259,39 @@ def stripe_webhook():
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
         user_id = session['metadata'].get('user_id')
+        tier = session['metadata'].get('tier', 'pro')
 
         if user_id:
             user = User.query.get(int(user_id))
             if user:
-                # Update user to Pro tier (unlimited features)
-                user.subscription_tier = 'pro'
-                user.credits = 1000  # Unlimited monthly credits for Pro
                 user.subscription_id = session.get('subscription')
+
+                # Allocate credits based on tier
+                if tier == 'elite':
+                    user.subscription_tier = 'elite'
+                    user.credits = 1000  # 1000 credits/month for Elite
+                    logging.info(f"User {user_id} upgraded to Elite tier (1000 credits)")
+                else:
+                    user.subscription_tier = 'pro'
+                    user.credits = 100  # 100 credits/month for Pro
+                    logging.info(f"User {user_id} upgraded to Pro tier (100 credits)")
+
                 db.session.commit()
 
-                logging.info(f"User {user_id} upgraded to Pro tier")
-    
     elif event['type'] == 'customer.subscription.deleted':
         subscription = event['data']['object']
         subscription_id = subscription['id']
-        
+
         # Find user by subscription ID
         user = User.query.filter_by(subscription_id=subscription_id).first()
         if user:
             # Downgrade to free tier
             user.subscription_tier = 'free'
-            user.credits = 0
+            user.credits = 5  # Free tier gets 5 credits
             user.subscription_id = None
             db.session.commit()
-            
-            logging.info(f"User {user.id} downgraded to free tier")
+
+            logging.info(f"User {user.id} downgraded to free tier (5 credits)")
     
     return jsonify({'status': 'success'}), 200
 

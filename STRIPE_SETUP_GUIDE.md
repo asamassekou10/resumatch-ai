@@ -41,17 +41,41 @@ STRIPE_WEBHOOK_SECRET=whsec_[get-this-from-stripe-dashboard]
 
 ## Step 3: Pricing Configuration
 
-Your app is now configured with:
+Your app is now configured with a 3-tier system:
 
 ### Free Tier
+- **Price:** $0 (no subscription)
 - **Initial Credits:** 5
-- **Cost:** $0
-- **When:** All new users start here
+- **Daily Limit:** 5 credits
+- **Features:** Basic resume analysis, limited feedback
+- **When:** All new users start here automatically
 
 ### Pro Tier
-- **Price:** $9.99/month
-- **Credits:** 1000 (unlimited)
-- **Billing:** Monthly subscription via Stripe
+- **Price:** $9.99/month (monthly subscription)
+- **Credits:** 100 credits/month
+- **Daily Limit:** 100 credits (can use all in one day)
+- **Rate Limits:** 10 analyses/hour, 5 feedback/hour, 5 optimizations/hour
+- **Features:**
+  - Unlimited resume analysis
+  - AI feedback generation
+  - Resume optimization
+  - Skill gap analysis
+  - Priority support
+- **Use Case:** Active job seekers doing multiple applications
+
+### Elite Tier (NEW)
+- **Price:** $49.99/month (monthly subscription)
+- **Credits:** 1000 credits/month (unlimited effectively)
+- **Daily Limit:** 1000 credits
+- **Rate Limits:** 50 analyses/hour, 20 feedback/hour, 20 optimizations/hour
+- **Features:**
+  - Everything in Pro
+  - Unlimited API access
+  - Custom integrations
+  - Advanced analytics
+  - Dedicated support
+  - Webhooks
+- **Use Case:** Career coaches, recruiters, power users
 
 ---
 
