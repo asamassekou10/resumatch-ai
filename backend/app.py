@@ -87,7 +87,7 @@ if STRIPE_API_KEY:
 else:
     app.logger.warning("STRIPE_SECRET_KEY not configured - payment features will not work")
 
-if not STRIPE_WEBHOOK_SECRET and not app.debug:
+if not STRIPE_WEBHOOK_SECRET and os.getenv('FLASK_ENV') == 'production':
     raise ValueError("STRIPE_WEBHOOK_SECRET environment variable must be set in production!")
 
 # Import db from models to use the same instance for all models

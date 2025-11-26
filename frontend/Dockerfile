@@ -1,6 +1,10 @@
 # Build stage
 FROM node:18-alpine AS builder
 
+# Accept build arguments for environment configuration
+ARG REACT_APP_API_URL=http://localhost:5000/api
+ARG REACT_APP_ENV=development
+
 WORKDIR /app
 
 # Copy package files
@@ -12,7 +16,9 @@ RUN npm install && npm cache clean --force
 # Copy application code
 COPY . .
 
-# Build the application
+# Build the application with environment variables
+ENV REACT_APP_API_URL=${REACT_APP_API_URL}
+ENV REACT_APP_ENV=${REACT_APP_ENV}
 RUN npm run build
 
 # Production stage

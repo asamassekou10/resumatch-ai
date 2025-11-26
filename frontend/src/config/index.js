@@ -2,7 +2,7 @@
 const config = {
   // API Configuration
   api: {
-    baseURL: process.env.REACT_APP_API_URL || 'https://resumatch-backend-7qdb.onrender.com/api/v1',
+    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
     timeout: parseInt(process.env.REACT_APP_API_TIMEOUT) || 30000,
     endpoints: {
       auth: {
@@ -10,7 +10,12 @@ const config = {
         register: '/auth/register',
         logout: '/auth/logout',
         me: '/auth/me',
-        changePassword: '/auth/change-password'
+        changePassword: '/auth/change-password',
+        // LinkedIn OAuth
+        linkedinStatus: '/auth/linkedin/status',
+        linkedinLogin: '/auth/linkedin/login',
+        linkedinProfile: '/auth/linkedin/profile',
+        linkedinDisconnect: '/auth/linkedin/disconnect'
       },
       analysis: {
         analyze: '/analysis/analyze',
@@ -23,6 +28,31 @@ const config = {
       dashboard: {
         stats: '/dashboard/stats',
         insights: '/dashboard/insights'
+      },
+      market: {
+        demandSkills: '/market/skills/demand',
+        skillDemand: '/market/skills/demand',
+        salaryTrends: '/market/skills',
+        gapAnalysis: '/market/skills/gap-analysis',
+        industrySkills: '/market/industries',
+        locationSalaries: '/market/locations',
+        summary: '/market/dashboard/summary'
+      },
+      jobs: {
+        ingest: '/jobs/ingest',
+        loadSample: '/jobs/load-sample-data',
+        statistics: '/jobs/statistics',
+        sources: '/jobs/sources',
+        ingestReal: '/jobs/ingest-real'
+      },
+      skills: {
+        extract: '/skills/extract',
+        feedback: '/skills/extract',
+        quality: '/skills/analyze',
+        methodsAccuracy: '/skills/methods/accuracy',
+        relationships: '/skills/relationships/analyze',
+        recommend: '/skills/relationships/recommend',
+        persist: '/skills/relationships/persist'
       },
       health: '/health'
     }
