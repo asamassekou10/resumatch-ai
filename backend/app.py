@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify, redirect, url_for, session
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -11,6 +10,7 @@ import os
 import secrets
 from dotenv import load_dotenv
 from authlib.integrations.flask_client import OAuth
+import stripe
 from email_service import email_service
 from security_config import (
     validate_email,
@@ -18,6 +18,19 @@ from security_config import (
     validate_file_upload,
     sanitize_text_input
 )
+from sqlalchemy import func
+from config_manager import init_config_manager
+from keyword_manager import init_keyword_manager
+from routes_config import config_bp
+from routes_keywords import keyword_bp
+from routes_skills import skill_bp
+from routes_market_intelligence import market_bp
+from routes_job_postings import job_bp
+from routes_scheduler import scheduler_bp
+from routes_linkedin import linkedin_bp
+from routes_preferences import preferences_bp, detect_industry_from_text, update_user_detected_industries
+from routes_job_seeker_insights import job_seeker_bp
+from scheduled_ingestion_tasks import init_scheduler
 import logging
 
 # Load environment variables
@@ -65,11 +78,31 @@ app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB max request size
 app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID')
 app.config['GOOGLE_CLIENT_SECRET'] = os.getenv('GOOGLE_CLIENT_SECRET')
 
-db = SQLAlchemy(app)
+# Stripe Configuration
+STRIPE_API_KEY = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
+
+if STRIPE_API_KEY:
+    stripe.api_key = STRIPE_API_KEY
+else:
+    app.logger.warning("STRIPE_SECRET_KEY not configured - payment features will not work")
+
+if not STRIPE_WEBHOOK_SECRET and not app.debug:
+    raise ValueError("STRIPE_WEBHOOK_SECRET environment variable must be set in production!")
+
+# Import db from models to use the same instance for all models
+from models import db
+db.init_app(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 oauth = OAuth(app)
+
+# Initialize Configuration Manager
+config_manager = init_config_manager(db)
+
+# Initialize Keyword Manager
+keyword_manager = init_keyword_manager()
 
 # Rate Limiting
 limiter = Limiter(
@@ -107,41 +140,8 @@ def set_security_headers(response):
     return response
 
 
-# Database Models
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=True)  # Nullable for OAuth users
-    name = db.Column(db.String(100), nullable=True)
-    google_id = db.Column(db.String(100), unique=True, nullable=True)
-    profile_picture = db.Column(db.String(500), nullable=True)
-    auth_provider = db.Column(db.String(20), default='email')  # 'email' or 'google'
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    last_login = db.Column(db.DateTime, default=datetime.utcnow)
-    email_verified = db.Column(db.Boolean, default=False, nullable=False)
-    verification_token = db.Column(db.String(255), nullable=True)
-    # Subscription and credit fields
-    subscription_tier = db.Column(db.String(50), default='free', nullable=False)
-    credits = db.Column(db.Integer, default=0, nullable=False)
-    stripe_customer_id = db.Column(db.String(255), nullable=True, unique=True)
-    subscription_id = db.Column(db.String(255), nullable=True, unique=True)
-    analyses = db.relationship('Analysis', backref='user', lazy=True, cascade='all, delete-orphan')
-
-
-class Analysis(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    job_title = db.Column(db.String(200))
-    company_name = db.Column(db.String(200))
-    match_score = db.Column(db.Float)
-    keywords_found = db.Column(db.JSON)
-    keywords_missing = db.Column(db.JSON)
-    suggestions = db.Column(db.Text)
-    resume_text = db.Column(db.Text)
-    job_description = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    ai_feedback = db.Column(db.Text)
-    optimized_resume = db.Column(db.Text)
+# Import models from models.py (single source of truth)
+from models import User, Analysis
 
 
 # Initialize database tables
@@ -182,6 +182,9 @@ def auto_migrate():
                 'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS credits INTEGER DEFAULT 0;',
                 'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(255);',
                 'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS subscription_id VARCHAR(255);',
+                # Admin fields
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;',
                 # Set Google OAuth users as verified
                 'UPDATE "user" SET email_verified = TRUE WHERE auth_provider = \'google\';'
             ]
@@ -192,6 +195,70 @@ def auto_migrate():
             db.session.rollback()
 
 auto_migrate()
+
+
+def init_default_configurations():
+    """Initialize default configurations if not already done"""
+    with app.app_context():
+        try:
+            from models import SystemConfiguration, SubscriptionTier, RateLimitConfig, ScoringThreshold, ValidationRule
+
+            # Check if configurations already exist
+            config_count = SystemConfiguration.query.count()
+            tier_count = SubscriptionTier.query.count()
+
+            if config_count == 0 or tier_count == 0:
+                logging.info("Initializing default system configurations...")
+
+                # Initialize subscription tiers
+                if tier_count == 0:
+                    tiers_data = [
+                        {
+                            'name': 'free',
+                            'display_name': 'Free Plan',
+                            'monthly_credits': 0,
+                            'max_file_size_mb': 5,
+                            'max_analyses_per_month': 5,
+                            'position': 1,
+                            'is_active': True
+                        },
+                        {
+                            'name': 'pro',
+                            'display_name': 'Pro Plan',
+                            'monthly_credits': 20,
+                            'price_cents': 1999,
+                            'max_file_size_mb': 16,
+                            'max_analyses_per_month': 100,
+                            'position': 2,
+                            'is_active': True
+                        }
+                    ]
+                    for tier_data in tiers_data:
+                        tier = SubscriptionTier(**tier_data)
+                        db.session.add(tier)
+                    logging.info("✓ Subscription tiers initialized")
+
+                # Initialize system configurations
+                if config_count == 0:
+                    configs_data = [
+                        {'config_key': 'max_file_size_mb', 'config_value': 16, 'data_type': 'int', 'category': 'file'},
+                        {'config_key': 'password_min_length', 'config_value': 8, 'data_type': 'int', 'category': 'validation'},
+                        {'config_key': 'gemini_model', 'config_value': 'models/gemini-2.5-flash', 'data_type': 'string', 'category': 'ai'},
+                        {'config_key': 'jwt_token_expires_days', 'config_value': 7, 'data_type': 'int', 'category': 'security'},
+                    ]
+                    for config_data in configs_data:
+                        config = SystemConfiguration(**config_data)
+                        db.session.add(config)
+                    logging.info("✓ System configurations initialized")
+
+                db.session.commit()
+                logging.info("✓ Default configurations initialized successfully")
+        except Exception as e:
+            db.session.rollback()
+            logging.error(f"Error initializing configurations: {str(e)}")
+
+
+init_default_configurations()
 
 
 def generate_verification_token():
@@ -341,10 +408,8 @@ def google_login():
         
         return google.authorize_redirect(redirect_uri)
     except Exception as e:
-        logging.error(f"Google login error: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': f'OAuth initialization failed: {str(e)}'}), 500
+        logging.error(f"Google login error: {str(e)}", exc_info=True)
+        return jsonify({'error': 'OAuth initialization failed'}), 500
 
 @app.route('/api/auth/verify-email', methods=['POST'])
 def verify_email():
@@ -520,14 +585,10 @@ def google_callback():
         return redirect(redirect_url)
 
     except Exception as e:
-        logging.error(f"Google OAuth error: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        
+        logging.error(f"Google OAuth error: {str(e)}", exc_info=True)
+
         frontend_url = get_frontend_url()
-        from urllib.parse import quote
-        error_message = str(e).replace('\n', ' ')[:200]
-        return redirect(f"{frontend_url}/auth/error?message={quote(error_message)}")
+        return redirect(f"{frontend_url}/auth/error?message=oauth_failed")
 
 
 @app.route('/api/auth/logout', methods=['POST'])
@@ -584,7 +645,7 @@ def analyze_resume():
     try:
         # Process the analysis
         result = process_resume_analysis(resume_file, job_description)
-        
+
         # Save to database
         analysis = Analysis(
             user_id=user_id,
@@ -595,13 +656,53 @@ def analyze_resume():
             keywords_missing=result['keywords_missing'],
             suggestions=result['suggestions'],
             resume_text=result['resume_text'][:50000],  # Limit stored text
-            job_description=job_description
+            job_description=job_description,
+            resume_filename=resume_file.filename  # Store original filename
         )
-        
+
         db.session.add(analysis)
         db.session.commit()
-        
+
         logging.info(f"Analysis completed for user {user_id}, analysis_id: {analysis.id}")
+
+        # Extract skills from resume using Spacy NER and pattern matching
+        extracted_skills = []
+        try:
+            from skill_extractor import get_skill_extractor
+            from models import SkillExtraction
+
+            # Get the skill extractor instance
+            extractor = get_skill_extractor(db)
+
+            # Extract skills from the full resume text (stored in analysis)
+            skills = extractor.extract_skills(analysis.resume_text)
+
+            logging.info(f"Extracted {len(skills)} skills from resume for analysis {analysis.id}")
+
+            # Save extracted skills to database
+            for skill in skills:
+                skill_extraction = SkillExtraction(
+                    analysis_id=analysis.id,
+                    extracted_text=skill.skill_name,
+                    matched_keyword_id=skill.matched_keyword,
+                    confidence=skill.confidence,
+                    extraction_method=skill.extraction_method
+                )
+                db.session.add(skill_extraction)
+                extracted_skills.append({
+                    'name': skill.skill_name,
+                    'matched_keyword_id': skill.matched_keyword,
+                    'confidence': round(skill.confidence, 3),
+                    'method': skill.extraction_method
+                })
+
+            db.session.commit()
+            logging.info(f"Saved {len(extracted_skills)} skill extractions for analysis {analysis.id}")
+
+        except Exception as e:
+            logging.warning(f"Skill extraction failed for analysis {analysis.id}: {str(e)}")
+            # Don't fail the entire analysis if skill extraction fails
+            extracted_skills = []
         
         # Send email with analysis results
         try:
@@ -628,13 +729,33 @@ def analyze_resume():
                     
         except Exception as e:
             logging.error(f"Error sending analysis results email: {str(e)}")
-        
+
+        # Detect industry from resume and job description
+        detected_industry = None
+        try:
+            combined_text = f"{result['resume_text']} {job_description}"
+            detected_industries = detect_industry_from_text(combined_text)
+
+            if detected_industries:
+                # Save top industry to analysis
+                detected_industry = detected_industries[0]['industry']
+                analysis.detected_industry = detected_industry
+                db.session.commit()
+
+                # Update user's detected industries
+                update_user_detected_industries(user_id, detected_industries)
+                logging.info(f"Detected industry for analysis {analysis.id}: {detected_industry}")
+        except Exception as e:
+            logging.error(f"Error detecting industry: {str(e)}")
+
         return jsonify({
             'analysis_id': analysis.id,
             'match_score': result['match_score'],
             'keywords_found': result['keywords_found'],
             'keywords_missing': result['keywords_missing'],
             'suggestions': result['suggestions'],
+            'extracted_skills': extracted_skills,
+            'detected_industry': detected_industry,
             'created_at': analysis.created_at.isoformat()
         }), 200
         
@@ -653,6 +774,7 @@ def get_analyses():
         'job_title': a.job_title,
         'company_name': a.company_name,
         'match_score': a.match_score,
+        'resume_filename': a.resume_filename,
         'created_at': a.created_at.isoformat()
     } for a in analyses]), 200
 
@@ -682,17 +804,19 @@ def get_user_profile():
     """Get user profile including subscription and credit info"""
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
-    
+
     if not user:
         return jsonify({'error': 'User not found'}), 404
-    
+
     return jsonify({
         'id': user.id,
         'email': user.email,
         'name': user.name,
         'subscription_tier': user.subscription_tier,
         'credits': user.credits,
-        'email_verified': user.email_verified
+        'email_verified': user.email_verified,
+        'is_admin': user.is_admin,
+        'is_active': user.is_active
     }), 200
 
 @app.route('/api/dashboard/stats', methods=['GET'])
@@ -807,9 +931,8 @@ def generate_feedback(analysis_id):
         }), 200
         
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': f'Failed to generate feedback: {str(e)}'}), 500
+        logging.error(f"Failed to generate feedback: {str(e)}", exc_info=True)
+        return jsonify({'error': 'Failed to generate feedback'}), 500
 
 @app.route('/api/analyze/optimize/<int:analysis_id>', methods=['POST'])
 @jwt_required()
@@ -872,9 +995,8 @@ def optimize_resume(analysis_id):
         }), 200
         
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': f'Failed to optimize resume: {str(e)}'}), 500
+        logging.error(f"Failed to optimize resume: {str(e)}", exc_info=True)
+        return jsonify({'error': 'Failed to optimize resume'}), 500
 
 @app.route('/api/analyze/cover-letter/<int:analysis_id>', methods=['POST'])
 @jwt_required()
@@ -938,9 +1060,8 @@ def generate_cover_letter_route(analysis_id):
         }), 200
         
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': f'Failed to generate cover letter: {str(e)}'}), 500
+        logging.error(f"Failed to generate cover letter: {str(e)}", exc_info=True)
+        return jsonify({'error': 'Failed to generate cover letter'}), 500
 
 @app.route('/api/analyze/skill-suggestions/<int:analysis_id>', methods=['POST'])
 @jwt_required()
@@ -970,9 +1091,8 @@ def get_skill_suggestions(analysis_id):
         }), 200
         
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': f'Failed to generate suggestions: {str(e)}'}), 500
+        logging.error(f"Failed to generate suggestions: {str(e)}", exc_info=True)
+        return jsonify({'error': 'Failed to generate suggestions'}), 500
 
 @app.route('/api/analyses/<int:analysis_id>/resend-email', methods=['POST'])
 @jwt_required()
@@ -1013,8 +1133,8 @@ def resend_analysis_email(analysis_id):
             return jsonify({'error': 'Failed to send email'}), 500
             
     except Exception as e:
-        logging.error(f"Error resending analysis email: {str(e)}")
-        return jsonify({'error': f'Failed to resend email: {str(e)}'}), 500
+        logging.error(f"Error resending analysis email: {str(e)}", exc_info=True)
+        return jsonify({'error': 'Failed to resend email'}), 500
 
 @app.route('/api/auth/google/test', methods=['GET'])
 def test_google_config():
@@ -1065,8 +1185,8 @@ def create_checkout_session():
                 'quantity': 1,
             }],
             mode='subscription',
-            success_url='https://resumeanalyzerai.com/dashboard?payment=success',
-            cancel_url='https://resumeanalyzerai.com/dashboard?payment=cancel',
+            success_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/dashboard?payment=success",
+            cancel_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/dashboard?payment=cancel",
             metadata={
                 'user_id': str(user_id)
             }
@@ -1111,7 +1231,7 @@ def stripe_webhook():
                 user.subscription_id = session.get('subscription')
                 db.session.commit()
                 
-                logging.info(f"User {user.email} upgraded to Pro tier")
+                logging.info(f"User {user_id} upgraded to Pro tier")
     
     elif event['type'] == 'customer.subscription.deleted':
         subscription = event['data']['object']
@@ -1126,12 +1246,191 @@ def stripe_webhook():
             user.subscription_id = None
             db.session.commit()
             
-            logging.info(f"User {user.email} downgraded to free tier")
+            logging.info(f"User {user.id} downgraded to free tier")
     
     return jsonify({'status': 'success'}), 200
+
+
+# ============== ADMIN ROUTES ==============
+
+@app.route('/api/admin/dashboard/stats', methods=['GET'])
+@jwt_required()
+def admin_dashboard_stats():
+    """Get admin dashboard statistics"""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+
+        if not user or not user.is_admin:
+            return jsonify({
+                'status': 'error',
+                'message': 'Admin access required',
+                'error_type': 'UNAUTHORIZED'
+            }), 403
+
+        total_users = User.query.count()
+        active_users = User.query.filter_by(is_active=True).count()
+        admin_users = User.query.filter_by(is_admin=True).count()
+
+        # User growth (last 30 days)
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        new_users_30d = User.query.filter(User.created_at >= thirty_days_ago).count()
+
+        # Total analyses
+        total_analyses = Analysis.query.count()
+        analyses_30d = Analysis.query.filter(Analysis.created_at >= thirty_days_ago).count()
+
+        # Average match score
+        avg_match_score = db.session.query(func.avg(Analysis.match_score)).scalar() or 0
+
+        # Users by signup date (daily for last 30 days)
+        daily_signups = db.session.query(
+            func.date(User.created_at).label('date'),
+            func.count(User.id).label('count')
+        ).filter(User.created_at >= thirty_days_ago).group_by(func.date(User.created_at)).all()
+
+        signup_trend = [{'date': str(d[0]), 'count': d[1]} for d in daily_signups]
+
+        # Analyses by day (last 30 days)
+        daily_analyses = db.session.query(
+            func.date(Analysis.created_at).label('date'),
+            func.count(Analysis.id).label('count')
+        ).filter(Analysis.created_at >= thirty_days_ago).group_by(
+            func.date(Analysis.created_at)
+        ).all()
+
+        analyses_trend = [{'date': str(d[0]), 'count': d[1]} for d in daily_analyses]
+
+        return jsonify({
+            'status': 'success',
+            'data': {
+                'metrics': {
+                    'total_users': total_users,
+                    'active_users': active_users,
+                    'admin_users': admin_users,
+                    'new_users_30d': new_users_30d,
+                    'total_analyses': total_analyses,
+                    'analyses_30d': analyses_30d,
+                    'avg_match_score': round(avg_match_score, 2)
+                },
+                'trends': {
+                    'signup_trend': signup_trend,
+                    'analyses_trend': analyses_trend
+                }
+            }
+        }), 200
+    except Exception as e:
+        logging.error(f"Error fetching dashboard stats: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to fetch dashboard stats',
+            'error_type': 'INTERNAL_SERVER_ERROR'
+        }), 500
+
+
+@app.route('/api/admin/users', methods=['GET'])
+@jwt_required()
+def admin_get_users():
+    """Get all users with optional filtering"""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+
+        if not user or not user.is_admin:
+            return jsonify({
+                'status': 'error',
+                'message': 'Admin access required',
+                'error_type': 'UNAUTHORIZED'
+            }), 403
+
+        page = request.args.get('page', 1, type=int)
+        limit = request.args.get('limit', 20, type=int)
+        search = request.args.get('search', '', type=str)
+
+        query = User.query
+
+        if search:
+            query = query.filter(User.email.ilike(f'%{search}%'))
+
+        total = query.count()
+        users = query.order_by(User.created_at.desc()).paginate(
+            page=page, per_page=limit, error_out=False
+        )
+
+        return jsonify({
+            'status': 'success',
+            'data': {
+                'users': [{
+                    'id': u.id,
+                    'email': u.email,
+                    'is_active': u.is_active,
+                    'is_admin': u.is_admin,
+                    'created_at': u.created_at.isoformat(),
+                    'last_login': u.last_login.isoformat() if u.last_login else None
+                } for u in users.items],
+                'pagination': {
+                    'total': total,
+                    'page': page,
+                    'limit': limit,
+                    'pages': (total + limit - 1) // limit
+                }
+            }
+        }), 200
+    except Exception as e:
+        logging.error(f"Error fetching users: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to fetch users',
+            'error_type': 'INTERNAL_SERVER_ERROR'
+        }), 500
+
+
+# ============== REGISTER BLUEPRINTS ==============
+
+app.register_blueprint(config_bp)
+app.register_blueprint(keyword_bp)
+app.register_blueprint(skill_bp)
+app.register_blueprint(market_bp)
+app.register_blueprint(job_bp)
+app.register_blueprint(scheduler_bp)
+app.register_blueprint(linkedin_bp)
+app.register_blueprint(preferences_bp)
+app.register_blueprint(job_seeker_bp)
+
+
+# ============== INITIALIZE SCHEDULER ==============
+
+def initialize_app():
+    """Initialize the application with all required services"""
+    with app.app_context():
+        try:
+            # Initialize database
+            db.create_all()
+            logging.info("Database initialized successfully")
+
+            # Initialize scheduler for background jobs (non-critical)
+            try:
+                init_scheduler(app)
+                logging.info("Application initialized successfully")
+            except Exception as scheduler_error:
+                logging.warning(f"Scheduler initialization failed (non-critical): {str(scheduler_error)}")
+                logging.info("Application initialized without scheduler - API will work normally")
+        except Exception as e:
+            logging.error(f"Critical error initializing application: {str(e)}")
+            raise
+
+
+# Initialize on app startup
+try:
+    initialize_app()
+except Exception as e:
+    logging.error(f"Fatal initialization error: {str(e)}")
+    # Continue anyway - let gunicorn handle the error
 
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Use FLASK_ENV to control debug mode. Default to False for safety
+    debug_mode = os.getenv('FLASK_ENV', 'production') == 'development'
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
