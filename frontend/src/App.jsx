@@ -1,19 +1,87 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import Navigation from './components/Navigation';
 import Breadcrumb from './components/Breadcrumb';
+import AdminDashboard from './components/AdminDashboard';
+import MarketIntelligenceDashboard from './components/MarketIntelligenceDashboard';
+import SkillGapAnalysis from './components/SkillGapAnalysis';
+import JobMarketStats from './components/JobMarketStats';
+import SkillRelationships from './components/SkillRelationships';
+import JobSeekerInsights from './components/JobSeekerInsights';
+import PreferenceQuestionnaire from './components/PreferenceQuestionnaire';
+import RepersonalizeButton from './components/RepersonalizeButton';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 
   function App() {
-    const [view, setView] = useState('landing');
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    // Map URL paths to view states
+    const pathToView = {
+      '/': 'landing',
+      '/login': 'login',
+      '/register': 'register',
+      '/dashboard': 'dashboard',
+      '/analyze': 'analyze',
+      '/result': 'result',
+      '/pricing': 'pricing',
+      '/admin': 'admin',
+      '/auth/callback': 'auth-callback',
+      '/market/dashboard': 'market-dashboard',
+      '/market/skill-gap': 'skill-gap',
+      '/market/job-stats': 'job-stats',
+      '/market/skill-relationships': 'skill-relationships',
+      '/market/insights': 'market-insights',
+    };
+
+    // Initialize view from URL path
+    const getViewFromPath = (pathname) => {
+      return pathToView[pathname] || 'landing';
+    };
+
+    // Map view states back to URLs
+    const viewToPath = {
+      'landing': '/',
+      'login': '/login',
+      'register': '/register',
+      'dashboard': '/dashboard',
+      'analyze': '/analyze',
+      'result': '/result',
+      'pricing': '/pricing',
+      'admin': '/admin',
+      'auth-callback': '/auth/callback',
+      'market-dashboard': '/market/dashboard',
+      'skill-gap': '/market/skill-gap',
+      'job-stats': '/market/job-stats',
+      'skill-relationships': '/market/skill-relationships',
+      'market-insights': '/market/insights',
+    };
+
+    const [view, setViewState] = useState(() => getViewFromPath(location.pathname));
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [formData, setFormData] = useState({ email: '', password: '' });
+
+    // Sync URL with view state changes
+    const setView = (newView) => {
+      setViewState(newView);
+      const path = viewToPath[newView] || '/';
+      navigate(path, { replace: false });
+    };
+
+    // Sync view state when URL changes (for back/forward buttons)
+    useEffect(() => {
+      const newView = getViewFromPath(location.pathname);
+      setViewState(newView);
+    }, [location.pathname]);
     const [analyses, setAnalyses] = useState([]);
     const [currentAnalysis, setCurrentAnalysis] = useState(null);
     const [dashboardStats, setDashboardStats] = useState(null);
     const [loading, setLoading] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [analysisMessage, setAnalysisMessage] = useState('');
     const [error, setError] = useState('');
     const [resumeFile, setResumeFile] = useState(null);
     const [jobDescription, setJobDescription] = useState('');
@@ -22,7 +90,12 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     const [aiFeedback, setAiFeedback] = useState(null);
     const [optimizedResume, setOptimizedResume] = useState(null);
   const [coverLetter, setCoverLetter] = useState(null);
-  const [generatingAI, setGeneratingAI] = useState(false);
+  // Separate loading states for each AI action
+  const [generatingFeedback, setGeneratingFeedback] = useState(false);
+  const [generatingOptimized, setGeneratingOptimized] = useState(false);
+  const [generatingCoverLetter, setGeneratingCoverLetter] = useState(false);
+  const [aiLoadingMessage, setAiLoadingMessage] = useState('');
+  const [aiProgress, setAiProgress] = useState(0);
   const [landingResumeFile, setLandingResumeFile] = useState(null);
   //Password validation state
   const [passwordError, setPasswordError] = useState('');
@@ -30,6 +103,16 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   // User profile and subscription state
   const [userProfile, setUserProfile] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  // Admin state
+  const [isAdmin, setIsAdmin] = useState(false);
+  // Extracted skills feedback state
+  const [extractedSkills, setExtractedSkills] = useState([]);
+  const [loadingSkills, setLoadingSkills] = useState(false);
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(null);
+  // Preference questionnaire state
+  const [showPreferenceQuestionnaire, setShowPreferenceQuestionnaire] = useState(false);
+  const [showRepersonalizeModal, setShowRepersonalizeModal] = useState(false);
+  const [preferencesHandled, setPreferencesHandled] = useState(false);
     //Password validation function
     const validatePassword = (password) => {
       if (password.length < 8) {
@@ -52,12 +135,56 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   
     useEffect(() => {
       if (token) {
-        fetchAnalyses();
-        fetchDashboardStats();
-        fetchUserProfile();
-        setView('dashboard');
+        // Only fetch dashboard data for dashboard-related pages
+        const dashboardPages = ['dashboard', 'analyze', 'result', 'admin'];
+        if (dashboardPages.includes(view)) {
+          fetchAnalyses();
+          fetchDashboardStats();
+          fetchUserProfile();
+        } else {
+          // For market pages, just fetch user profile to check admin status
+          fetchUserProfile();
+        }
       }
-    }, [token]);
+    }, [token, view]);
+
+  // Show preference questionnaire on first market page visit
+  useEffect(() => {
+    const marketPages = ['market-dashboard', 'skill-gap', 'job-stats', 'skill-relationships', 'market-insights'];
+    if (token && userProfile && marketPages.includes(view) && !preferencesHandled) {
+      if (!userProfile.preferences_completed) {
+        setShowPreferenceQuestionnaire(true);
+      }
+    }
+  }, [token, userProfile, view, preferencesHandled]);
+
+  const handlePreferenceComplete = () => {
+    setShowPreferenceQuestionnaire(false);
+    setPreferencesHandled(true); // Prevent showing again this session
+    fetchUserProfile(); // Refresh profile to get updated preferences
+  };
+
+  const handlePreferenceSkip = () => {
+    setShowPreferenceQuestionnaire(false);
+    setPreferencesHandled(true); // Prevent showing again this session
+    fetchUserProfile(); // Refresh profile to mark as skipped
+  };
+
+  const handleOpenRepersonalize = () => {
+    setShowRepersonalizeModal(true);
+    setShowPreferenceQuestionnaire(true);
+  };
+
+  const handleRepersonalizeComplete = () => {
+    setShowPreferenceQuestionnaire(false);
+    setShowRepersonalizeModal(false);
+    fetchUserProfile();
+  };
+
+  const handleRepersonalizeSkip = () => {
+    setShowPreferenceQuestionnaire(false);
+    setShowRepersonalizeModal(false);
+  };
 
   const handleAuth = async (isLogin) => {
     setLoading(true);
@@ -106,6 +233,8 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     setView('login');
     setAnalyses([]);
     setCurrentAnalysis(null);
+    setIsAdmin(false);
+    setUserProfile(null);
   };
 
   const handleGoogleLogin = () => {
@@ -146,11 +275,11 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
           setToken(data.access_token);
           localStorage.setItem('token', data.access_token);
           setError('');
-          alert('✅ Email verified successfully! Welcome to ResuMatch AI!');
+          alert('Email verified successfully! Welcome to ResuMatch AI!');
           setView('dashboard');
         } else {
           setError(data.error || 'Verification failed');
-          alert('❌ ' + (data.error || 'Verification failed. Please try again or contact support.'));
+          alert('Error: ' + (data.error || 'Verification failed. Please try again or contact support.'));
           setView('login');
         }
         // Clean the URL
@@ -160,7 +289,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
         setLoading(false);
         console.error('Verification error:', err);
         setError('Verification failed. Please try again or contact support.');
-        alert('❌ Verification failed. Please try again or contact support.');
+        alert('Verification failed. Please try again or contact support.');
         setView('login');
         window.history.replaceState({}, document.title, '/');
       });
@@ -173,12 +302,21 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       setView('dashboard');
       // Clean the URL
       window.history.replaceState({}, document.title, '/');
+    }
+    // 2b. Check for LinkedIn OAuth success (has token and provider, no userId)
+    else if (tokenParam && urlParams.get('provider') === 'linkedin') {
+      console.log('LinkedIn OAuth success - setting token and redirecting to dashboard');
+      setToken(tokenParam);
+      localStorage.setItem('token', tokenParam);
+      setView('dashboard');
+      // Clean the URL
+      window.history.replaceState({}, document.title, '/');
     } 
     // 3. Check for payment success/cancel
     else if (payment) {
       console.log('Payment result:', payment);
       if (payment === 'success') {
-        alert('🎉 Payment successful! Welcome to Pro! Your credits have been added.');
+        alert('Payment successful! Welcome to Pro! Your credits have been added.');
         // Refresh user profile to get updated subscription and credits
         if (token) {
           fetchUserProfile();
@@ -194,6 +332,21 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     else if (errorMessage) {
       console.log('OAuth or other error:', errorMessage);
       setError(decodeURIComponent(errorMessage));
+      setView('login');
+      // Clean the URL
+      window.history.replaceState({}, document.title, '/');
+    }
+    // 4b. Check for error param (from LinkedIn OAuth)
+    else if (urlParams.get('error')) {
+      const errorParam = urlParams.get('error');
+      console.log('OAuth error:', errorParam);
+      if (errorParam === 'linkedin_auth_failed') {
+        setError('LinkedIn authentication failed. Please try again or use email login.');
+      } else if (errorParam === 'invalid_state') {
+        setError('Security validation failed. Please try again.');
+      } else {
+        setError(decodeURIComponent(errorParam));
+      }
       setView('login');
       // Clean the URL
       window.history.replaceState({}, document.title, '/');
@@ -239,34 +392,77 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch(`${API_URL}/user/profile`, {
+      // Use direct URL path since user profile is at /api/user/profile not /api/v1/user/profile
+      const baseURL = API_URL.replace('/v1', '');
+      const response = await fetch(`${baseURL}/user/profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
       setUserProfile(data);
+      // Check if user is admin
+      if (data.is_admin) {
+        setIsAdmin(true);
+      }
     } catch (err) {
       console.error('Failed to fetch user profile:', err);
     }
   };
 
-  const handleUpgradeToPro = async () => {
+  const handleUpgrade = async (tier = 'pro') => {
     try {
-      const response = await fetch(`${API_URL}/payments/create-checkout-session`, {
+      const response = await fetch(`${API_URL}/payments/create-checkout-session?tier=${tier}`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
       const data = await response.json();
-      
+
       if (!response.ok) throw new Error(data.error);
-      
+
       // Redirect to Stripe checkout
       window.location.href = data.checkout_url;
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  const handleUpgradeToPro = () => handleUpgrade('pro');
+  const handleUpgradeToElite = () => handleUpgrade('elite');
+
+  // Analysis loading messages
+  const analysisLoadingMessages = [
+    'Uploading your resume...',
+    'Parsing document content...',
+    'Analyzing job requirements...',
+    'Matching skills and keywords...',
+    'Calculating compatibility score...',
+    'Generating detailed insights...',
+    'Finalizing your analysis...'
+  ];
+
+  // Simulate analysis progress
+  const simulateAnalysisProgress = () => {
+    setAnalysisProgress(0);
+    setAnalysisMessage(analysisLoadingMessages[0]);
+
+    let progress = 0;
+    let messageIndex = 0;
+
+    const interval = setInterval(() => {
+      const increment = progress < 40 ? 12 : progress < 70 ? 6 : 2;
+      progress = Math.min(progress + increment, 92);
+      setAnalysisProgress(progress);
+
+      const newIndex = Math.min(Math.floor(progress / 14), analysisLoadingMessages.length - 1);
+      if (newIndex !== messageIndex) {
+        messageIndex = newIndex;
+        setAnalysisMessage(analysisLoadingMessages[messageIndex]);
+      }
+    }, 600);
+
+    return () => clearInterval(interval);
   };
 
   const handleAnalyze = async (e) => {
@@ -278,7 +474,8 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
     setLoading(true);
     setError('');
-    
+    const stopProgress = simulateAnalysisProgress();
+
     const formDataObj = new FormData();
     formDataObj.append('resume', resumeFile);
     formDataObj.append('job_description', jobDescription);
@@ -292,14 +489,19 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
         body: formDataObj
       });
       const data = await response.json();
-      
+
       if (!response.ok) throw new Error(data.error);
-      
+
+      setAnalysisProgress(100);
+      setAnalysisMessage('Analysis complete!');
+
       setCurrentAnalysis(data);
       await fetchAnalyses();
       await fetchDashboardStats();
       setView('result');
-      
+      // Fetch extracted skills for the new analysis
+      fetchExtractedSkills(data.analysis_id || data.id);
+
       setResumeFile(null);
       setJobDescription('');
       setJobTitle('');
@@ -307,7 +509,12 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      stopProgress();
+      setTimeout(() => {
+        setLoading(false);
+        setAnalysisProgress(0);
+        setAnalysisMessage('');
+      }, 500);
     }
   };
 
@@ -321,105 +528,228 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       setAiFeedback(null);
       setOptimizedResume(null);
       setCoverLetter(null);
+      setExtractedSkills([]);
       setView('result');
+      // Fetch extracted skills for feedback
+      fetchExtractedSkills(id);
     } catch (err) {
       setError('Failed to load analysis');
     }
   };
 
+  // AI loading messages for better UX
+  const aiLoadingMessages = [
+    'Analyzing your resume...',
+    'Processing content...',
+    'Generating insights...',
+    'Crafting recommendations...',
+    'Almost there...',
+    'Finalizing...'
+  ];
+
+  // Simulate progress with dynamic messages
+  const simulateAIProgress = (setLoading) => {
+    setAiProgress(0);
+    setAiLoadingMessage(aiLoadingMessages[0]);
+
+    let progress = 0;
+    let messageIndex = 0;
+
+    const interval = setInterval(() => {
+      // Increment progress (slow down as we get closer to 90%)
+      const increment = progress < 50 ? 15 : progress < 80 ? 8 : 3;
+      progress = Math.min(progress + increment, 90);
+      setAiProgress(progress);
+
+      // Update message based on progress
+      const newIndex = Math.min(Math.floor(progress / 18), aiLoadingMessages.length - 1);
+      if (newIndex !== messageIndex) {
+        messageIndex = newIndex;
+        setAiLoadingMessage(aiLoadingMessages[messageIndex]);
+      }
+    }, 800);
+
+    return () => clearInterval(interval);
+  };
+
   const generateAIFeedback = async () => {
     if (!currentAnalysis) return;
-    
-    setGeneratingAI(true);
+
+    setGeneratingFeedback(true);
+    const stopProgress = simulateAIProgress(setGeneratingFeedback);
+
     try {
       const response = await fetch(`${API_URL}/analyze/feedback/${currentAnalysis.analysis_id || currentAnalysis.id}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
-      
+
       if (!response.ok) {
         if (response.status === 402) {
-          // Insufficient credits - show upgrade modal
           setShowUpgradeModal(true);
           return;
         }
         throw new Error(data.error);
       }
-      
+
+      setAiProgress(100);
+      setAiLoadingMessage('Complete!');
       setAiFeedback(data.feedback);
-      // Refresh user profile to update credits
       fetchUserProfile();
     } catch (err) {
       setError(err.message);
     } finally {
-      setGeneratingAI(false);
+      stopProgress();
+      setTimeout(() => {
+        setGeneratingFeedback(false);
+        setAiProgress(0);
+        setAiLoadingMessage('');
+      }, 500);
     }
   };
 
   const generateOptimizedResume = async () => {
     if (!currentAnalysis) return;
-    
-    setGeneratingAI(true);
+
+    setGeneratingOptimized(true);
+    const stopProgress = simulateAIProgress(setGeneratingOptimized);
+
     try {
       const response = await fetch(`${API_URL}/analyze/optimize/${currentAnalysis.analysis_id || currentAnalysis.id}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
-      
+
       if (!response.ok) {
         if (response.status === 402) {
-          // Insufficient credits - show upgrade modal
           setShowUpgradeModal(true);
           return;
         }
         throw new Error(data.error);
       }
-      
+
+      setAiProgress(100);
+      setAiLoadingMessage('Complete!');
       setOptimizedResume(data.optimized_resume);
-      // Refresh user profile to update credits
       fetchUserProfile();
     } catch (err) {
       setError(err.message);
     } finally {
-      setGeneratingAI(false);
+      stopProgress();
+      setTimeout(() => {
+        setGeneratingOptimized(false);
+        setAiProgress(0);
+        setAiLoadingMessage('');
+      }, 500);
     }
   };
 
   const generateCoverLetter = async () => {
     if (!currentAnalysis) return;
-    
-    setGeneratingAI(true);
+
+    setGeneratingCoverLetter(true);
+    const stopProgress = simulateAIProgress(setGeneratingCoverLetter);
+
     try {
       const response = await fetch(`${API_URL}/analyze/cover-letter/${currentAnalysis.analysis_id || currentAnalysis.id}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
-      
+
       if (!response.ok) {
         if (response.status === 402) {
-          // Insufficient credits - show upgrade modal
           setShowUpgradeModal(true);
           return;
         }
         throw new Error(data.error);
       }
-      
+
+      setAiProgress(100);
+      setAiLoadingMessage('Complete!');
       setCoverLetter(data.cover_letter);
-      // Refresh user profile to update credits
       fetchUserProfile();
     } catch (err) {
       setError(err.message);
     } finally {
-      setGeneratingAI(false);
+      stopProgress();
+      setTimeout(() => {
+        setGeneratingCoverLetter(false);
+        setAiProgress(0);
+        setAiLoadingMessage('');
+      }, 500);
     }
   };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     alert('Copied to clipboard!');
+  };
+
+  // Fetch extracted skills for an analysis
+  const fetchExtractedSkills = async (analysisId) => {
+    if (!analysisId) {
+      console.log('No analysis ID provided for skill extraction');
+      return;
+    }
+    setLoadingSkills(true);
+    try {
+      console.log(`Fetching extracted skills for analysis ${analysisId}`);
+      const response = await fetch(`${API_URL}/skills/extract/${analysisId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      console.log('Extracted skills response:', data);
+      if (response.ok) {
+        // Backend returns 'skills' not 'extractions'
+        const skills = data.skills || [];
+        console.log(`Loaded ${skills.length} extracted skills`);
+        setExtractedSkills(skills);
+      } else {
+        console.error('Failed to fetch extracted skills:', data.error);
+        setExtractedSkills([]);
+      }
+    } catch (err) {
+      console.error('Error fetching extracted skills:', err);
+      setExtractedSkills([]);
+    } finally {
+      setLoadingSkills(false);
+    }
+  };
+
+  // Submit skill feedback (confirm or reject)
+  const submitSkillFeedback = async (extractionId, confirmed) => {
+    setFeedbackSubmitting(extractionId);
+    try {
+      const response = await fetch(`${API_URL}/skills/extract/${extractionId}/feedback`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          confirmed: confirmed,
+          rejected: !confirmed
+        })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        // Update the skill in the list
+        setExtractedSkills(prev => prev.map(skill =>
+          skill.id === extractionId
+            ? { ...skill, user_confirmed: confirmed, user_rejected: !confirmed }
+            : skill
+        ));
+      } else {
+        console.error('Failed to submit feedback:', data.error);
+      }
+    } catch (err) {
+      console.error('Error submitting skill feedback:', err);
+    } finally {
+      setFeedbackSubmitting(null);
+    }
   };
 
   const resendAnalysisEmail = async (analysisId) => {
@@ -495,20 +825,26 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
             <p className="text-slate-300 text-lg">Unlock the full potential of AI-powered resume optimization</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Free Plan */}
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8">
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-bold text-white mb-2">Free</h3>
                 <div className="text-4xl font-bold text-slate-300 mb-2">$0</div>
-                <p className="text-slate-400">Perfect for getting started</p>
+                <p className="text-slate-400">5 credits on signup</p>
               </div>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center text-slate-300">
                   <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Basic resume analysis
+                  5 free credits
+                </li>
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Resume analysis
                 </li>
                 <li className="flex items-center text-slate-300">
                   <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -516,17 +852,11 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
                   </svg>
                   Keyword matching
                 </li>
-                <li className="flex items-center text-slate-300">
-                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Basic suggestions
-                </li>
                 <li className="flex items-center text-slate-400">
                   <svg className="w-5 h-5 text-slate-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  No AI credits
+                  Limited AI features
                 </li>
               </ul>
               <button
@@ -546,27 +876,27 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
               </div>
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-bold text-white mb-2">Pro</h3>
-                <div className="text-4xl font-bold text-cyan-400 mb-2">$19.99</div>
-                <p className="text-slate-400">per month</p>
+                <div className="text-4xl font-bold text-cyan-400 mb-2">$9.99</div>
+                <p className="text-slate-400">per month • 100 credits</p>
               </div>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center text-slate-300">
                   <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Everything in Free
+                  100 credits/month
                 </li>
                 <li className="flex items-center text-slate-300">
                   <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  20 AI credits per month
+                  Unlimited analyses
                 </li>
                 <li className="flex items-center text-slate-300">
                   <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  AI-powered feedback
+                  AI feedback
                 </li>
                 <li className="flex items-center text-slate-300">
                   <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -584,7 +914,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
                   <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Priority email support
+                  Priority support
                 </li>
               </ul>
               <button
@@ -592,6 +922,64 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
                 className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-cyan-500/25"
               >
                 Upgrade to Pro
+              </button>
+            </div>
+
+            {/* Elite Plan */}
+            <div className="bg-gradient-to-br from-amber-500/10 to-orange-600/10 backdrop-blur-sm border-2 border-amber-500/50 rounded-2xl p-8 relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                  Premium
+                </span>
+              </div>
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-white mb-2">Elite</h3>
+                <div className="text-4xl font-bold text-amber-400 mb-2">$49.99</div>
+                <p className="text-slate-400">per month • 1000 credits</p>
+              </div>
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  1000 credits/month
+                </li>
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Everything in Pro
+                </li>
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Unlimited API access
+                </li>
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Custom integrations
+                </li>
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Advanced analytics
+                </li>
+                <li className="flex items-center text-slate-300">
+                  <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Dedicated support
+                </li>
+              </ul>
+              <button
+                onClick={handleUpgradeToElite}
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-amber-500/25"
+              >
+                Upgrade to Elite
               </button>
             </div>
           </div>
@@ -667,7 +1055,12 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
                   <div className="text-center">
                     {landingResumeFile ? (
                       <>
-                        <h3 className="text-xl font-semibold text-green-400 mb-2">✓ File Selected</h3>
+                        <h3 className="text-xl font-semibold text-green-400 mb-2 flex items-center gap-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          File Selected
+                        </h3>
                         <p className="text-slate-300">{landingResumeFile.name}</p>
                         <p className="text-sm text-slate-500 mt-2">Click "Start Analyzing" to continue</p>
                       </>
@@ -835,7 +1228,18 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
                   </svg>
                   Continue with Google
                 </button>
-                
+
+                {/* LinkedIn Sign-in Button */}
+                <button
+                  onClick={() => window.location.href = `${API_URL}/auth/linkedin/login`}
+                  className="w-full bg-[#0077B5] hover:bg-[#006097] text-white py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-lg flex items-center justify-center gap-3"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+                  </svg>
+                  Continue with LinkedIn
+                </button>
+
                 {/* Divider */}
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
@@ -879,23 +1283,23 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
                       <p className="text-sm font-medium text-slate-300 mb-2">Password must contain:</p>
                       <ul className="space-y-1 text-sm">
                         <li className={`flex items-center gap-2 ${formData.password.length >= 8 ? 'text-green-400' : 'text-slate-400'}`}>
-                          <span>{formData.password.length >= 8 ? '✓' : '○'}</span>
+                          <span className={formData.password.length >= 8 ? 'text-green-400' : 'text-slate-500'}>{formData.password.length >= 8 ? '●' : '○'}</span>
                           At least 8 characters
                         </li>
                         <li className={`flex items-center gap-2 ${/[A-Z]/.test(formData.password) ? 'text-green-400' : 'text-slate-400'}`}>
-                          <span>{/[A-Z]/.test(formData.password) ? '✓' : '○'}</span>
+                          <span className={/[A-Z]/.test(formData.password) ? 'text-green-400' : 'text-slate-500'}>{/[A-Z]/.test(formData.password) ? '●' : '○'}</span>
                           One uppercase letter
                         </li>
                         <li className={`flex items-center gap-2 ${/[a-z]/.test(formData.password) ? 'text-green-400' : 'text-slate-400'}`}>
-                          <span>{/[a-z]/.test(formData.password) ? '✓' : '○'}</span>
+                          <span className={/[a-z]/.test(formData.password) ? 'text-green-400' : 'text-slate-500'}>{/[a-z]/.test(formData.password) ? '●' : '○'}</span>
                           One lowercase letter
                         </li>
                         <li className={`flex items-center gap-2 ${/[0-9]/.test(formData.password) ? 'text-green-400' : 'text-slate-400'}`}>
-                          <span>{/[0-9]/.test(formData.password) ? '✓' : '○'}</span>
+                          <span className={/[0-9]/.test(formData.password) ? 'text-green-400' : 'text-slate-500'}>{/[0-9]/.test(formData.password) ? '●' : '○'}</span>
                           One number
                         </li>
                         <li className={`flex items-center gap-2 ${/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? 'text-green-400' : 'text-slate-400'}`}>
-                          <span>{/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? '✓' : '○'}</span>
+                          <span className={/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? 'text-green-400' : 'text-slate-500'}>{/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? '●' : '○'}</span>
                           One special character (!@#$%^&*)
                         </li>
                       </ul>
@@ -953,6 +1357,17 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     );
   }
 
+  // Admin Dashboard View
+  if (view === 'admin' && isAdmin && token) {
+    return (
+      <AdminDashboard
+        token={token}
+        onLogout={handleLogout}
+        onNavigate={setView}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Navigation */}
@@ -980,30 +1395,47 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
               <h2 className="text-3xl font-bold text-white">Your Career Dashboard</h2>
               {userProfile && (
                 <div className="flex items-center gap-4">
+                  {isAdmin && (
+                    <button
+                      onClick={() => setView('admin')}
+                      className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg hover:shadow-purple-500/25 flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                      </svg>
+                      Admin
+                    </button>
+                  )}
                   <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg px-4 py-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                      <div className={`w-2 h-2 rounded-full ${userProfile.subscription_tier === 'elite' ? 'bg-amber-400' : userProfile.subscription_tier === 'pro' ? 'bg-cyan-400' : 'bg-slate-400'}`}></div>
                       <span className="text-slate-300 text-sm">
-                        {userProfile.subscription_tier === 'pro' ? 'Pro Plan' : 'Free Plan'}
+                        {userProfile.subscription_tier === 'elite' ? 'Elite Plan' : userProfile.subscription_tier === 'pro' ? 'Pro Plan' : 'Free Plan'}
                       </span>
                     </div>
                   </div>
-                  {userProfile.subscription_tier === 'pro' && (
-                    <div className="bg-gradient-to-r from-cyan-500/20 to-purple-600/20 backdrop-blur-sm border border-cyan-500/30 rounded-lg px-4 py-2">
-                      <div className="flex items-center gap-2">
-                        <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        <span className="text-cyan-400 font-semibold">{userProfile.credits} Credits</span>
-                      </div>
+                  <div className={`backdrop-blur-sm border rounded-lg px-4 py-2 ${userProfile.subscription_tier === 'elite' ? 'bg-gradient-to-r from-amber-500/20 to-orange-600/20 border-amber-500/30' : userProfile.subscription_tier === 'pro' ? 'bg-gradient-to-r from-cyan-500/20 to-purple-600/20 border-cyan-500/30' : 'bg-slate-700/30 border-slate-600/50'}`}>
+                    <div className="flex items-center gap-2">
+                      <svg className={`w-4 h-4 ${userProfile.subscription_tier === 'elite' ? 'text-amber-400' : userProfile.subscription_tier === 'pro' ? 'text-cyan-400' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span className={`font-semibold ${userProfile.subscription_tier === 'elite' ? 'text-amber-400' : userProfile.subscription_tier === 'pro' ? 'text-cyan-400' : 'text-slate-400'}`}>{userProfile.credits} Credits</span>
                     </div>
-                  )}
+                  </div>
                   {userProfile.subscription_tier === 'free' && (
                     <button
                       onClick={() => setView('pricing')}
                       className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg hover:shadow-cyan-500/25"
                     >
-                      Upgrade to Pro
+                      Upgrade Now
+                    </button>
+                  )}
+                  {userProfile.subscription_tier === 'pro' && (
+                    <button
+                      onClick={() => setView('pricing')}
+                      className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg hover:shadow-amber-500/25"
+                    >
+                      Upgrade to Elite
                     </button>
                   )}
                 </div>
@@ -1068,6 +1500,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
                 <table className="min-w-full divide-y divide-slate-600">
                   <thead className="bg-slate-700/50">
                     <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Resume</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Job Title</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Company</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Match Score</th>
@@ -1078,6 +1511,16 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
                   <tbody className="bg-slate-800/30 divide-y divide-slate-600">
                     {analyses.map((analysis) => (
                       <tr key={analysis.id} className="hover:bg-slate-700/30 transition">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-cyan-400">
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span className="truncate max-w-[150px]" title={analysis.resume_filename}>
+                              {analysis.resume_filename || 'Unknown'}
+                            </span>
+                          </div>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
                           {analysis.job_title || 'Untitled'}
                         </td>
@@ -1110,7 +1553,11 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
                 </table>
                 {analyses.length === 0 && (
                   <div className="text-center py-12 text-slate-400">
-                    <div className="text-6xl mb-4">📊</div>
+                    <div className="text-cyan-400 mb-4">
+                      <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
                     <p className="text-lg">No analyses yet</p>
                     <p className="text-sm">Create your first analysis to get started!</p>
                   </div>
@@ -1177,12 +1624,49 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
                   />
                 </div>
 
+                {/* Analysis Progress Indicator */}
+                {loading && (
+                  <div className="p-4 bg-slate-700/50 rounded-xl border border-slate-600">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-cyan-400 font-medium flex items-center gap-2">
+                        <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {analysisMessage || 'Processing...'}
+                      </span>
+                      <span className="text-slate-400 text-sm">{analysisProgress}%</span>
+                    </div>
+                    <div className="w-full bg-slate-600 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${analysisProgress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {loading ? 'Analyzing...' : 'Analyze Resume'}
+                  {loading ? (
+                    <>
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Analyzing Resume...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                      </svg>
+                      Analyze Resume
+                    </>
+                  )}
                 </button>
               </form>
             </div>
@@ -1262,33 +1746,202 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
               <p className="text-slate-300 leading-relaxed">{currentAnalysis.suggestions}</p>
             </div>
 
+            {/* Skill Feedback Section - Self-Learning */}
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-semibold text-white flex items-center gap-2">
+                    <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    Help Us Learn - Skill Verification
+                  </h3>
+                  <p className="text-slate-400 text-sm mt-1">
+                    Confirm or reject extracted skills to improve our AI accuracy
+                  </p>
+                </div>
+                {extractedSkills.length > 0 && (
+                  <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full">
+                    {extractedSkills.filter(s => s.user_confirmed || s.user_rejected).length}/{extractedSkills.length} reviewed
+                  </span>
+                )}
+              </div>
+
+              {loadingSkills ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
+                  <span className="ml-3 text-slate-400">Loading extracted skills...</span>
+                </div>
+              ) : extractedSkills.length > 0 ? (
+                <div className="space-y-3">
+                  {extractedSkills.map((skill) => (
+                    <div
+                      key={skill.id}
+                      className={`flex items-center justify-between p-3 rounded-lg border transition ${
+                        skill.user_confirmed
+                          ? 'bg-green-900/20 border-green-500/30'
+                          : skill.user_rejected
+                          ? 'bg-red-900/20 border-red-500/30'
+                          : 'bg-slate-700/30 border-slate-600 hover:border-slate-500'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col">
+                          <span className="text-white font-medium">{skill.name || skill.extracted_text}</span>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-slate-400">
+                              Confidence: {Math.round((skill.confidence || 0) * 100)}%
+                            </span>
+                            {(skill.method || skill.extraction_method) && (
+                              <span className="text-xs bg-slate-600 text-slate-300 px-2 py-0.5 rounded">
+                                {skill.method || skill.extraction_method}
+                              </span>
+                            )}
+                            {skill.matched_keyword && (
+                              <span className="text-xs text-cyan-400">
+                                Matched: {skill.matched_keyword.name || skill.matched_keyword}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {skill.user_confirmed ? (
+                          <span className="flex items-center gap-1 text-green-400 text-sm">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            Confirmed
+                          </span>
+                        ) : skill.user_rejected ? (
+                          <span className="flex items-center gap-1 text-red-400 text-sm">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                            Rejected
+                          </span>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => submitSkillFeedback(skill.id, true)}
+                              disabled={feedbackSubmitting === skill.id}
+                              className="p-2 rounded-lg bg-green-600/20 hover:bg-green-600/40 text-green-400 transition disabled:opacity-50"
+                              title="Confirm - This skill is correct"
+                            >
+                              {feedbackSubmitting === skill.id ? (
+                                <div className="w-5 h-5 animate-spin rounded-full border-2 border-green-400 border-t-transparent"></div>
+                              ) : (
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </button>
+                            <button
+                              onClick={() => submitSkillFeedback(skill.id, false)}
+                              disabled={feedbackSubmitting === skill.id}
+                              className="p-2 rounded-lg bg-red-600/20 hover:bg-red-600/40 text-red-400 transition disabled:opacity-50"
+                              title="Reject - This skill is incorrect"
+                            >
+                              {feedbackSubmitting === skill.id ? (
+                                <div className="w-5 h-5 animate-spin rounded-full border-2 border-red-400 border-t-transparent"></div>
+                              ) : (
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              )}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-slate-400">
+                  <svg className="w-12 h-12 mx-auto mb-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  <p>No extracted skills available for feedback</p>
+                  <p className="text-sm mt-1">Skills will appear here after analysis</p>
+                </div>
+              )}
+            </div>
+
             {/* AI-Powered Features */}
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
               <h3 className="text-xl font-semibold mb-4 text-white">
                 AI-Powered Enhancement Tools
               </h3>
               <p className="text-slate-400 mb-6">Get personalized AI assistance to improve your resume and application</p>
+
+              {/* Progress indicator - shows when any AI action is in progress */}
+              {(generatingFeedback || generatingOptimized || generatingCoverLetter) && (
+                <div className="mb-6 p-4 bg-slate-700/50 rounded-xl border border-slate-600">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-cyan-400 font-medium flex items-center gap-2">
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {aiLoadingMessage || 'Processing...'}
+                    </span>
+                    <span className="text-slate-400 text-sm">{aiProgress}%</span>
+                  </div>
+                  <div className="w-full bg-slate-600 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${aiProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+
               <div className="grid md:grid-cols-3 gap-4">
                 <button
                   onClick={generateAIFeedback}
-                  disabled={generatingAI}
-                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white px-6 py-3 rounded-lg transition shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                  disabled={generatingFeedback || generatingOptimized || generatingCoverLetter}
+                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white px-6 py-3 rounded-lg transition shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2"
                 >
-                  {generatingAI && !aiFeedback ? 'Generating...' : 'Get AI Feedback'}
+                  {generatingFeedback ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                      </svg>
+                      Generating Feedback...
+                    </>
+                  ) : 'Get AI Feedback'}
                 </button>
                 <button
                   onClick={generateOptimizedResume}
-                  disabled={generatingAI}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-6 py-3 rounded-lg transition shadow-lg hover:shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                  disabled={generatingFeedback || generatingOptimized || generatingCoverLetter}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-6 py-3 rounded-lg transition shadow-lg hover:shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2"
                 >
-                  {generatingAI && !optimizedResume ? 'Generating...' : 'Optimize Resume'}
+                  {generatingOptimized ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                      </svg>
+                      Optimizing Resume...
+                    </>
+                  ) : 'Optimize Resume'}
                 </button>
                 <button
                   onClick={generateCoverLetter}
-                  disabled={generatingAI}
-                  className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white px-6 py-3 rounded-lg transition shadow-lg hover:shadow-indigo-500/25 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                  disabled={generatingFeedback || generatingOptimized || generatingCoverLetter}
+                  className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white px-6 py-3 rounded-lg transition shadow-lg hover:shadow-indigo-500/25 disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2"
                 >
-                  {generatingAI && !coverLetter ? 'Generating...' : 'Generate Cover Letter'}
+                  {generatingCoverLetter ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                      </svg>
+                      Writing Cover Letter...
+                    </>
+                  ) : 'Generate Cover Letter'}
                 </button>
               </div>
             </div>
@@ -1351,10 +2004,55 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
             )}
           </div>
         )}
+
+        {view === 'market-dashboard' && (
+          <div>
+            <Breadcrumb view={view} setView={setView} token={token} />
+            <MarketIntelligenceDashboard userProfile={userProfile} onRepersonalize={handleOpenRepersonalize} />
+          </div>
+        )}
+
+        {view === 'skill-gap' && (
+          <div>
+            <Breadcrumb view={view} setView={setView} token={token} />
+            <SkillGapAnalysis userProfile={userProfile} onRepersonalize={handleOpenRepersonalize} />
+          </div>
+        )}
+
+        {view === 'job-stats' && (
+          <div>
+            <Breadcrumb view={view} setView={setView} token={token} />
+            <JobMarketStats userProfile={userProfile} onRepersonalize={handleOpenRepersonalize} />
+          </div>
+        )}
+
+        {view === 'skill-relationships' && (
+          <div>
+            <Breadcrumb view={view} setView={setView} token={token} />
+            <SkillRelationships userProfile={userProfile} onRepersonalize={handleOpenRepersonalize} />
+          </div>
+        )}
+
+        {view === 'market-insights' && (
+          <div>
+            <Breadcrumb view={view} setView={setView} token={token} />
+            <JobSeekerInsights userProfile={userProfile} onRepersonalize={handleOpenRepersonalize} />
+          </div>
+        )}
       </div>
-      
+
       {/* Upgrade Modal */}
       <UpgradeModal />
+
+      {/* Preference Questionnaire Modal */}
+      {showPreferenceQuestionnaire && (
+        <PreferenceQuestionnaire
+          token={token}
+          onComplete={showRepersonalizeModal ? handleRepersonalizeComplete : handlePreferenceComplete}
+          onSkip={showRepersonalizeModal ? handleRepersonalizeSkip : handlePreferenceSkip}
+          isUpdate={showRepersonalizeModal}
+        />
+      )}
     </div>
   );
 }
