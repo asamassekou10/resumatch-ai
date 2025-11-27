@@ -12,6 +12,8 @@ import JobSeekerInsights from './components/JobSeekerInsights';
 import PreferenceQuestionnaire from './components/PreferenceQuestionnaire';
 import RepersonalizeButton from './components/RepersonalizeButton';
 import StripeCheckout from './components/StripeCheckout';
+import LandingPageV2 from './components/LandingPageV2';
+import PricingPageV2 from './components/PricingPageV2';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -797,7 +799,32 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         {/* Navigation */}
-        <Navigation 
+        <Navigation
+          view={view}
+          setView={setView}
+          token={token}
+          handleLogout={handleLogout}
+          showBackButton={true}
+          backButtonText="Back to Dashboard"
+          onBackClick={() => setView('dashboard')}
+        />
+
+        <PricingPageV2
+          setView={setView}
+          handleUpgradeToPro={handleUpgradeToPro}
+          handleUpgradeToElite={handleUpgradeToElite}
+          token={token}
+        />
+      </div>
+    );
+  }
+
+  // OLD PRICING PAGE - KEPT FOR REFERENCE BUT NOT USED
+  if (false && view === 'pricing') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {/* Navigation */}
+        <Navigation
           view={view}
           setView={setView}
           token={token}
@@ -994,7 +1021,24 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         {/* Navigation */}
-        <Navigation 
+        <Navigation
+          view={view}
+          setView={setView}
+          token={token}
+          handleLogout={handleLogout}
+        />
+
+        <LandingPageV2 setView={setView} token={token} />
+      </div>
+    );
+  }
+
+  // OLD LANDING PAGE - KEPT FOR REFERENCE BUT NOT USED
+  if (false && view === 'landing') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {/* Navigation */}
+        <Navigation
           view={view}
           setView={setView}
           token={token}

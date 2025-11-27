@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Lock, CheckCircle, AlertCircle } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -84,7 +86,12 @@ const CheckoutForm = ({ tier, clientSecret, onSuccess, onError }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Order Summary */}
-      <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+      <motion.div
+        className="bg-slate-800 rounded-lg p-6 border border-slate-700"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
         <h3 className="text-lg font-semibold text-white mb-4">Order Summary</h3>
         <div className="space-y-3">
           <div className="flex justify-between items-center">
@@ -110,10 +117,15 @@ const CheckoutForm = ({ tier, clientSecret, onSuccess, onError }) => {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Payment Method */}
-      <div className="space-y-3">
+      <motion.div
+        className="space-y-3"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
         <label className="block text-white font-semibold">Payment Method</label>
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
           <PaymentElement
@@ -132,39 +144,62 @@ const CheckoutForm = ({ tier, clientSecret, onSuccess, onError }) => {
             }}
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Error Message */}
-      {errorMessage && (
-        <div className="bg-red-900/20 border border-red-700 rounded-lg p-4">
-          <p className="text-red-400 text-sm">{errorMessage}</p>
-        </div>
-      )}
+      <AnimatePresence>
+        {errorMessage && (
+          <motion.div
+            className="bg-red-900/20 border border-red-700 rounded-lg p-4 flex items-start gap-3"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <p className="text-red-400 text-sm">{errorMessage}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Submit Button */}
-      <button
+      <motion.button
         type="submit"
         disabled={isLoading || !stripe || !elements}
         className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
       >
         {isLoading ? (
           <>
-            <span className="animate-spin">⏳</span>
+            <motion.span
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity }}
+            >
+              <Lock className="w-5 h-5" />
+            </motion.span>
             Processing...
           </>
         ) : (
           <>
-            <span>🔒</span>
+            <Lock className="w-5 h-5" />
             Pay ${tierInfo.price.toFixed(2)}
           </>
         )}
-      </button>
+      </motion.button>
 
       {/* Security Info */}
-      <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
-        <span>🛡️</span>
+      <motion.div
+        className="flex items-center justify-center gap-2 text-xs text-slate-400"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+      >
+        <CheckCircle className="w-4 h-4 text-green-400" />
         <p>Secure payment powered by Stripe. Your information is encrypted.</p>
-      </div>
+      </motion.div>
     </form>
   );
 };
