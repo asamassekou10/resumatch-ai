@@ -131,16 +131,25 @@ if not google_redirect_uri:
     google_redirect_uri = f"{backend_url}/api/auth/callback"
     logging.warning(f"GOOGLE_REDIRECT_URI not set, using: {google_redirect_uri}")
 
-google = oauth.register(
-    name='google',
-    client_id=app.config['GOOGLE_CLIENT_ID'],
-    client_secret=app.config['GOOGLE_CLIENT_SECRET'],
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    client_kwargs={
-        'scope': 'openid email profile',
-    },
-    authorize_params={'access_type': 'offline'},
-)
+# Only register Google OAuth if credentials are available
+google_client_id = app.config.get('GOOGLE_CLIENT_ID')
+google_client_secret = app.config.get('GOOGLE_CLIENT_SECRET')
+
+if google_client_id and google_client_secret:
+    google = oauth.register(
+        name='google',
+        client_id=google_client_id,
+        client_secret=google_client_secret,
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={
+            'scope': 'openid email profile',
+        },
+        authorize_params={'access_type': 'offline'},
+    )
+    logging.info("Google OAuth configured successfully")
+else:
+    google = None
+    logging.warning("Google OAuth not configured - GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET required")
 
 # Security: Enforce HTTPS in production
 @app.before_request
@@ -430,66 +439,75 @@ def register():
 @app.route('/api/auth/login', methods=['POST'])
 @limiter.limit("5 per minute")
 def login():
-    data = request.json
-    
-    # Validate input
-    email = data.get('email', '').strip().lower()
-    password = data.get('password', '')
-    
-    if not email or not password:
-        return jsonify({'error': 'Email and password required'}), 400
-    
-    if not validate_email(email):
-        return jsonify({'error': 'Invalid email format'}), 400
-    
-    # Find user
-    user = User.query.filter_by(email=email).first()
-    
-    if not user or not user.password_hash or not bcrypt.check_password_hash(user.password_hash, password):
-        logging.warning(f"Failed login attempt for: {email}")
-        return jsonify({'error': 'Invalid email or password'}), 401
-    
-    # Check if email is verified (only for email auth, not Google OAuth)
-    if user.auth_provider == 'email' and not user.email_verified:
-        logging.warning(f"Login attempt with unverified email: {email}")
+    try:
+        data = request.json
+
+        # Validate input
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+
+        if not email or not password:
+            return jsonify({'error': 'Email and password required'}), 400
+
+        if not validate_email(email):
+            return jsonify({'error': 'Invalid email format'}), 400
+
+        # Find user
+        user = User.query.filter_by(email=email).first()
+
+        if not user or not user.password_hash or not bcrypt.check_password_hash(user.password_hash, password):
+            logging.warning(f"Failed login attempt for: {email}")
+            return jsonify({'error': 'Invalid email or password'}), 401
+
+        # Check if email is verified (only for email auth, not Google OAuth)
+        if user.auth_provider == 'email' and not user.email_verified:
+            logging.warning(f"Login attempt with unverified email: {email}")
+            return jsonify({
+                'error': 'Please verify your email before logging in',
+                'email_verified': False
+            }), 403
+
+        # Check if user is OAuth user trying to login with password
+        if user.auth_provider == 'google' and not user.password_hash:
+            return jsonify({'error': 'Please login with Google'}), 401
+
+        # Update last login
+        user.last_login = datetime.utcnow()
+        db.session.commit()
+
+        logging.info(f"Successful login: {email}")
+
+        access_token = create_access_token(identity=str(user.id))
         return jsonify({
-            'error': 'Please verify your email before logging in',
-            'email_verified': False
-        }), 403
-    
-    # Check if user is OAuth user trying to login with password
-    if user.auth_provider == 'google' and not user.password_hash:
-        return jsonify({'error': 'Please login with Google'}), 401
-    
-    # Update last login
-    user.last_login = datetime.utcnow()
-    db.session.commit()
-    
-    logging.info(f"Successful login: {email}")
-    
-    access_token = create_access_token(identity=str(user.id))
-    return jsonify({
-        'access_token': access_token,
-        'user': {
-            'id': user.id, 
-            'email': user.email,
-            'name': user.name,
-            'auth_provider': user.auth_provider,
-            'email_verified': user.email_verified,
-            'subscription_tier': user.subscription_tier,
-            'credits': user.credits
-        }
-    }), 200
+            'access_token': access_token,
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'name': user.name,
+                'auth_provider': user.auth_provider,
+                'email_verified': user.email_verified,
+                'subscription_tier': user.subscription_tier,
+                'credits': user.credits
+            }
+        }), 200
+
+    except Exception as e:
+        logging.error(f"Login error: {str(e)}", exc_info=True)
+        return jsonify({'error': 'Login failed. Please try again.'}), 500
 
 # Google OAuth Routes
 @app.route('/api/auth/google')
 def google_login():
     """Initiate Google OAuth login"""
     try:
+        # Check if Google OAuth is configured
+        if google is None:
+            logging.error("Google OAuth not configured")
+            return jsonify({'error': 'Google OAuth is not configured on the server'}), 503
+
         # Use the full URL including protocol
         redirect_uri = url_for('google_callback', _external=True)
 
-        
         return google.authorize_redirect(redirect_uri)
     except Exception as e:
         logging.error(f"Google login error: {str(e)}", exc_info=True)
