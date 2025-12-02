@@ -402,3 +402,197 @@ def get_market_dashboard_summary():
     except Exception as e:
         logger.error(f"Error retrieving dashboard summary: {str(e)}")
         return jsonify({'error': 'Failed to retrieve dashboard data'}), 500
+
+
+# ============== NEW: INDUSTRY MANAGEMENT ENDPOINTS ==============
+
+@market_bp.route('/industries', methods=['GET'])
+@jwt_required()
+def get_all_industries():
+    """
+    Get list of all available industries with descriptions
+
+    Returns:
+        List of industries with metadata
+    """
+    try:
+        from services import industry_service
+
+        industries = industry_service.get_all_industries()
+        industry_data = []
+
+        for industry in industries:
+            industry_data.append({
+                'name': industry,
+                'description': industry_service.get_industry_description(industry),
+                'categories': industry_service.get_industry_categories(industry),
+                'job_titles': industry_service.get_industry_job_titles(industry)[:5]
+            })
+
+        return jsonify({
+            'industries': industry_data,
+            'total': len(industry_data)
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching industries: {str(e)}")
+        return jsonify({
+            'error': 'Failed to fetch industries',
+            'error_type': 'INTERNAL_SERVER_ERROR'
+        }), 500
+
+
+@market_bp.route('/user/industry', methods=['GET'])
+@jwt_required()
+def get_current_user_industry():
+    """
+    Get current user's industry preference and context
+
+    Returns:
+        User's industry information
+    """
+    try:
+        from services import industry_service
+        from models import User
+
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        industry = industry_service.get_user_industry(user)
+
+        return jsonify({
+            'industry': industry,
+            'preferred_industry': user.preferred_industry,
+            'detected_industries': user.detected_industries or [],
+            'job_titles': industry_service.get_industry_job_titles(industry),
+            'top_skills': industry_service.get_industry_skills(industry, 'high_demand')[:10],
+            'description': industry_service.get_industry_description(industry)
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error fetching user industry: {str(e)}")
+        return jsonify({
+            'error': 'Failed to fetch user industry',
+            'error_type': 'INTERNAL_SERVER_ERROR'
+        }), 500
+
+
+@market_bp.route('/user/industry', methods=['PUT'])
+@jwt_required()
+def update_current_user_industry():
+    """
+    Update user's industry preferences
+
+    Request body:
+        {
+            "industry": "Technology",
+            "job_titles": ["Software Engineer"],
+            "location": "San Francisco, CA",
+            "experience_level": "Mid"
+        }
+
+    Returns:
+        Updated user profile
+    """
+    try:
+        from services import industry_service
+        from models import User
+        from app import db
+
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        data = request.get_json()
+
+        # Validate and update industry
+        if 'industry' in data:
+            if not industry_service.is_valid_industry(data['industry']):
+                return jsonify({
+                    'error': f'Invalid industry: {data["industry"]}',
+                    'valid_industries': industry_service.get_all_industries()
+                }), 400
+            user.preferred_industry = data['industry']
+
+        # Update job titles
+        if 'job_titles' in data:
+            user.preferred_job_titles = data['job_titles']
+
+        # Update location
+        if 'location' in data:
+            user.preferred_location = data['location']
+
+        # Update experience level
+        if 'experience_level' in data:
+            valid_levels = ['Entry', 'Mid', 'Senior', 'Lead', 'Executive']
+            if data['experience_level'] in valid_levels:
+                user.experience_level = data['experience_level']
+
+        # Mark preferences as completed
+        user.preferences_completed = True
+
+        db.session.commit()
+
+        logger.info(f"User {user.id} updated industry preferences to {user.preferred_industry}")
+
+        return jsonify({
+            'message': 'Industry preferences updated successfully',
+            'user': user.to_dict()
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error updating user industry: {str(e)}")
+        db.session.rollback()
+        return jsonify({
+            'error': 'Failed to update industry preferences',
+            'error_type': 'INTERNAL_SERVER_ERROR'
+        }), 500
+
+
+@market_bp.route('/detect-industry', methods=['POST'])
+@jwt_required()
+def detect_industry_from_resume():
+    """
+    Detect industry from resume text or job description
+
+    Request body:
+        {
+            "text": "resume or job description text"
+        }
+
+    Returns:
+        Detected industry with confidence
+    """
+    try:
+        from services import industry_service
+
+        data = request.get_json()
+
+        if not data or 'text' not in data:
+            return jsonify({
+                'error': 'Text is required for industry detection',
+                'error_type': 'INVALID_REQUEST'
+            }), 400
+
+        text = data['text']
+        detected_industry = industry_service.detect_industry_from_text(text)
+
+        return jsonify({
+            'detected_industry': detected_industry,
+            'confidence': 'high',
+            'description': industry_service.get_industry_description(detected_industry),
+            'suggested_skills': industry_service.get_industry_skills(detected_industry, 'high_demand')[:10],
+            'salary_range': industry_service.get_industry_salary_range(detected_industry, 'Mid')
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error detecting industry: {str(e)}")
+        return jsonify({
+            'error': 'Failed to detect industry',
+            'error_type': 'INTERNAL_SERVER_ERROR'
+        }), 500

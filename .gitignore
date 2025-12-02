@@ -49,3 +49,26 @@ postgres_data/
 node_modules/
 npm-debug.log
 yarn-error.log
+
+# AI Cache
+backend/cache/
+*.pkl
+
+# Test Files
+test_files/
+test_*.py
+
+# Documentation (optional - uncomment if you don't want these tracked)
+# *_PLAN.md
+# *_COMPLETE.md
+# *_IMPLEMENTATION*.md
+
+# Claude Settings
+.claude/settings.local.json
+
+# Temporary/Fixed Files
+*_fixed.py
+
+# Files with potential secrets
+STRIPE_SETUP_GUIDE.md
+LOCAL_SETUP_CHECKLIST.md

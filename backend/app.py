@@ -30,6 +30,11 @@ from routes_scheduler import scheduler_bp
 from routes_linkedin import linkedin_bp
 from routes_preferences import preferences_bp, detect_industry_from_text, update_user_detected_industries
 from routes_job_seeker_insights import job_seeker_bp
+from routes_guest import guest_bp
+from routes_job_matches import job_matches_bp
+from routes_interview_prep import interview_prep_bp
+from routes_company_intel import company_intel_bp
+from routes_career_path import career_path_bp
 from scheduled_ingestion_tasks import init_scheduler
 import logging
 
@@ -141,7 +146,7 @@ def set_security_headers(response):
 
 
 # Import models from models.py (single source of truth)
-from models import User, Analysis
+from models import User, Analysis, GuestSession, GuestAnalysis
 
 
 # Initialize database tables
@@ -271,6 +276,58 @@ def create_verification_link(user_id, token):
     backend_url = os.getenv('BACKEND_URL', 'http://localhost:5000')
     return f"{backend_url}/api/auth/verify-email?user={user_id}&token={token}"
 
+def transfer_guest_analyses_to_user(guest_token, user_id):
+    """Transfer all guest analyses to a newly registered/logged-in user"""
+    try:
+        if not guest_token:
+            return 0
+
+        # Find the guest session
+        guest_session = GuestSession.query.filter_by(session_token=guest_token).first()
+
+        if not guest_session:
+            return 0
+
+        # Get all analyses for this guest session
+        guest_analyses = GuestAnalysis.query.filter_by(guest_session_id=guest_session.id).all()
+
+        transferred_count = 0
+        for guest_analysis in guest_analyses:
+            # Parse ai_feedback as JSON if it's a string
+            ai_feedback_str = guest_analysis.ai_feedback
+
+            # Create a new Analysis record for the user
+            new_analysis = Analysis(
+                user_id=user_id,
+                job_title=guest_analysis.job_title,
+                company_name=guest_analysis.company_name,
+                match_score=guest_analysis.match_score,
+                keywords_found=guest_analysis.keywords_found,
+                keywords_missing=guest_analysis.keywords_missing,
+                suggestions=guest_analysis.suggestions,
+                resume_text=guest_analysis.resume_text,
+                job_description=guest_analysis.job_description,
+                resume_filename=guest_analysis.resume_filename,
+                detected_industry=guest_analysis.detected_industry,
+                ai_feedback=ai_feedback_str,
+                created_at=guest_analysis.created_at
+            )
+            db.session.add(new_analysis)
+            transferred_count += 1
+
+        # Mark guest session as converted
+        guest_session.status = 'converted'
+        guest_session.converted_user_id = user_id
+
+        db.session.commit()
+        logging.info(f"Transferred {transferred_count} analyses from guest session {guest_session.id} to user {user_id}")
+        return transferred_count
+
+    except Exception as e:
+        logging.error(f"Error transferring guest analyses: {str(e)}")
+        db.session.rollback()
+        return 0
+
 # Routes
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -280,30 +337,31 @@ def health_check():
 @limiter.limit("3 per hour")
 def register():
     data = request.json
-    
+
     # Validate required fields
     email = data.get('email', '').strip().lower()
     password = data.get('password', '')
-    
+    guest_token = data.get('guest_token')  # Accept guest token for analysis transfer
+
     if not email or not password:
         return jsonify({'error': 'Email and password required'}), 400
-    
+
     # Validate email format
     if not validate_email(email):
         return jsonify({'error': 'Invalid email format'}), 400
-    
+
     # Validate password strength
     is_valid, error_message = validate_password(password)
     if not is_valid:
         return jsonify({'error': error_message}), 400
-    
+
     # Check if user exists
     if User.query.filter_by(email=email).first():
         return jsonify({'error': 'Email already registered'}), 400
-    
+
     # Generate verification token
     verification_token = generate_verification_token()
-    
+
     # Create user (NOT verified yet)
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     user = User(
@@ -314,32 +372,42 @@ def register():
         verification_token=verification_token,
         credits=5  # Free users get 5 initial credits
     )
-    
+
     try:
         db.session.add(user)
         db.session.commit()
-        
+
+        # Transfer guest analyses if guest_token provided
+        transferred_count = 0
+        if guest_token:
+            transferred_count = transfer_guest_analyses_to_user(guest_token, user.id)
+
         # Generate verification link
         verification_link = create_verification_link(user.id, verification_token)
-        
+
         # Send verification email
         email_sent = email_service.send_verification_email(
             recipient_email=email,
             recipient_name=email.split('@')[0],
             verification_link=verification_link
         )
-        
+
         if email_sent:
             logging.info(f"New user registered: {email}, verification email sent")
         else:
             logging.warning(f"User registered but verification email failed: {email}")
-        
-        return jsonify({
+
+        response = {
             'message': 'Registration successful! Please check your email to verify your account.',
             'email': email,
             'verification_required': True
-        }), 201
-        
+        }
+
+        if transferred_count > 0:
+            response['analyses_transferred'] = transferred_count
+
+        return jsonify(response), 201
+
     except Exception as e:
         db.session.rollback()
         logging.error(f"Registration error: {str(e)}")
@@ -685,27 +753,45 @@ def analyze_resume():
     
     # Import AI processing module
     try:
-        from ai_processor import process_resume_analysis
+        from ai_processor import extract_text_from_file
+        from intelligent_resume_analyzer import get_analyzer
     except ImportError as e:
-        logging.error(f"Failed to import ai_processor: {str(e)}")
+        logging.error(f"Failed to import AI modules: {str(e)}")
         return jsonify({'error': 'AI processing module not available'}), 500
-    
-    try:
-        # Process the analysis
-        result = process_resume_analysis(resume_file, job_description)
 
-        # Save to database
+    try:
+        # Extract resume text from file
+        resume_text = extract_text_from_file(resume_file)
+
+        if not resume_text or len(resume_text.strip()) < 50:
+            return jsonify({'error': 'Resume appears empty. Please provide a valid resume.'}), 400
+
+        # Use intelligent analyzer for better results
+        analyzer = get_analyzer()
+        logging.info(f"Starting intelligent analysis for user {user_id}")
+        result = analyzer.comprehensive_resume_analysis(resume_text, job_description)
+
+        # Extract data from intelligent analysis result
+        import json
+        match_analysis = result.get('match_analysis', {})
+        keywords_found = match_analysis.get('keywords_present', [])
+        keywords_missing = [k['keyword'] if isinstance(k, dict) else k
+                           for k in match_analysis.get('keywords_missing', [])]
+
+        # Save to database with intelligent analysis data
         analysis = Analysis(
             user_id=user_id,
             job_title=job_title,
             company_name=company_name,
-            match_score=result['match_score'],
-            keywords_found=result['keywords_found'],
-            keywords_missing=result['keywords_missing'],
-            suggestions=result['suggestions'],
-            resume_text=result['resume_text'][:50000],  # Limit stored text
+            match_score=result.get('overall_score', 0),
+            keywords_found=keywords_found[:20],  # Limit to top 20
+            keywords_missing=keywords_missing[:20],  # Limit to top 20
+            suggestions=result.get('interpretation', ''),
+            resume_text=resume_text[:50000],  # Limit stored text
             job_description=job_description,
-            resume_filename=resume_file.filename  # Store original filename
+            resume_filename=resume_file.filename,  # Store original filename
+            detected_industry=result.get('job_industry', 'Unknown'),
+            ai_feedback=json.dumps(result)  # Store full intelligent analysis as JSON
         )
 
         db.session.add(analysis)
@@ -761,52 +847,60 @@ def analyze_resume():
         try:
             user = User.query.get(user_id)
             if user and user.email:
+                # Prepare new analysis data format
+                recommendations = result.get('recommendations', {})
+                priority_improvements = recommendations.get('priority_improvements', [])
+
                 analysis_data = {
-                    'match_score': result['match_score'],
-                    'keywords_found': result['keywords_found'],
-                    'keywords_missing': result['keywords_missing'],
-                    'suggestions': result['suggestions'],
+                    'match_score': result.get('overall_score', 0),
+                    'interpretation': result.get('interpretation', ''),
+                    'keywords_found': keywords_found[:10],
+                    'keywords_missing': keywords_missing[:10],
+                    'suggestions': result.get('interpretation', ''),
+                    'priority_improvements': priority_improvements[:3] if priority_improvements else [],
                     'job_title': job_title,
                     'company_name': company_name,
-                    'analysis_id': analysis.id
+                    'analysis_id': analysis.id,
+                    'industry': result.get('job_industry', 'Unknown'),
+                    'ats_pass_rate': result.get('expected_ats_pass_rate', 'N/A')
                 }
-                
+
                 email_sent = email_service.send_analysis_results(
                     recipient_email=user.email,
                     recipient_name=user.name or user.email.split('@')[0],
                     analysis_data=analysis_data
                 )
-                
+
                 if email_sent:
                     logging.info(f"Analysis results email sent to {user.email}")
-                    
+
         except Exception as e:
             logging.error(f"Error sending analysis results email: {str(e)}")
 
-        # Detect industry from resume and job description
-        detected_industry = None
+        # Industry is already detected by intelligent analyzer
+        detected_industry = result.get('job_industry', 'Unknown')
+
+        # Update user's detected industries
         try:
-            combined_text = f"{result['resume_text']} {job_description}"
-            detected_industries = detect_industry_from_text(combined_text)
-
-            if detected_industries:
-                # Save top industry to analysis
-                detected_industry = detected_industries[0]['industry']
-                analysis.detected_industry = detected_industry
-                db.session.commit()
-
-                # Update user's detected industries
-                update_user_detected_industries(user_id, detected_industries)
-                logging.info(f"Detected industry for analysis {analysis.id}: {detected_industry}")
+            if detected_industry and detected_industry != 'Unknown':
+                industry_data = [{'industry': detected_industry, 'confidence': 0.9}]
+                update_user_detected_industries(user_id, industry_data)
+                logging.info(f"Updated user {user_id} detected industry: {detected_industry}")
         except Exception as e:
-            logging.error(f"Error detecting industry: {str(e)}")
+            logging.error(f"Error updating user detected industries: {str(e)}")
 
+        # Return new intelligent analysis format
         return jsonify({
             'analysis_id': analysis.id,
-            'match_score': result['match_score'],
-            'keywords_found': result['keywords_found'],
-            'keywords_missing': result['keywords_missing'],
-            'suggestions': result['suggestions'],
+            'overall_score': result.get('overall_score'),
+            'interpretation': result.get('interpretation'),
+            'match_analysis': result.get('match_analysis'),
+            'ats_optimization': result.get('ats_optimization'),
+            'recommendations': result.get('recommendations'),
+            'job_industry': result.get('job_industry'),
+            'job_level': result.get('job_level'),
+            'resume_level': result.get('resume_level'),
+            'expected_ats_pass_rate': result.get('expected_ats_pass_rate'),
             'extracted_skills': extracted_skills,
             'detected_industry': detected_industry,
             'created_at': analysis.created_at.isoformat()
@@ -815,6 +909,80 @@ def analyze_resume():
     except Exception as e:
         logging.error(f"Analysis failed for user {user_id}: {str(e)}")
         return jsonify({'error': 'Analysis failed. Please try again.'}), 500
+
+@app.route('/api/analyze-intelligent', methods=['POST'])
+@jwt_required()
+@limiter.limit("10 per hour")  # Limit intelligent analyses
+def analyze_resume_intelligent():
+    """
+    Intelligent resume analysis using Gemini AI
+    Provides semantic matching, ATS optimization, and industry-specific recommendations
+    """
+    try:
+        user_id = int(get_jwt_identity())
+        logging.info(f"Intelligent analysis request from user: {user_id}")
+    except Exception as e:
+        logging.error(f"JWT Error: {str(e)}")
+        return jsonify({'error': 'Authentication error'}), 401
+
+    try:
+        # Validate file upload
+        if 'resume' not in request.files:
+            return jsonify({'error': 'Resume file required'}), 400
+
+        resume_file = request.files['resume']
+
+        # Validate file
+        is_valid, error_message = validate_file_upload(resume_file)
+        if not is_valid:
+            return jsonify({'error': error_message}), 400
+
+        # Get job description
+        job_description = sanitize_text_input(request.form.get('job_description', ''), max_length=10000)
+
+        if not job_description:
+            return jsonify({'error': 'Job description required'}), 400
+
+        if len(job_description) < 50:
+            return jsonify({'error': 'Job description too short (minimum 50 characters)'}), 400
+
+        # Extract resume text
+        from ai_processor import extract_text_from_file
+        resume_text = extract_text_from_file(resume_file)
+
+        if not resume_text or len(resume_text.strip()) < 50:
+            return jsonify({'error': 'Resume appears empty. Please provide a valid resume.'}), 400
+
+        # Use intelligent analyzer
+        from intelligent_resume_analyzer import get_analyzer
+        analyzer = get_analyzer()
+
+        logging.info(f"Starting intelligent analysis for user {user_id}")
+        analysis_result = analyzer.comprehensive_resume_analysis(resume_text, job_description)
+
+        # Deduct credits for analysis (same as regular analyze)
+        from abuse_prevention import deduct_credits
+        success, msg = deduct_credits(user_id, 'analyze')
+        if not success:
+            logging.warning(f"Failed to deduct credits for user {user_id}: {msg}")
+
+        return jsonify({
+            'analysis_id': None,  # This is a real-time analysis, not stored
+            'overall_score': analysis_result['overall_score'],
+            'interpretation': analysis_result['interpretation'],
+            'match_analysis': analysis_result['match_analysis'],
+            'ats_optimization': analysis_result['ats_optimization'],
+            'recommendations': analysis_result['recommendations'],
+            'job_industry': analysis_result['job_industry'],
+            'job_level': analysis_result['job_level'],
+            'resume_level': analysis_result['resume_level'],
+            'expected_ats_pass_rate': analysis_result['expected_ats_pass_rate'],
+            'created_at': datetime.utcnow().isoformat()
+        }), 200
+
+    except Exception as e:
+        logging.error(f"Intelligent analysis failed for user {user_id}: {str(e)}")
+        return jsonify({'error': 'Analysis failed. Please try again.', 'details': str(e)[:100]}), 500
 
 @app.route('/api/analyses', methods=['GET'])
 @jwt_required()
@@ -1593,6 +1761,11 @@ app.register_blueprint(scheduler_bp)
 app.register_blueprint(linkedin_bp)
 app.register_blueprint(preferences_bp)
 app.register_blueprint(job_seeker_bp)
+app.register_blueprint(guest_bp)
+app.register_blueprint(job_matches_bp)
+app.register_blueprint(interview_prep_bp)
+app.register_blueprint(company_intel_bp)
+app.register_blueprint(career_path_bp)
 
 
 # ============== INITIALIZE SCHEDULER ==============

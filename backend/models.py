@@ -79,6 +79,7 @@ class User(db.Model):
     verification_token = db.Column(db.String(255), nullable=True)
     # Subscription and credit fields
     subscription_tier = db.Column(db.String(50), default='free', nullable=False)
+    subscription_status = db.Column(db.String(50), default='inactive', nullable=False)  # inactive, active, cancelled, expired, past_due
     credits = db.Column(db.Integer, default=0, nullable=False)
     stripe_customer_id = db.Column(db.String(255), nullable=True, unique=True)
     subscription_id = db.Column(db.String(255), nullable=True, unique=True)
@@ -122,6 +123,7 @@ class User(db.Model):
             'is_active': self.is_active,
             'is_admin': self.is_admin,
             'subscription_tier': self.subscription_tier,
+            'subscription_status': self.subscription_status,
             'credits': self.credits,
             'roles': [r.name for r in self.roles],
             'preferred_industry': self.preferred_industry,
@@ -160,7 +162,9 @@ class Analysis(db.Model):
     # AI enhancements
     ai_feedback = db.Column(db.Text)
     optimized_resume = db.Column(db.Text)
-    
+    optimized_feedback = db.Column(db.Text)  # Detailed optimization feedback
+    cover_letter = db.Column(db.Text)  # AI-generated cover letter
+
     # Metadata
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -186,6 +190,8 @@ class Analysis(db.Model):
             'suggestions': self.suggestions,
             'ai_feedback': self.ai_feedback,
             'optimized_resume': self.optimized_resume,
+            'optimized_feedback': self.optimized_feedback,
+            'cover_letter': self.cover_letter,
             'resume_filename': self.resume_filename,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()
@@ -691,6 +697,618 @@ class SkillTaxonomy(db.Model):
 
     def __repr__(self):
         return f'<SkillTaxonomy {self.name} (level {self.level})>'
+
+
+class GuestSession(db.Model):
+    """Guest session model for temporary guest users without login"""
+    __tablename__ = 'guest_sessions'
+
+    id = db.Column(db.String(255), primary_key=True)  # UUID as string
+    session_token = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    credits_used = db.Column(db.Integer, default=0, nullable=False)
+    credits_remaining = db.Column(db.Integer, default=5, nullable=False)
+
+    # Guest session metadata
+    ip_address = db.Column(db.String(45), nullable=True)  # IPv4 or IPv6
+    user_agent = db.Column(db.Text, nullable=True)
+    device_fingerprint = db.Column(db.String(255), nullable=True)
+
+    # Session status
+    status = db.Column(db.String(20), default='active', nullable=False)  # 'active', 'expired', 'converted'
+    converted_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    last_activity = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=False, index=True)
+
+    # Relationships
+    analyses = db.relationship('GuestAnalysis', backref='guest_session', lazy=True, cascade='all, delete-orphan')
+
+    __table_args__ = (
+        db.Index('idx_session_token', 'session_token'),
+        db.Index('idx_expires_at', 'expires_at'),
+        db.Index('idx_ip_address', 'ip_address'),
+    )
+
+    def __repr__(self):
+        return f'<GuestSession {self.id} ({self.status})>'
+
+    def is_expired(self):
+        """Check if session has expired"""
+        return datetime.utcnow() > self.expires_at
+
+    def has_credits(self):
+        """Check if guest has remaining credits"""
+        return self.credits_remaining > 0
+
+    def deduct_credits(self, amount=1):
+        """Deduct credits from guest session"""
+        self.credits_used += amount
+        self.credits_remaining = max(0, self.credits_remaining - amount)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'session_token': self.session_token,
+            'credits_remaining': self.credits_remaining,
+            'credits_used': self.credits_used,
+            'status': self.status,
+            'expires_at': self.expires_at.isoformat(),
+            'created_at': self.created_at.isoformat()
+        }
+
+
+class GuestAnalysis(db.Model):
+    """Guest analysis results - temporary, auto-deleted after 24 hours"""
+    __tablename__ = 'guest_analyses'
+
+    id = db.Column(db.String(255), primary_key=True)  # UUID as string
+    guest_session_id = db.Column(db.String(255), db.ForeignKey('guest_sessions.id'), nullable=False, index=True)
+
+    # Job information
+    job_title = db.Column(db.String(200), nullable=True)
+    company_name = db.Column(db.String(200), nullable=True)
+    resume_filename = db.Column(db.String(255), nullable=True)
+
+    # Analysis content
+    resume_text = db.Column(db.Text, nullable=False)
+    job_description = db.Column(db.Text, nullable=False)
+
+    # Analysis results (stored as JSON)
+    match_score = db.Column(db.Float, nullable=False)
+    keywords_found = db.Column(db.JSON, nullable=True)
+    keywords_missing = db.Column(db.JSON, nullable=True)
+    suggestions = db.Column(db.Text, nullable=True)
+    ai_feedback = db.Column(db.Text, nullable=True)
+    detected_industry = db.Column(db.String(100), nullable=True)
+
+    # Metadata
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    expires_at = db.Column(db.DateTime, nullable=False, index=True)
+
+    __table_args__ = (
+        db.Index('idx_guest_analysis_session_id', 'guest_session_id'),
+        db.Index('idx_guest_analysis_expires_at', 'expires_at'),
+    )
+
+    def __repr__(self):
+        return f'<GuestAnalysis {self.id}>'
+
+    def is_expired(self):
+        """Check if analysis has expired"""
+        return datetime.utcnow() > self.expires_at
+
+    def to_dict(self, include_content=True):
+        data = {
+            'id': self.id,
+            'guest_session_id': self.guest_session_id,
+            'job_title': self.job_title,
+            'company_name': self.company_name,
+            'match_score': self.match_score,
+            'keywords_found': self.keywords_found,
+            'keywords_missing': self.keywords_missing,
+            'suggestions': self.suggestions,
+            'ai_feedback': self.ai_feedback,
+            'detected_industry': self.detected_industry,
+            'created_at': self.created_at.isoformat(),
+            'expires_at': self.expires_at.isoformat()
+        }
+
+        if include_content:
+            data['resume_text'] = self.resume_text
+            data['job_description'] = self.job_description
+
+        return data
+
+
+# ==================== JOB MATCHING MODELS ====================
+
+class JobPosting(db.Model):
+    """Job postings for AI-powered job matching"""
+    __tablename__ = 'job_postings'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False, index=True)
+    company = db.Column(db.String(200), nullable=False, index=True)
+    location = db.Column(db.String(200))
+    remote_type = db.Column(db.String(50))  # 'remote', 'hybrid', 'onsite'
+    industry = db.Column(db.String(100), index=True)
+    description = db.Column(db.Text)
+    requirements = db.Column(db.JSON)  # ["Python", "React", "5 years exp"]
+    responsibilities = db.Column(db.JSON)  # ["Build APIs", "Lead team"]
+    salary_min = db.Column(db.Integer)
+    salary_max = db.Column(db.Integer)
+    salary_currency = db.Column(db.String(10), default='USD')
+    employment_type = db.Column(db.String(50))  # 'full-time', 'part-time', 'contract'
+    experience_level = db.Column(db.String(50))  # 'Entry', 'Mid', 'Senior', 'Lead'
+    posted_date = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    expires_date = db.Column(db.DateTime)
+    source = db.Column(db.String(100))  # 'LinkedIn', 'Indeed', 'Manual', etc.
+    external_url = db.Column(db.String(500))
+    is_active = db.Column(db.Boolean, default=True, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    matches = db.relationship('JobMatch', backref='job_posting', lazy=True, cascade='all, delete-orphan')
+
+    __table_args__ = (
+        db.Index('idx_job_industry_active', 'industry', 'is_active'),
+        db.Index('idx_job_posted_active', 'posted_date', 'is_active'),
+        db.Index('idx_job_location', 'location'),
+    )
+
+    def __repr__(self):
+        return f'<JobPosting {self.title} at {self.company}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'company': self.company,
+            'location': self.location,
+            'remote_type': self.remote_type,
+            'industry': self.industry,
+            'description': self.description,
+            'requirements': self.requirements or [],
+            'responsibilities': self.responsibilities or [],
+            'salary_min': self.salary_min,
+            'salary_max': self.salary_max,
+            'salary_currency': self.salary_currency,
+            'salary_range': f"${self.salary_min:,} - ${self.salary_max:,}" if self.salary_min and self.salary_max else None,
+            'employment_type': self.employment_type,
+            'experience_level': self.experience_level,
+            'posted_date': self.posted_date.isoformat() if self.posted_date else None,
+            'source': self.source,
+            'external_url': self.external_url,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat()
+        }
+
+
+class JobMatch(db.Model):
+    """AI-generated job matches for users with match scores and explanations"""
+    __tablename__ = 'job_matches'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    job_posting_id = db.Column(db.Integer, db.ForeignKey('job_postings.id'), nullable=False, index=True)
+
+    # AI-generated match data
+    match_score = db.Column(db.Float, nullable=False)  # 0-100
+    ai_explanation = db.Column(db.Text)  # Why this is a good match
+    matching_skills = db.Column(db.JSON)  # ["Python", "React", "AWS"]
+    missing_skills = db.Column(db.JSON)  # ["Docker", "Kubernetes"]
+    skill_match_percentage = db.Column(db.Float)  # Percentage of required skills matched
+
+    # User interaction
+    is_saved = db.Column(db.Boolean, default=False, index=True)
+    is_applied = db.Column(db.Boolean, default=False)
+    is_dismissed = db.Column(db.Boolean, default=False)
+    viewed_at = db.Column(db.DateTime)
+    saved_at = db.Column(db.DateTime)
+    applied_at = db.Column(db.DateTime)
+
+    # Metadata
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    user = db.relationship('User', backref='job_matches')
+
+    __table_args__ = (
+        db.Index('idx_match_user_score', 'user_id', 'match_score'),
+        db.Index('idx_match_user_saved', 'user_id', 'is_saved'),
+        db.Index('idx_match_score', 'match_score'),
+        db.UniqueConstraint('user_id', 'job_posting_id', name='unique_user_job_match'),
+    )
+
+    def __repr__(self):
+        return f'<JobMatch user={self.user_id} job={self.job_posting_id} score={self.match_score}>'
+
+    def mark_saved(self):
+        """Mark this job as saved by the user"""
+        self.is_saved = True
+        self.saved_at = datetime.utcnow()
+
+    def mark_applied(self):
+        """Mark this job as applied to by the user"""
+        self.is_applied = True
+        self.applied_at = datetime.utcnow()
+
+    def mark_viewed(self):
+        """Mark this job as viewed by the user"""
+        if not self.viewed_at:
+            self.viewed_at = datetime.utcnow()
+
+    def to_dict(self, include_job_details=True):
+        data = {
+            'id': self.id,
+            'user_id': self.user_id,
+            'job_posting_id': self.job_posting_id,
+            'match_score': round(self.match_score, 1),
+            'ai_explanation': self.ai_explanation,
+            'matching_skills': self.matching_skills or [],
+            'missing_skills': self.missing_skills or [],
+            'skill_match_percentage': round(self.skill_match_percentage, 1) if self.skill_match_percentage else None,
+            'is_saved': self.is_saved,
+            'is_applied': self.is_applied,
+            'viewed_at': self.viewed_at.isoformat() if self.viewed_at else None,
+            'created_at': self.created_at.isoformat()
+        }
+
+        # Include full job details if requested
+        if include_job_details and self.job_posting:
+            data['job'] = self.job_posting.to_dict()
+            # Calculate days ago
+            if self.job_posting.posted_date:
+                days_ago = (datetime.utcnow() - self.job_posting.posted_date).days
+                data['job']['posted_days_ago'] = days_ago
+
+        return data
+
+
+class InterviewPrep(db.Model):
+    """AI-generated interview preparation content for specific companies/roles"""
+    __tablename__ = 'interview_prep'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    company = db.Column(db.String(200), nullable=False, index=True)
+    job_title = db.Column(db.String(200), nullable=True)
+    industry = db.Column(db.String(100), index=True)
+
+    # AI-generated content
+    questions = db.Column(db.JSON)  # [{"question": "...", "type": "technical/behavioral", "answer_framework": "...", "tips": "..."}]
+    company_culture = db.Column(db.Text)  # AI analysis of company culture
+    interview_process = db.Column(db.JSON)  # {"rounds": 3, "stages": ["phone", "technical", "final"], "duration": "2-3 weeks"}
+    interview_tips = db.Column(db.JSON)  # Company-specific tips ["Tip 1", "Tip 2"]
+    common_topics = db.Column(db.JSON)  # Common interview topics for this company
+
+    # User interaction
+    is_saved = db.Column(db.Boolean, default=False, index=True)
+    practiced_questions = db.Column(db.JSON, default=[])  # Question IDs user has practiced
+
+    # Metadata
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    cached_until = db.Column(db.DateTime)  # Cache expiry (1 week)
+
+    # Relationships
+    user = db.relationship('User', backref='interview_preps')
+
+    __table_args__ = (
+        db.Index('idx_prep_user_company', 'user_id', 'company'),
+        db.Index('idx_prep_company', 'company'),
+    )
+
+    def __repr__(self):
+        return f'<InterviewPrep user={self.user_id} company={self.company}>'
+
+    def mark_question_practiced(self, question_index):
+        """Mark a question as practiced"""
+        if self.practiced_questions is None:
+            self.practiced_questions = []
+        if question_index not in self.practiced_questions:
+            self.practiced_questions.append(question_index)
+            self.practiced_questions = list(self.practiced_questions)  # Trigger update
+
+    def is_cached(self):
+        """Check if prep data is still fresh"""
+        if not self.cached_until:
+            return False
+        return datetime.utcnow() < self.cached_until
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'company': self.company,
+            'job_title': self.job_title,
+            'industry': self.industry,
+            'questions': self.questions or [],
+            'company_culture': self.company_culture,
+            'interview_process': self.interview_process or {},
+            'interview_tips': self.interview_tips or [],
+            'common_topics': self.common_topics or [],
+            'is_saved': self.is_saved,
+            'practiced_questions': self.practiced_questions or [],
+            'total_questions': len(self.questions) if self.questions else 0,
+            'practiced_count': len(self.practiced_questions) if self.practiced_questions else 0,
+            'created_at': self.created_at.isoformat(),
+            'is_fresh': self.is_cached()
+        }
+
+
+# ============== COMPANY INTELLIGENCE MODEL ==============
+
+class CompanyIntel(db.Model):
+    """
+    Company Intelligence - AI-powered company research and insights
+    Stores comprehensive company information for user research
+    """
+    __tablename__ = 'company_intel'
+
+    # Primary fields
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    company = db.Column(db.String(200), nullable=False, index=True)
+    industry = db.Column(db.String(100), index=True)
+
+    # Company overview
+    overview = db.Column(db.Text)  # Company description and history
+    founded_year = db.Column(db.Integer)
+    headquarters = db.Column(db.String(200))
+    company_size = db.Column(db.String(200))  # "1-10", "11-50", "51-200", etc. or AI-generated descriptions
+    website = db.Column(db.String(500))
+
+    # Business information (JSON)
+    products_services = db.Column(db.JSON)  # [{name, description}, ...]
+    target_markets = db.Column(db.JSON)  # [market1, market2, ...]
+    competitors = db.Column(db.JSON)  # [{name, comparison}, ...]
+
+    # Culture and values
+    company_culture = db.Column(db.Text)  # AI-generated culture analysis
+    core_values = db.Column(db.JSON)  # [value1, value2, ...]
+    work_environment = db.Column(db.Text)  # Work environment description
+
+    # News and updates (JSON)
+    recent_news = db.Column(db.JSON)  # [{title, summary, date, source}, ...]
+    major_developments = db.Column(db.JSON)  # [development1, development2, ...]
+
+    # Leadership team (JSON)
+    leadership = db.Column(db.JSON)  # [{name, title, bio}, ...]
+
+    # Financial and growth (JSON)
+    financial_health = db.Column(db.JSON)  # {revenue, funding, profitability, etc.}
+    growth_metrics = db.Column(db.JSON)  # {employee_growth, revenue_growth, etc.}
+
+    # Career insights
+    interview_insights = db.Column(db.Text)  # Interview process overview
+    employee_sentiment = db.Column(db.Text)  # AI analysis of employee reviews
+    pros_cons = db.Column(db.JSON)  # {pros: [...], cons: [...]}
+
+    # Technology stack (JSON)
+    tech_stack = db.Column(db.JSON)  # {languages: [...], frameworks: [...], tools: [...]}
+
+    # AI-generated insights
+    ai_summary = db.Column(db.Text)  # Executive summary
+    key_insights = db.Column(db.JSON)  # [insight1, insight2, ...]
+    recommendations = db.Column(db.JSON)  # [recommendation1, recommendation2, ...]
+
+    # User interaction
+    is_saved = db.Column(db.Boolean, default=False, index=True)
+    notes = db.Column(db.Text)  # User's personal notes
+
+    # Timestamps and caching
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    cached_until = db.Column(db.DateTime)  # 14-day cache for company intel
+
+    # Relationships
+    user = db.relationship('User', backref=db.backref('company_intels', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'<CompanyIntel {self.company} for User {self.user_id}>'
+
+    def is_cached(self):
+        """Check if company intel is still cached (fresh)"""
+        if not self.cached_until:
+            return False
+        return datetime.utcnow() < self.cached_until
+
+    def to_dict(self):
+        """Convert to dictionary for API responses"""
+        return {
+            'id': self.id,
+            'company': self.company,
+            'industry': self.industry,
+            'overview': self.overview,
+            'founded_year': self.founded_year,
+            'headquarters': self.headquarters,
+            'company_size': self.company_size,
+            'website': self.website,
+            'products_services': self.products_services,
+            'target_markets': self.target_markets,
+            'competitors': self.competitors,
+            'company_culture': self.company_culture,
+            'core_values': self.core_values,
+            'work_environment': self.work_environment,
+            'recent_news': self.recent_news,
+            'major_developments': self.major_developments,
+            'leadership': self.leadership,
+            'financial_health': self.financial_health,
+            'growth_metrics': self.growth_metrics,
+            'interview_insights': self.interview_insights,
+            'employee_sentiment': self.employee_sentiment,
+            'pros_cons': self.pros_cons,
+            'tech_stack': self.tech_stack,
+            'ai_summary': self.ai_summary,
+            'key_insights': self.key_insights,
+            'recommendations': self.recommendations,
+            'is_saved': self.is_saved,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'cached_until': self.cached_until.isoformat() if self.cached_until else None,
+            'is_fresh': self.is_cached()
+        }
+
+
+class CareerPath(db.Model):
+    """
+    Career Path - AI-generated career progression roadmaps
+    Provides personalized career advancement strategies and roadmaps
+    """
+    __tablename__ = 'career_path'
+
+    # Primary fields
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+
+    # Career positions
+    current_role = db.Column(db.String(200), nullable=False, index=True)
+    target_role = db.Column(db.String(200), nullable=False, index=True)
+    industry = db.Column(db.String(100), index=True)
+    years_of_experience = db.Column(db.Integer)
+
+    # Path overview
+    path_summary = db.Column(db.Text)
+    estimated_duration = db.Column(db.String(100))  # "2-3 years", "6-12 months", etc.
+    difficulty_level = db.Column(db.String(50))  # "Beginner-friendly", "Moderate", "Challenging"
+
+    # Career steps (JSON array of step objects)
+    # [{step_number, title, description, duration, skills_to_acquire, key_actions, certifications}]
+    career_steps = db.Column(db.JSON)
+
+    # Skills analysis
+    current_skills = db.Column(db.JSON)  # Skills user currently has
+    skills_gap = db.Column(db.JSON)  # Skills needed to acquire
+    transferable_skills = db.Column(db.JSON)  # Skills that transfer well
+
+    # Learning resources (JSON)
+    # [{type, title, url, description, cost, priority}]
+    learning_resources = db.Column(db.JSON)
+
+    # Certifications recommended
+    # [{name, provider, cost, duration, priority, relevance}]
+    certifications = db.Column(db.JSON)
+
+    # Salary progression
+    # [{role, min_salary, max_salary, median_salary}]
+    salary_expectations = db.Column(db.JSON)
+
+    # Alternative paths
+    # [{path_name, description, duration, steps_summary}]
+    alternative_paths = db.Column(db.JSON)
+
+    # Networking and mentorship
+    networking_tips = db.Column(db.Text)
+    mentor_guidance = db.Column(db.Text)
+    industry_connections = db.Column(db.JSON)  # Where to connect
+
+    # Success metrics
+    # [{milestone, timeframe, success_criteria, importance}]
+    key_milestones = db.Column(db.JSON)
+
+    # Success stories (anonymized case studies)
+    # [{profile, transition_time, key_factors, advice}]
+    success_stories = db.Column(db.JSON)
+
+    # AI insights
+    ai_recommendations = db.Column(db.Text)
+
+    # Risk and success factors
+    # [{"factor": "...", "impact": "high/medium/low", "mitigation": "..."}]
+    risk_factors = db.Column(db.JSON)
+    success_factors = db.Column(db.JSON)
+
+    # Market insights
+    job_market_outlook = db.Column(db.Text)
+    demand_trend = db.Column(db.String(50))  # "Growing", "Stable", "Declining"
+
+    # User interaction
+    is_saved = db.Column(db.Boolean, default=False, index=True)
+    notes = db.Column(db.Text)  # Personal career planning notes
+
+    # Progress tracking (user can mark steps complete)
+    # {step_1: {completed: true, date: "...", notes: "..."}, ...}
+    progress_tracking = db.Column(db.JSON, default=dict)
+
+    # Timestamps and caching
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    cached_until = db.Column(db.DateTime)  # 30-day cache for career paths
+
+    def is_cached(self):
+        """Check if career path is still cached (fresh)"""
+        if not self.cached_until:
+            return False
+        return datetime.utcnow() < self.cached_until
+
+    def get_completion_percentage(self):
+        """Calculate what percentage of steps are completed"""
+        if not self.progress_tracking or not self.career_steps:
+            return 0
+
+        completed_steps = sum(
+            1 for step_key, progress in self.progress_tracking.items()
+            if progress.get('completed', False)
+        )
+        total_steps = len(self.career_steps)
+
+        return (completed_steps / total_steps * 100) if total_steps > 0 else 0
+
+    def to_dict(self):
+        """Convert to dictionary for API responses"""
+        return {
+            'id': self.id,
+            'current_role': self.current_role,
+            'target_role': self.target_role,
+            'industry': self.industry,
+            'years_of_experience': self.years_of_experience,
+
+            'path_summary': self.path_summary,
+            'estimated_duration': self.estimated_duration,
+            'difficulty_level': self.difficulty_level,
+
+            'career_steps': self.career_steps or [],
+
+            'current_skills': self.current_skills or [],
+            'skills_gap': self.skills_gap or [],
+            'transferable_skills': self.transferable_skills or [],
+
+            'learning_resources': self.learning_resources or [],
+            'certifications': self.certifications or [],
+
+            'salary_expectations': self.salary_expectations or [],
+            'alternative_paths': self.alternative_paths or [],
+
+            'networking_tips': self.networking_tips,
+            'mentor_guidance': self.mentor_guidance,
+            'industry_connections': self.industry_connections or [],
+
+            'key_milestones': self.key_milestones or [],
+            'success_stories': self.success_stories or [],
+
+            'ai_recommendations': self.ai_recommendations,
+            'risk_factors': self.risk_factors or [],
+            'success_factors': self.success_factors or [],
+
+            'job_market_outlook': self.job_market_outlook,
+            'demand_trend': self.demand_trend,
+
+            'is_saved': self.is_saved,
+            'notes': self.notes,
+            'progress_tracking': self.progress_tracking or {},
+            'completion_percentage': self.get_completion_percentage(),
+
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'cached_until': self.cached_until.isoformat() if self.cached_until else None,
+            'is_fresh': self.is_cached()
+        }
 
 
 class UserSchema(SQLAlchemyAutoSchema):

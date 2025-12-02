@@ -47,7 +47,15 @@
       "Bash(docker system:*)",
       "Bash(docker container prune:*)",
       "Bash(timeout 300 bash -c \"until docker-compose images | grep -q frontend; do sleep 5; done; echo ''Build appears complete''\")",
-      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc2NDE4NjE2MiwianRpIjoiMjNiMGE0MTQtYmRiNy00ZWEyLTk5MzctNjcxYjgwNjhlNGEwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEwIiwibmJmIjoxNzY0MTg2MTYyLCJleHAiOjE3NjQ3OTA5NjJ9.xcThItEz8yOGpOd5MrR8Iu_8F6YiVzBKgO3YvuXonZc\")"
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc2NDE4NjE2MiwianRpIjoiMjNiMGE0MTQtYmRiNy00ZWEyLTk5MzctNjcxYjgwNjhlNGEwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEwIiwibmJmIjoxNzY0MTg2MTYyLCJleHAiOjE3NjQ3OTA5NjJ9.xcThItEz8yOGpOd5MrR8Iu_8F6YiVzBKgO3YvuXonZc\")",
+      "Bash(timeout 180 bash -c:*)",
+      "Bash(timeout 600 bash -c \"until docker-compose up -d 2>&1 | grep -q ''done''; do sleep 10; echo ''Waiting for services...''; done\")",
+      "Bash(docker ps:*)",
+      "Bash(set PYTHONIOENCODING=utf-8:*)",
+      "Bash(timeout 5 docker ps:*)",
+      "Bash(docker logs:*)",
+      "Bash(touch:*)",
+      "Bash(docker cp:*)"
     ],
     "deny": [],
     "ask": []

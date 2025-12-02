@@ -14,6 +14,10 @@ import RepersonalizeButton from './components/RepersonalizeButton';
 import StripeCheckout from './components/StripeCheckout';
 import LandingPageV2 from './components/LandingPageV2';
 import PricingPageV2 from './components/PricingPageV2';
+import GuestAnalyze from './components/GuestAnalyze';
+import GuestModeBanner from './components/GuestModeBanner';
+import SubscriptionRequired from './components/SubscriptionRequired';
+import guestService from './services/guestService';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -29,6 +33,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       '/register': 'register',
       '/dashboard': 'dashboard',
       '/analyze': 'analyze',
+      '/guest-analyze': 'guest-analyze',
       '/result': 'result',
       '/pricing': 'pricing',
       '/checkout': 'checkout',
@@ -53,6 +58,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       'register': '/register',
       'dashboard': '/dashboard',
       'analyze': '/analyze',
+      'guest-analyze': '/guest-analyze',
       'result': '/result',
       'pricing': '/pricing',
       'checkout': '/checkout',
@@ -114,6 +120,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   const [extractedSkills, setExtractedSkills] = useState([]);
   const [loadingSkills, setLoadingSkills] = useState(false);
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(null);
+  const [skillVerificationOpen, setSkillVerificationOpen] = useState(false);
   // Preference questionnaire state
   const [showPreferenceQuestionnaire, setShowPreferenceQuestionnaire] = useState(false);
   const [showRepersonalizeModal, setShowRepersonalizeModal] = useState(false);
@@ -678,6 +685,16 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     alert('Copied to clipboard!');
   };
 
+  const downloadAsTextFile = (content, filename) => {
+    const element = document.createElement('a');
+    const file = new Blob([content], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = filename;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
   // Fetch extracted skills for an analysis
   const fetchExtractedSkills = async (analysisId) => {
     if (!analysisId) {
@@ -1013,6 +1030,20 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <StripeCheckout token={token} navigate={navigate} />
+      </div>
+    );
+  }
+
+  if (view === 'guest-analyze') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <Navigation
+          view={view}
+          setView={setView}
+          token={token}
+          handleLogout={handleLogout}
+        />
+        <GuestAnalyze setView={setView} navigate={navigate} />
       </div>
     );
   }
@@ -1608,117 +1639,135 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
         )}
 
         {view === 'analyze' && (
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             <Breadcrumb view={view} setView={setView} token={token} />
-            <h2 className="text-3xl font-bold text-white mb-6">Analyze Your Resume</h2>
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
-              <form onSubmit={handleAnalyze} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Upload Resume (PDF, DOCX, or TXT)
-                  </label>
+
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-6 flex items-start gap-3">
+                <svg className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-red-400 text-sm">{error}</p>
+              </div>
+            )}
+
+            {/* Form */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Resume Upload */}
+              <div>
+                <label className="block text-white font-semibold mb-3">Resume File</label>
+                <div className="relative">
                   <input
                     type="file"
                     accept=".pdf,.docx,.txt"
                     onChange={(e) => setResumeFile(e.target.files[0])}
-                    className="block w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-700 file:text-slate-300 hover:file:bg-slate-600"
+                    className="hidden"
+                    id="resume-upload"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Job Title (Optional)
+                  <label
+                    htmlFor="resume-upload"
+                    className="flex items-center justify-center w-full px-4 py-8 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer hover:border-cyan-500 transition-colors bg-slate-800/30"
+                  >
+                    {resumeFile ? (
+                      <div className="text-center">
+                        <svg className="w-8 h-8 text-green-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="text-white font-semibold text-sm">{resumeFile.name}</p>
+                        <p className="text-slate-400 text-xs mt-1">Click to change</p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <svg className="w-8 h-8 text-slate-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p className="text-white font-semibold text-sm">Upload Your Resume</p>
+                        <p className="text-slate-400 text-xs mt-1">PDF, DOCX, or TXT</p>
+                      </div>
+                    )}
                   </label>
+                </div>
+              </div>
+
+              {/* Job Details */}
+              <div>
+                <label className="block text-white font-semibold mb-3">Job Details</label>
+                <div className="space-y-3">
                   <input
                     type="text"
-                    value={jobTitle}
-                    onChange={(e) => setJobTitle(e.target.value)}
-                    placeholder="e.g., Senior Software Engineer"
-                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Company Name (Optional)
-                  </label>
-                  <input
-                    type="text"
+                    placeholder="Company (optional)"
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="e.g., Tech Corp"
-                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Job Description
-                  </label>
+                  <input
+                    type="text"
+                    placeholder="Job Title (optional)"
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+                  />
                   <textarea
+                    placeholder="Paste job description here (required)"
                     value={jobDescription}
                     onChange={(e) => setJobDescription(e.target.value)}
-                    placeholder="Paste the job description here..."
-                    rows="10"
-                    className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition resize-none"
+                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none h-32 resize-none"
                   />
                 </div>
+              </div>
+            </div>
 
-                {/* Analysis Progress Indicator */}
-                {loading && (
-                  <div className="p-4 bg-slate-700/50 rounded-xl border border-slate-600">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-cyan-400 font-medium flex items-center gap-2">
-                        <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        {analysisMessage || 'Processing...'}
-                      </span>
-                      <span className="text-slate-400 text-sm">{analysisProgress}%</span>
-                    </div>
-                    <div className="w-full bg-slate-600 rounded-full h-2 overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all duration-300 ease-out"
-                        style={{ width: `${analysisProgress}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+            {/* Progress Section */}
+            {loading && (
+              <div className="mt-6 space-y-4">
+                {/* Progress Bar */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white font-semibold flex items-center gap-2">
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Analyzing Resume...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                      </svg>
-                      Analyze Resume
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
+                      {analysisMessage}
+                    </span>
+                    <span className="text-slate-400 text-sm">{Math.round(analysisProgress)}%</span>
+                  </div>
+                  <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-cyan-500 to-purple-600 transition-all duration-300 ease-out"
+                      style={{ width: `${analysisProgress}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Analyze Button */}
+            {!loading && (
+              <button
+                onClick={handleAnalyze}
+                disabled={loading || !resumeFile || !jobDescription}
+                className="w-full mt-6 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all"
+              >
+                Start Analysis
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </button>
+            )}
           </div>
         )}
 
         {view === 'result' && currentAnalysis && (
-          <div className="max-w-4xl mx-auto space-y-6">
+          <div className="max-w-5xl mx-auto space-y-6">
             <Breadcrumb view={view} setView={setView} token={token} currentAnalysis={currentAnalysis} />
-            <div className="flex justify-between items-center">
-              <h2 className="text-3xl font-bold text-white">Analysis Results</h2>
-              <div className="flex items-center gap-4">
+
+            {/* Results Header */}
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-white mb-2">AI-Powered Analysis Complete</h1>
+              <p className="text-slate-400">Comprehensive resume evaluation & ATS optimization</p>
+              <div className="flex items-center justify-center gap-4 mt-4">
                 <button
                   onClick={() => resendAnalysisEmail(currentAnalysis.analysis_id || currentAnalysis.id)}
                   className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg hover:shadow-green-500/25 flex items-center gap-2"
@@ -1735,79 +1784,198 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
               </div>
             </div>
 
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 text-center">
-              <h3 className="text-lg font-medium text-slate-400 mb-2">Match Score</h3>
-              <div className={`text-6xl font-bold mb-2 ${
-                currentAnalysis.match_score >= 70 ? 'text-green-400' :
-                currentAnalysis.match_score >= 50 ? 'text-yellow-400' :
-                'text-red-400'
-              }`}>
-                {currentAnalysis.match_score}%
+            {/* Overall Score Card */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-600 rounded-lg p-8">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="text-center">
+                  <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
+                    {currentAnalysis.overall_score || currentAnalysis.match_score || 0}%
+                  </div>
+                  <p className="text-slate-300 font-semibold">Overall Match Score</p>
+                  <p className="text-slate-400 text-sm mt-2">{currentAnalysis.interpretation || 'Analysis complete'}</p>
+                </div>
+                <div className="flex flex-col justify-center gap-3">
+                  <div>
+                    <p className="text-slate-400 text-sm mb-1">Industry</p>
+                    <p className="text-white font-semibold">{currentAnalysis.job_industry || currentAnalysis.detected_industry || 'Unknown'}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-sm mb-1">ATS Pass Rate</p>
+                    <p className="text-cyan-400 font-semibold">{currentAnalysis.expected_ats_pass_rate || 'N/A'}</p>
+                  </div>
+                </div>
               </div>
-              <p className="text-slate-300">
-                {currentAnalysis.match_score >= 70 ? 'Excellent match!' :
-                 currentAnalysis.match_score >= 50 ? 'Good match with room for improvement' :
-                 'Consider tailoring your resume more'}
-              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
-                <h3 className="text-xl font-semibold mb-4 text-green-400">Keywords Found</h3>
+            {/* Match Breakdown */}
+            {currentAnalysis.match_analysis?.match_breakdown && (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                <h3 className="text-white font-semibold mb-4">Match Breakdown</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(currentAnalysis.match_analysis.match_breakdown || {}).map(([key, value]) => (
+                    <div key={key}>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-slate-400 text-sm capitalize">{key.replace(/_/g, ' ')}</span>
+                        <span className="text-cyan-400 font-semibold">{value}%</span>
+                      </div>
+                      <div className="w-full bg-slate-700 rounded-full h-2">
+                        <div
+                          className="h-full bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full transition-all duration-1000"
+                          style={{ width: `${value}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Keywords Found */}
+            {(currentAnalysis.match_analysis?.keywords_present || currentAnalysis.keywords_found) && (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Keywords Found ({(currentAnalysis.match_analysis?.keywords_present || currentAnalysis.keywords_found || []).length})
+                </h3>
                 <div className="flex flex-wrap gap-2">
-                  {currentAnalysis.keywords_found && currentAnalysis.keywords_found.map((kw, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-green-900/50 text-green-300 border border-green-500/30 rounded-full text-sm">
-                      {kw}
+                  {(currentAnalysis.match_analysis?.keywords_present || currentAnalysis.keywords_found || []).slice(0, 15).map((keyword, i) => (
+                    <span
+                      key={i}
+                      className="px-3 py-1 bg-green-900/30 text-green-300 rounded-full text-sm border border-green-700/50"
+                    >
+                      {keyword}
                     </span>
                   ))}
-                  {(!currentAnalysis.keywords_found || currentAnalysis.keywords_found.length === 0) && (
-                    <p className="text-slate-400">No matching keywords found</p>
-                  )}
                 </div>
               </div>
+            )}
 
-              <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
-                <h3 className="text-xl font-semibold mb-4 text-orange-400">Keywords Missing</h3>
+            {/* Keywords Missing */}
+            {((currentAnalysis.match_analysis?.keywords_missing && currentAnalysis.match_analysis.keywords_missing.length > 0) ||
+              (currentAnalysis.keywords_missing && currentAnalysis.keywords_missing.length > 0)) && (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  Keywords to Add ({(currentAnalysis.match_analysis?.keywords_missing || currentAnalysis.keywords_missing || []).length})
+                </h3>
+                <p className="text-slate-400 text-sm mb-3">
+                  Adding these keywords could improve your match score
+                </p>
                 <div className="flex flex-wrap gap-2">
-                  {currentAnalysis.keywords_missing && currentAnalysis.keywords_missing.map((kw, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-orange-900/50 text-orange-300 border border-orange-500/30 rounded-full text-sm">
-                      {kw}
-                    </span>
+                  {(currentAnalysis.match_analysis?.keywords_missing || currentAnalysis.keywords_missing || []).slice(0, 15).map((keyword, i) => {
+                    const keywordText = typeof keyword === 'object' ? (keyword.keyword || keyword.name || 'N/A') : keyword;
+                    return (
+                      <span
+                        key={i}
+                        className="px-3 py-1 bg-amber-900/30 text-amber-300 rounded-full text-sm border border-amber-700/50"
+                      >
+                        {keywordText}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Suggestions for Improvement */}
+            {(currentAnalysis.suggestions || currentAnalysis.interpretation) && (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                <h3 className="text-white font-semibold mb-3">Suggestions for Improvement</h3>
+                <p className="text-slate-300 leading-relaxed">{currentAnalysis.suggestions || currentAnalysis.interpretation}</p>
+              </div>
+            )}
+
+            {/* Priority Improvements */}
+            {currentAnalysis.recommendations?.priority_improvements && currentAnalysis.recommendations.priority_improvements.length > 0 && (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                <h3 className="text-xl font-semibold mb-4 text-white flex items-center gap-2">
+                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Priority Improvements
+                </h3>
+                <div className="space-y-4">
+                  {currentAnalysis.recommendations.priority_improvements.slice(0, 5).map((improvement, idx) => (
+                    <div key={idx} className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-white text-xs font-bold">
+                            {improvement.rank || idx + 1}
+                          </span>
+                          <h4 className="font-semibold text-white">{improvement.action}</h4>
+                        </div>
+                        <span className="text-green-400 font-semibold text-sm">+{improvement.estimated_impact}%</span>
+                      </div>
+                      <p className="text-slate-300 text-sm ml-8">{improvement.why_matters}</p>
+                    </div>
                   ))}
-                  {(!currentAnalysis.keywords_missing || currentAnalysis.keywords_missing.length === 0) && (
-                    <p className="text-slate-400">Great! All keywords covered</p>
+                </div>
+              </div>
+            )}
+
+            {/* ATS Optimization Tips */}
+            {currentAnalysis.ats_optimization?.natural_integration_tips && currentAnalysis.ats_optimization.natural_integration_tips.length > 0 && (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                <h3 className="text-xl font-semibold mb-4 text-white flex items-center gap-2">
+                  <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                  ATS Optimization Tips
+                </h3>
+                <div className="space-y-2">
+                  {currentAnalysis.ats_optimization.natural_integration_tips.slice(0, 5).map((tip, idx) => (
+                    <div key={idx} className="flex items-start gap-3">
+                      <svg className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-slate-300 text-sm">{tip}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Skill Feedback Section - Self-Learning - Collapsible */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <button
+                onClick={() => setSkillVerificationOpen(!skillVerificationOpen)}
+                className="w-full flex items-center justify-between mb-4 cursor-pointer group"
+              >
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-purple-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  <div className="text-left">
+                    <h3 className="text-xl font-semibold text-white group-hover:text-purple-400 transition">
+                      Help Us Learn - Skill Verification
+                    </h3>
+                    <p className="text-slate-400 text-sm mt-1">
+                      Confirm or reject extracted skills to improve our AI accuracy
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {extractedSkills.length > 0 && (
+                    <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full">
+                      {extractedSkills.filter(s => s.user_confirmed || s.user_rejected).length}/{extractedSkills.length} reviewed
+                    </span>
                   )}
+                  <svg
+                    className={`w-5 h-5 text-slate-400 transition-transform ${skillVerificationOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
-              </div>
-            </div>
+              </button>
 
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
-              <h3 className="text-xl font-semibold mb-4 text-white">Suggestions for Improvement</h3>
-              <p className="text-slate-300 leading-relaxed">{currentAnalysis.suggestions}</p>
-            </div>
-
-            {/* Skill Feedback Section - Self-Learning */}
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-semibold text-white flex items-center gap-2">
-                    <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                    Help Us Learn - Skill Verification
-                  </h3>
-                  <p className="text-slate-400 text-sm mt-1">
-                    Confirm or reject extracted skills to improve our AI accuracy
-                  </p>
-                </div>
-                {extractedSkills.length > 0 && (
-                  <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full">
-                    {extractedSkills.filter(s => s.user_confirmed || s.user_rejected).length}/{extractedSkills.length} reviewed
-                  </span>
-                )}
-              </div>
-
-              {loadingSkills ? (
+              {skillVerificationOpen && (loadingSkills ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
                   <span className="ml-3 text-slate-400">Loading extracted skills...</span>
@@ -1905,7 +2073,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
                   <p>No extracted skills available for feedback</p>
                   <p className="text-sm mt-1">Skills will appear here after analysis</p>
                 </div>
-              )}
+              ))}
             </div>
 
             {/* AI-Powered Features */}
@@ -2009,18 +2177,29 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
               <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-xl font-semibold text-white">Your Optimized Resume</h3>
-                  <button
-                    onClick={() => copyToClipboard(optimizedResume)}
-                    className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition"
-                  >
-                    Copy to Clipboard
-                  </button>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => downloadAsTextFile(optimizedResume, `Optimized_Resume_${new Date().toISOString().split('T')[0]}.txt`)}
+                      className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-sm font-medium rounded-lg transition-all flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Download
+                    </button>
+                    <button
+                      onClick={() => copyToClipboard(optimizedResume)}
+                      className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition"
+                    >
+                      Copy to Clipboard
+                    </button>
+                  </div>
                 </div>
                 <div className="bg-slate-700/30 p-6 rounded-lg border border-slate-600">
                   <pre className="whitespace-pre-wrap text-slate-300 font-sans text-sm">{optimizedResume}</pre>
                 </div>
                 <p className="text-sm text-slate-400 mt-4">
-                  Tip: Copy this optimized version and paste it into your preferred document editor for final formatting.
+                  💡 Tip: Download and open in Microsoft Word or Google Docs to add final formatting touches and save as PDF.
                 </p>
               </div>
             )}
@@ -2030,16 +2209,30 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
               <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-xl font-semibold text-white">Tailored Cover Letter</h3>
-                  <button
-                    onClick={() => copyToClipboard(coverLetter)}
-                    className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition"
-                  >
-                    Copy to Clipboard
-                  </button>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => downloadAsTextFile(coverLetter, `Cover_Letter_${new Date().toISOString().split('T')[0]}.txt`)}
+                      className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-sm font-medium rounded-lg transition-all flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Download
+                    </button>
+                    <button
+                      onClick={() => copyToClipboard(coverLetter)}
+                      className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition"
+                    >
+                      Copy to Clipboard
+                    </button>
+                  </div>
                 </div>
                 <div className="bg-slate-700/30 p-6 rounded-lg border border-slate-600">
                   <pre className="whitespace-pre-wrap text-slate-300 font-sans">{coverLetter}</pre>
                 </div>
+                <p className="text-sm text-slate-400 mt-4">
+                  💡 Tip: Download and customize with your specific details, then save as PDF for professional submission.
+                </p>
               </div>
             )}
           </div>
@@ -2048,21 +2241,33 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
         {view === 'market-dashboard' && (
           <div>
             <Breadcrumb view={view} setView={setView} token={token} />
-            <MarketIntelligenceDashboard userProfile={userProfile} onRepersonalize={handleOpenRepersonalize} />
+            {userProfile && (userProfile.subscription_status === 'active' || userProfile.is_admin) ? (
+              <MarketIntelligenceDashboard userProfile={userProfile} onRepersonalize={handleOpenRepersonalize} />
+            ) : (
+              <SubscriptionRequired feature="Market Intelligence" setView={setView} />
+            )}
           </div>
         )}
 
         {view === 'skill-gap' && (
           <div>
             <Breadcrumb view={view} setView={setView} token={token} />
-            <SkillGapAnalysis userProfile={userProfile} onRepersonalize={handleOpenRepersonalize} />
+            {userProfile && (userProfile.subscription_status === 'active' || userProfile.is_admin) ? (
+              <SkillGapAnalysis userProfile={userProfile} onRepersonalize={handleOpenRepersonalize} />
+            ) : (
+              <SubscriptionRequired feature="Skills Gap Analysis" setView={setView} />
+            )}
           </div>
         )}
 
         {view === 'job-stats' && (
           <div>
             <Breadcrumb view={view} setView={setView} token={token} />
-            <JobMarketStats userProfile={userProfile} onRepersonalize={handleOpenRepersonalize} />
+            {userProfile && (userProfile.subscription_status === 'active' || userProfile.is_admin) ? (
+              <JobMarketStats userProfile={userProfile} onRepersonalize={handleOpenRepersonalize} />
+            ) : (
+              <SubscriptionRequired feature="Job Market Statistics" setView={setView} />
+            )}
           </div>
         )}
 

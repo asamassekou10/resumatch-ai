@@ -435,3 +435,8 @@ ai_processor = AIProcessor()
 def process_resume_analysis(resume_file, job_description):
     """Backward compatibility function"""
     return ai_processor.process_resume_analysis(resume_file, job_description)
+
+# Helper function for text extraction
+def extract_text_from_file(file):
+    """Extract text from uploaded file (PDF, DOCX, or TXT)"""
+    return ai_processor.extract_text_from_file(file)

@@ -4,7 +4,7 @@ import traceback
 import time
 import html
 import re
-from typing import Optional, Dict, Any
+from typing import Optional, List, Dict, Any
 from errors import AIProcessingError
 import logging
 from functools import lru_cache
@@ -116,14 +116,44 @@ CURRENT ANALYSIS:
 - Keywords Found: {', '.join(keywords_found[:10]) if keywords_found else 'None'}
 - Keywords Missing: {', '.join(keywords_missing[:10]) if keywords_missing else 'None'}
 
-Please provide:
-1. **Overall Assessment** (2-3 sentences about the current match)
-2. **Specific Strengths** (3 things this resume does well for this job)
-3. **Critical Gaps** (3 most important things missing)
-4. **Action Items** (5 specific changes to make, with examples)
-5. **Keyword Integration Tips** (How to naturally add missing keywords)
+FORMAT REQUIREMENTS - Structure your feedback as follows:
 
-Be specific, encouraging, and actionable. Focus on what the candidate CAN control. Keep the response under 800 words."""
+📊 OVERALL ASSESSMENT
+[2-3 sentences about the current match quality and overall impression]
+
+✅ KEY STRENGTHS
+1. [Specific strength with example from resume]
+2. [Specific strength with example from resume]
+3. [Specific strength with example from resume]
+
+⚠️ CRITICAL GAPS
+1. [Important missing element with specific impact]
+2. [Important missing element with specific impact]
+3. [Important missing element with specific impact]
+
+🎯 PRIORITY ACTION ITEMS
+1. [Specific action] - [Example of how to implement]
+2. [Specific action] - [Example of how to implement]
+3. [Specific action] - [Example of how to implement]
+4. [Specific action] - [Example of how to implement]
+5. [Specific action] - [Example of how to implement]
+
+🔑 KEYWORD INTEGRATION STRATEGY
+[Paragraph explaining how to naturally integrate the missing keywords into existing experience. Provide specific examples of before/after bullet points.]
+
+💡 QUICK WINS
+• [Immediate change that will improve the resume]
+• [Immediate change that will improve the resume]
+• [Immediate change that will improve the resume]
+
+IMPORTANT:
+- Be specific and actionable, not vague
+- Focus on what the candidate CAN control
+- Provide concrete examples and rewording suggestions
+- Be encouraging while being honest
+- Keep the total response under 800 words
+- Use bullet points and clear formatting
+- Include specific metrics and quantifiable improvements where possible"""
 
         try:
             return self._call_gemini_with_retry(prompt, "personalized_feedback")
@@ -131,46 +161,92 @@ Be specific, encouraging, and actionable. Focus on what the candidate CAN contro
             logger.error(f"Failed to generate personalized feedback: {e}")
             return self._generate_fallback_feedback(match_score, keywords_missing)
     
-    def generate_optimized_resume(self, resume_text: str, job_description: str, 
+    def generate_optimized_resume(self, 
+                                resume_text: str, 
+                                job_description: str,
                                 keywords_missing: list) -> Optional[str]:
         """Generate an optimized version of the resume tailored to the job"""
+        
+        # 1. Check model availability
         if not self._is_model_available():
             return None
-        
-        # Limit text lengths to avoid token limits
+
+        # 2. Limit text lengths to avoid token limits (Safety check)
         resume_excerpt = resume_text[:3000] if resume_text else ""
         job_excerpt = job_description[:1500] if job_description else ""
         
+        # Handle the keywords list safely
+        formatted_keywords = ', '.join(keywords_missing[:15]) if keywords_missing else 'None'
+
+        # 3. Construct the Prompt
         prompt = f"""You are an expert resume writer. Rewrite this resume to better match the job description while maintaining the candidate's authentic experience and achievements.
 
-ORIGINAL RESUME:
-{resume_excerpt}
+    ORIGINAL RESUME:
+    {resume_excerpt}
 
-TARGET JOB DESCRIPTION:
-{job_excerpt}
+    TARGET JOB DESCRIPTION:
+    {job_excerpt}
 
-MISSING KEYWORDS TO INTEGRATE:
-{', '.join(keywords_missing[:15]) if keywords_missing else 'None'}
+    MISSING KEYWORDS TO INTEGRATE:
+    {formatted_keywords}
 
-INSTRUCTIONS:
-1. Keep all real experiences and achievements - DO NOT fabricate
-2. Rephrase bullets to include relevant keywords naturally
-3. Emphasize experiences that match the job requirements
-4. Add a professional summary tailored to this role
-5. Reorganize sections to highlight most relevant experience first
-6. Use action verbs and quantify achievements where possible
-7. Integrate missing keywords ONLY where they genuinely apply
+    INSTRUCTIONS:
+    1. Keep all real experiences and achievements - DO NOT fabricate
+    2. Rephrase bullets to include relevant keywords naturally
+    3. Emphasize experiences that match the job requirements
+    4. Add a professional summary tailored to this role
+    5. Reorganize sections to highlight most relevant experience first
+    6. Use action verbs and quantify achievements where possible
+    7. Integrate missing keywords ONLY where they genuinely apply
 
-FORMAT: Return the complete optimized resume in a clean, professional format.
+    FORMAT REQUIREMENTS - Follow this exact professional resume structure:
 
-IMPORTANT: Be honest - only include keywords where the candidate actually has that experience."""
+    [CANDIDATE NAME]
+    [Contact Information: Email | Phone | LinkedIn | Location]
 
+    PROFESSIONAL SUMMARY
+    [3-4 lines highlighting key qualifications and value proposition tailored to the target role]
+
+    CORE COMPETENCIES
+    • [Skill 1] • [Skill 2] • [Skill 3] • [Skill 4]
+    • [Skill 5] • [Skill 6] • [Skill 7] • [Skill 8]
+
+    PROFESSIONAL EXPERIENCE
+
+    [Job Title] | [Company Name] | [Location]
+    [Start Date] - [End Date]
+    • [Achievement-focused bullet with metrics and impact]
+    • [Achievement-focused bullet with metrics and impact]
+    • [Achievement-focused bullet with metrics and impact]
+
+    [Repeat for each position]
+
+    EDUCATION
+    [Degree] in [Major] | [University Name] | [Graduation Year]
+
+    CERTIFICATIONS (if applicable)
+    • [Certification Name] | [Issuing Organization] | [Year]
+
+    TECHNICAL SKILLS (if applicable)
+    [List relevant technical skills]
+
+    IMPORTANT:
+    - Use proper formatting with clear section headers
+    - Start each bullet with strong action verbs
+    - Include quantifiable achievements wherever possible
+    - Be honest - only include keywords where the candidate actually has that experience
+    - Make it ATS-friendly with standard section names
+    - Keep formatting clean and professional"""
+
+        # 4. API Call with Error Handling
         try:
             return self._call_gemini_with_retry(prompt, "optimized_resume")
-        except AIProcessingError as e:
+        except Exception as e:
+            # Note: Changed to generic Exception to catch naming errors, 
+            # replace with AIProcessingError if that class is imported.
             logger.error(f"Failed to generate optimized resume: {e}")
             return None
-    
+
     def generate_cover_letter(self, resume_text: str, job_description: str, 
                             company_name: str, job_title: str) -> Optional[str]:
         """Generate a tailored cover letter"""
@@ -191,13 +267,47 @@ JOB DESCRIPTION:
 
 REQUIREMENTS:
 1. Professional yet personable tone
-2. 3-4 paragraphs (250-300 words)
+2. 3-4 paragraphs (250-350 words)
 3. Highlight 2-3 most relevant experiences
 4. Show genuine interest in the company/role
 5. Include a strong closing call-to-action
 6. Use specific examples from their resume
 
-Make it unique and authentic, not generic."""
+FORMAT REQUIREMENTS - Follow this exact professional cover letter structure:
+
+[Your Name]
+[Your Address]
+[City, State ZIP Code]
+[Your Email]
+[Your Phone]
+[Date]
+
+[Hiring Manager's Name] (if known, otherwise "Hiring Manager")
+{company_name}
+[Company Address]
+[City, State ZIP Code]
+
+Dear [Hiring Manager's Name/Hiring Manager],
+
+[OPENING PARAGRAPH - Express enthusiasm for the role and company. Mention how you learned about the position. Include a strong hook that demonstrates your understanding of the company/role.]
+
+[BODY PARAGRAPH 1 - Highlight 2-3 key achievements from your experience that directly relate to the job requirements. Use specific examples with quantifiable results. Show how your skills match what they're looking for.]
+
+[BODY PARAGRAPH 2 - Demonstrate knowledge of the company and explain why you're particularly interested in this role. Connect your career goals with the company's mission/values. Show cultural fit.]
+
+[CLOSING PARAGRAPH - Reiterate your enthusiasm. Include a clear call-to-action expressing desire for an interview. Thank them for their consideration. End professionally.]
+
+Sincerely,
+
+[Your Name]
+
+IMPORTANT:
+- Make it unique and authentic, not generic
+- Use the candidate's actual experiences and achievements
+- Maintain a confident yet humble tone
+- Avoid clichés and overused phrases
+- Be specific and concrete, not vague
+- Keep it focused and concise"""
 
         try:
             return self._call_gemini_with_retry(prompt, "cover_letter")

@@ -767,3 +767,44 @@
     text-align: center;
   }
 }
+
+/* Coming Soon Badge */
+.coming-soon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  margin-left: 0.5rem;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(139, 92, 246, 0.8);
+  }
+}
+
+/* Disabled Tab Button */
+.tab-btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.tab-btn.disabled:hover {
+  background-color: rgba(51, 65, 85, 0.3);
+  border-color: rgba(148, 163, 184, 0.2);
+  transform: none;
+}
+
+.tab-btn.disabled:active {
+  transform: none;
+}

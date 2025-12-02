@@ -103,15 +103,6 @@ const LandingPageV2 = ({ setView, token }) => {
             variants={fadeInUp}
             custom={0}
           >
-            <motion.div
-              className="inline-flex items-center gap-2 bg-slate-800/50 border border-slate-700 rounded-full px-4 py-2 mb-6"
-              variants={fadeInUp}
-              custom={0.5}
-            >
-              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-              <span className="text-sm text-slate-300">Trusted by 10,000+ job seekers</span>
-            </motion.div>
-
             <motion.h1
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
               variants={fadeInUp}
@@ -138,12 +129,12 @@ const LandingPageV2 = ({ setView, token }) => {
               custom={3}
             >
               <motion.button
-                onClick={() => setView('analyze')}
+                onClick={() => setView('guest-analyze')}
                 className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg flex items-center gap-2 hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Start Free Analysis
+                Try Free (5 Credits)
                 <ArrowRight className="w-5 h-5" />
               </motion.button>
               <motion.button
@@ -156,21 +147,12 @@ const LandingPageV2 = ({ setView, token }) => {
               </motion.button>
             </motion.div>
 
-            {/* Social Proof */}
+            {/* Speed Indicator */}
             <motion.div
-              className="mt-12 flex flex-col sm:flex-row gap-8 justify-center items-center text-slate-400 text-sm"
+              className="mt-12 flex justify-center items-center text-slate-400 text-sm"
               variants={fadeInUp}
               custom={4}
             >
-              <div className="flex items-center gap-2">
-                <div className="flex -space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600" />
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400" />
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-500" />
-                </div>
-                <span>Join 10,000+ successful job seekers</span>
-              </div>
-              <div className="hidden sm:block w-px h-6 bg-slate-700" />
               <div className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-yellow-400" />
                 <span>Get results in under 2 minutes</span>
