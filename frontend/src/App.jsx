@@ -1068,6 +1068,10 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
             <p className="text-slate-300 mb-6">
               {errorMessage === 'oauth_failed'
                 ? 'There was a problem signing in with your OAuth provider. Please try again or use email registration.'
+                : errorMessage === 'linkedin_auth_failed'
+                ? 'LinkedIn authentication failed. Please try again or use another sign-in method.'
+                : errorMessage === 'oauth_state_mismatch'
+                ? 'Authentication security check failed. This might be due to an expired session. Please try again.'
                 : decodeURIComponent(errorMessage)}
             </p>
             <div className="space-y-3">

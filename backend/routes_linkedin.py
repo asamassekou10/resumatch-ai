@@ -87,7 +87,7 @@ def linkedin_callback():
     if error:
         logger.error(f"LinkedIn OAuth error: {error} - {error_description}")
         frontend_url = get_frontend_url(request.host)
-        return redirect(f"{frontend_url}/login?error=linkedin_auth_failed")
+        return redirect(f"{frontend_url}/auth/error?message=linkedin_auth_failed")
 
     # Validate state (CSRF protection)
     stored_state = session.pop('linkedin_oauth_state', None)
@@ -95,7 +95,7 @@ def linkedin_callback():
     if not state or state != stored_state:
         logger.warning("LinkedIn OAuth state mismatch - possible CSRF attempt")
         frontend_url = get_frontend_url(stored_host)
-        return redirect(f"{frontend_url}/login?error=invalid_state")
+        return redirect(f"{frontend_url}/auth/error?message=oauth_state_mismatch")
 
     try:
         client = get_linkedin_client()
@@ -163,7 +163,7 @@ def linkedin_callback():
     except Exception as e:
         logger.error(f"LinkedIn OAuth callback error: {str(e)}")
         frontend_url = get_frontend_url(stored_host)
-        return redirect(f"{frontend_url}/login?error=linkedin_auth_failed")
+        return redirect(f"{frontend_url}/auth/error?message=linkedin_auth_failed")
 
 
 @linkedin_bp.route('/profile', methods=['GET'])

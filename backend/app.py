@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime, timedelta
 import os
 import secrets
@@ -43,6 +44,10 @@ import logging
 load_dotenv()
 
 app = Flask(__name__)
+
+# Fix for HTTPS behind proxy (Render, Heroku, etc.)
+# This tells Flask to trust the X-Forwarded-* headers from the proxy
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 
 # Security: Require secrets in production
@@ -85,6 +90,7 @@ app.config['JWT_SECRET_KEY'] = JWT_SECRET
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=7)
 app.config['SECRET_KEY'] = SESSION_SECRET
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB max request size
+app.config['PREFERRED_URL_SCHEME'] = 'https'  # Force HTTPS URL generation
 
 # OAuth Configuration
 app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID')
