@@ -56,16 +56,22 @@ if not JWT_SECRET or not SESSION_SECRET:
     SESSION_SECRET = 'dev-session-secret-change-in-production'
     logging.warning("⚠️ Using default secrets - DO NOT use in production!")
 
-# CORS - Strict origins only
+# CORS - Allow frontend origins
+frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+allowed_origins = [
+    "http://localhost:3000",
+    frontend_url,
+    "https://resumatch-frontend.onrender.com",
+    "https://resumeanalyzerai.com",
+    "https://www.resumeanalyzerai.com"
+]
+# Remove duplicates and empty strings
+allowed_origins = list(set(filter(None, allowed_origins)))
+
 CORS(app, resources={
-    r"/api/*": {
-        "origins": [
-            "http://localhost:3000",
-            "https://resumatch-frontend.onrender.com",
-            "https://resumeanalyzerai.com",
-            "https://www.resumeanalyzerai.com"
-        ],
-        "methods": ["GET", "POST", "PUT", "DELETE"],
+    r"/*": {
+        "origins": allowed_origins,
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"],
         "supports_credentials": True
     }
