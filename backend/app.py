@@ -123,6 +123,13 @@ limiter = Limiter(
 )
 
 # Configure Google OAuth
+google_redirect_uri = os.getenv('GOOGLE_REDIRECT_URI')
+if not google_redirect_uri:
+    # Auto-generate based on backend URL
+    backend_url = os.getenv('BACKEND_URL', 'http://localhost:5000')
+    google_redirect_uri = f"{backend_url}/api/auth/callback"
+    logging.warning(f"GOOGLE_REDIRECT_URI not set, using: {google_redirect_uri}")
+
 google = oauth.register(
     name='google',
     client_id=app.config['GOOGLE_CLIENT_ID'],
@@ -130,7 +137,8 @@ google = oauth.register(
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={
         'scope': 'openid email profile',
-    }
+    },
+    authorize_params={'access_type': 'offline'},
 )
 
 # Security: Enforce HTTPS in production
@@ -612,22 +620,28 @@ def get_frontend_url():
 def google_callback():
     """Handle Google OAuth callback"""
     try:
-        
+        logging.info(f"Google OAuth callback received from: {request.url}")
+        logging.info(f"Request args: {dict(request.args)}")
+
         # Check for OAuth errors first
         error = request.args.get('error')
         if error:
             error_description = request.args.get('error_description', 'Authentication failed')
+            logging.error(f"Google OAuth error: {error} - {error_description}")
             frontend_url = get_frontend_url()
             from urllib.parse import quote
             return redirect(f"{frontend_url}/auth/error?message={quote(error_description)}")
-        
+
         # Check if authorization code is present
         if 'code' not in request.args:
+            logging.error("No authorization code in OAuth callback")
             frontend_url = get_frontend_url()
             return redirect(f"{frontend_url}/auth/error?message=No authorization code received")
-        
+
         # Get the token
+        logging.info("Attempting to exchange authorization code for token")
         token = google.authorize_access_token()
+        logging.info("Token received successfully")
         
         # Get user info
         user_info = token.get('userinfo')
@@ -1753,6 +1767,35 @@ def admin_get_users():
             'message': 'Failed to fetch users',
             'error_type': 'INTERNAL_SERVER_ERROR'
         }), 500
+
+
+# ============== HEALTH CHECK AND DIAGNOSTICS ==============
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """Health check endpoint with configuration diagnostics"""
+    try:
+        # Check database connection
+        db.session.execute('SELECT 1')
+        db_status = 'connected'
+    except Exception as e:
+        db_status = f'error: {str(e)}'
+
+    config_status = {
+        'status': 'ok',
+        'database': db_status,
+        'environment': {
+            'flask_env': os.getenv('FLASK_ENV', 'not set'),
+            'frontend_url': os.getenv('FRONTEND_URL', 'not set'),
+            'backend_url': os.getenv('BACKEND_URL', 'not set'),
+            'has_jwt_secret': 'yes' if JWT_SECRET else 'no',
+            'has_google_oauth': 'yes' if app.config.get('GOOGLE_CLIENT_ID') else 'no',
+            'has_gemini_key': 'yes' if os.getenv('GEMINI_API_KEY') else 'no',
+            'has_database_url': 'yes' if os.getenv('DATABASE_URL') else 'no',
+        }
+    }
+
+    return jsonify(config_status), 200
 
 
 # ============== REGISTER BLUEPRINTS ==============
