@@ -35,6 +35,7 @@ from routes_job_matches import job_matches_bp
 from routes_interview_prep import interview_prep_bp
 from routes_company_intel import company_intel_bp
 from routes_career_path import career_path_bp
+from routes.health import health_bp
 from scheduled_ingestion_tasks import init_scheduler
 import logging
 
@@ -1769,37 +1770,9 @@ def admin_get_users():
         }), 500
 
 
-# ============== HEALTH CHECK AND DIAGNOSTICS ==============
-
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    """Health check endpoint with configuration diagnostics"""
-    try:
-        # Check database connection
-        db.session.execute('SELECT 1')
-        db_status = 'connected'
-    except Exception as e:
-        db_status = f'error: {str(e)}'
-
-    config_status = {
-        'status': 'ok',
-        'database': db_status,
-        'environment': {
-            'flask_env': os.getenv('FLASK_ENV', 'not set'),
-            'frontend_url': os.getenv('FRONTEND_URL', 'not set'),
-            'backend_url': os.getenv('BACKEND_URL', 'not set'),
-            'has_jwt_secret': 'yes' if JWT_SECRET else 'no',
-            'has_google_oauth': 'yes' if app.config.get('GOOGLE_CLIENT_ID') else 'no',
-            'has_gemini_key': 'yes' if os.getenv('GEMINI_API_KEY') else 'no',
-            'has_database_url': 'yes' if os.getenv('DATABASE_URL') else 'no',
-        }
-    }
-
-    return jsonify(config_status), 200
-
-
 # ============== REGISTER BLUEPRINTS ==============
 
+app.register_blueprint(health_bp)
 app.register_blueprint(config_bp)
 app.register_blueprint(keyword_bp)
 app.register_blueprint(skill_bp)

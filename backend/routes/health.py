@@ -1,8 +1,9 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, User
 from datetime import datetime
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -21,20 +22,33 @@ def create_success_response(message: str, data: dict = None, status_code: int = 
 
 @health_bp.route('/health', methods=['GET'])
 def health_check():
-    """Basic health check endpoint"""
+    """Basic health check endpoint with environment diagnostics"""
     try:
         # Test database connection
         db.session.execute('SELECT 1')
         db_status = 'healthy'
     except Exception as e:
         logger.error(f"Database health check failed: {e}")
-        db_status = 'unhealthy'
-    
+        db_status = f'unhealthy: {str(e)}'
+
+    # Environment variable diagnostics
+    env_diagnostics = {
+        'flask_env': os.getenv('FLASK_ENV', 'not set'),
+        'frontend_url': os.getenv('FRONTEND_URL', 'not set'),
+        'backend_url': os.getenv('BACKEND_URL', 'not set'),
+        'has_jwt_secret': 'yes' if os.getenv('JWT_SECRET_KEY') else 'no',
+        'has_google_oauth': 'yes' if os.getenv('GOOGLE_CLIENT_ID') else 'no',
+        'has_gemini_key': 'yes' if os.getenv('GEMINI_API_KEY') else 'no',
+        'has_database_url': 'yes' if os.getenv('DATABASE_URL') else 'no',
+        'has_adzuna_keys': 'yes' if (os.getenv('ADZUNA_APP_ID') and os.getenv('ADZUNA_APP_KEY')) else 'no',
+    }
+
     return create_success_response(
         "AI Resume Optimizer API is running",
         {
             'status': 'healthy',
             'database': db_status,
+            'environment': env_diagnostics,
             'version': '2.0.0',
             'timestamp': datetime.utcnow().isoformat()
         }
