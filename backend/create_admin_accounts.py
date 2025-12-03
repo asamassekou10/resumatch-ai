@@ -67,6 +67,7 @@ def create_admin_accounts():
                         email_verified = true,
                         is_active = true,
                         subscription_tier = 'pro',
+                        subscription_status = 'active',
                         credits = 1000
                     WHERE email = :email
                 '''),
@@ -79,9 +80,9 @@ def create_admin_accounts():
                 text('''
                     INSERT INTO users
                     (email, password_hash, name, auth_provider, is_admin,
-                     email_verified, is_active, subscription_tier, credits)
+                     email_verified, is_active, subscription_tier, subscription_status, credits)
                     VALUES
-                    (:email, :password_hash, :name, 'email', true, true, true, 'pro', 1000)
+                    (:email, :password_hash, :name, 'email', true, true, true, 'pro', 'active', 1000)
                 '''),
                 {
                     'email': admin1_email,
@@ -107,6 +108,7 @@ def create_admin_accounts():
                         email_verified = true,
                         is_active = true,
                         subscription_tier = 'pro',
+                        subscription_status = 'active',
                         credits = 1000
                     WHERE email = :email
                 '''),
@@ -119,9 +121,9 @@ def create_admin_accounts():
                 text('''
                     INSERT INTO users
                     (email, password_hash, name, auth_provider, is_admin,
-                     email_verified, is_active, subscription_tier, credits)
+                     email_verified, is_active, subscription_tier, subscription_status, credits)
                     VALUES
-                    (:email, :password_hash, :name, 'email', true, true, true, 'pro', 1000)
+                    (:email, :password_hash, :name, 'email', true, true, true, 'pro', 'active', 1000)
                 '''),
                 {
                     'email': admin2_email,
