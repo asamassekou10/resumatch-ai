@@ -115,7 +115,7 @@ def create_guest_session():
             GuestSession.created_at >= datetime.utcnow() - timedelta(hours=24)
         ).count()
 
-        if total_analyses_from_ip >= 5:  # Max 5 total analyses per IP per day across all sessions
+        if total_analyses_from_ip >= 10:  # Max 10 total analyses per IP per day across all sessions
             logger.warning(f"Analysis limit exceeded for IP {ip_address}: {total_analyses_from_ip} analyses in 24h")
             return jsonify({
                 'error': 'Daily guest analysis limit reached. Create an account for unlimited access.',
@@ -131,7 +131,7 @@ def create_guest_session():
         guest_session = GuestSession(
             id=session_id,
             session_token=session_token,
-            credits_remaining=2,  # CHANGED: Reduced from 5 to 2 analyses
+            credits_remaining=10,  # CHANGED: Increased to 10 analyses for presentation
             credits_used=0,
             ip_address=ip_address,
             user_agent=user_agent,
