@@ -37,18 +37,18 @@ def ingest_jobs():
     try:
         # Import the ingestion function
         print("Loading ingestion module...")
-        from scheduled_ingestion_tasks import ingest_jobs_for_popular_titles
+        from scheduled_ingestion_tasks import ingest_real_job_postings
 
         print("✅ Module loaded")
         print()
 
         # Trigger ingestion
         print("Starting job ingestion...")
-        print("This will fetch jobs for popular titles from Adzuna")
+        print("This will fetch real jobs from Adzuna API")
         print("(This may take 2-5 minutes)")
         print()
 
-        result = ingest_jobs_for_popular_titles()
+        result = ingest_real_job_postings()
 
         print()
         print("=" * 60)
