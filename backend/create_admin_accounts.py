@@ -80,9 +80,11 @@ def create_admin_accounts():
                 text('''
                     INSERT INTO users
                     (email, password_hash, name, auth_provider, is_admin,
-                     email_verified, is_active, subscription_tier, subscription_status, credits)
+                     email_verified, is_active, subscription_tier, subscription_status, credits,
+                     created_at, updated_at)
                     VALUES
-                    (:email, :password_hash, :name, 'email', true, true, true, 'pro', 'active', 1000)
+                    (:email, :password_hash, :name, 'email', true, true, true, 'pro', 'active', 1000,
+                     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                 '''),
                 {
                     'email': admin1_email,
@@ -121,9 +123,11 @@ def create_admin_accounts():
                 text('''
                     INSERT INTO users
                     (email, password_hash, name, auth_provider, is_admin,
-                     email_verified, is_active, subscription_tier, subscription_status, credits)
+                     email_verified, is_active, subscription_tier, subscription_status, credits,
+                     created_at, updated_at)
                     VALUES
-                    (:email, :password_hash, :name, 'email', true, true, true, 'pro', 'active', 1000)
+                    (:email, :password_hash, :name, 'email', true, true, true, 'pro', 'active', 1000,
+                     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                 '''),
                 {
                     'email': admin2_email,
