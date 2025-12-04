@@ -55,8 +55,10 @@
       "Bash(timeout 5 docker ps:*)",
       "Bash(docker logs:*)",
       "Bash(touch:*)",
-      "Bash(docker cp:*)"
+      "Bash(docker cp:*)",
+      "Bash(git push:*)"
     ],
+    "includeCoAuthoredBy": false,
     "deny": [],
     "ask": []
   }

@@ -37,6 +37,7 @@ from routes_interview_prep import interview_prep_bp
 from routes_company_intel import company_intel_bp
 from routes_career_path import career_path_bp
 from routes.health import health_bp
+from routes_admin_diagnostics import admin_diag_bp
 from scheduled_ingestion_tasks import init_scheduler
 import logging
 
@@ -1811,6 +1812,7 @@ app.register_blueprint(job_matches_bp)
 app.register_blueprint(interview_prep_bp)
 app.register_blueprint(company_intel_bp)
 app.register_blueprint(career_path_bp)
+app.register_blueprint(admin_diag_bp)
 
 
 # ============== INITIALIZE SCHEDULER ==============
