@@ -54,51 +54,100 @@ def update_admin_passwords():
         print(f"✅ Admin 2 password hashed")
         print()
 
-        # Update passwords
-        print("Updating passwords in database...")
+        # Check if accounts exist
+        print("Checking if accounts exist...")
+        existing1 = session.execute(
+            text('SELECT id FROM users WHERE email = :email'),
+            {'email': admin1_email}
+        ).fetchone()
 
-        result1 = session.execute(
-            text('''
-                UPDATE users
-                SET password_hash = :password_hash,
-                    auth_provider = 'email',
-                    is_admin = true,
-                    email_verified = true,
-                    is_active = true,
-                    subscription_tier = 'pro',
-                    subscription_status = 'active',
-                    credits = 1000
-                WHERE email = :email
-            '''),
-            {
-                'email': admin1_email,
-                'password_hash': admin1_hash
-            }
-        )
+        existing2 = session.execute(
+            text('SELECT id FROM users WHERE email = :email'),
+            {'email': admin2_email}
+        ).fetchone()
 
-        result2 = session.execute(
-            text('''
-                UPDATE users
-                SET password_hash = :password_hash,
-                    auth_provider = 'email',
-                    is_admin = true,
-                    email_verified = true,
-                    is_active = true,
-                    subscription_tier = 'pro',
-                    subscription_status = 'active',
-                    credits = 1000
-                WHERE email = :email
-            '''),
-            {
-                'email': admin2_email,
-                'password_hash': admin2_hash
-            }
-        )
+        # Upsert admin 1
+        if existing1:
+            print(f"Updating existing account: {admin1_email}")
+            session.execute(
+                text('''
+                    UPDATE users
+                    SET password_hash = :password_hash,
+                        auth_provider = 'email',
+                        is_admin = true,
+                        email_verified = true,
+                        is_active = true,
+                        subscription_tier = 'pro',
+                        subscription_status = 'active',
+                        credits = 1000
+                    WHERE email = :email
+                '''),
+                {
+                    'email': admin1_email,
+                    'password_hash': admin1_hash
+                }
+            )
+        else:
+            print(f"Creating new account: {admin1_email}")
+            session.execute(
+                text('''
+                    INSERT INTO users
+                    (email, password_hash, name, auth_provider, is_admin,
+                     email_verified, is_active, subscription_tier, subscription_status, credits,
+                     created_at, updated_at)
+                    VALUES
+                    (:email, :password_hash, 'Alhassane Samassekou', 'email', true, true, true, 'pro', 'active', 1000,
+                     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                '''),
+                {
+                    'email': admin1_email,
+                    'password_hash': admin1_hash
+                }
+            )
+
+        # Upsert admin 2
+        if existing2:
+            print(f"Updating existing account: {admin2_email}")
+            session.execute(
+                text('''
+                    UPDATE users
+                    SET password_hash = :password_hash,
+                        auth_provider = 'email',
+                        is_admin = true,
+                        email_verified = true,
+                        is_active = true,
+                        subscription_tier = 'pro',
+                        subscription_status = 'active',
+                        credits = 1000
+                    WHERE email = :email
+                '''),
+                {
+                    'email': admin2_email,
+                    'password_hash': admin2_hash
+                }
+            )
+        else:
+            print(f"Creating new account: {admin2_email}")
+            session.execute(
+                text('''
+                    INSERT INTO users
+                    (email, password_hash, name, auth_provider, is_admin,
+                     email_verified, is_active, subscription_tier, subscription_status, credits,
+                     created_at, updated_at)
+                    VALUES
+                    (:email, :password_hash, 'Professor Sitaram Ayyagari', 'email', true, true, true, 'pro', 'active', 1000,
+                     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                '''),
+                {
+                    'email': admin2_email,
+                    'password_hash': admin2_hash
+                }
+            )
 
         session.commit()
 
-        print(f"✅ Updated password for: {admin1_email}")
-        print(f"✅ Updated password for: {admin2_email}")
+        print(f"✅ Account ready: {admin1_email}")
+        print(f"✅ Account ready: {admin2_email}")
         print()
 
         # Verify
