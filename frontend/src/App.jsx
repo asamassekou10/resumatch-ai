@@ -716,6 +716,10 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
         const skills = data.skills || [];
         console.log(`Loaded ${skills.length} extracted skills`);
         setExtractedSkills(skills);
+        // Auto-expand skill verification if skills are found
+        if (skills.length > 0) {
+          setSkillVerificationOpen(true);
+        }
       } else {
         console.error('Failed to fetch extracted skills:', data.error);
         setExtractedSkills([]);
@@ -1998,9 +2002,15 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
                   <div className="text-left">
                     <h3 className="text-xl font-semibold text-white group-hover:text-purple-400 transition">
                       Help Us Learn - Skill Verification
+                      {extractedSkills.filter(s => !s.user_confirmed && !s.user_rejected).length > 0 && (
+                        <span className="ml-2 text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full animate-pulse">
+                          {extractedSkills.filter(s => !s.user_confirmed && !s.user_rejected).length} pending
+                        </span>
+                      )}
                     </h3>
                     <p className="text-slate-400 text-sm mt-1">
                       Confirm or reject extracted skills to improve our AI accuracy
+                      {extractedSkills.length > 0 && ` (${extractedSkills.length} skills found)`}
                     </p>
                   </div>
                 </div>
