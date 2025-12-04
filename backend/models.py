@@ -172,7 +172,7 @@ class Analysis(db.Model):
     # Indexes for better query performance
     __table_args__ = (
         db.Index('idx_user_created', 'user_id', 'created_at'),
-        db.Index('idx_match_score', 'match_score'),
+        db.Index('idx_analysis_match_score', 'match_score'),
     )
     
     def __repr__(self):
@@ -920,7 +920,7 @@ class JobMatch(db.Model):
     __table_args__ = (
         db.Index('idx_match_user_score', 'user_id', 'match_score'),
         db.Index('idx_match_user_saved', 'user_id', 'is_saved'),
-        db.Index('idx_match_score', 'match_score'),
+        db.Index('idx_job_match_score', 'match_score'),
         db.UniqueConstraint('user_id', 'job_posting_id', name='unique_user_job_match'),
     )
 
