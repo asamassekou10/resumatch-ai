@@ -34,8 +34,18 @@ def get_extracted_skills(analysis_id):
     try:
         user_id = int(get_jwt_identity())
 
-        # Verify user owns this analysis
-        analysis = Analysis.query.filter_by(id=analysis_id, user_id=user_id).first()
+        # Get current user to check if admin
+        user = User.query.get(user_id)
+        is_admin = user and user.is_admin
+
+        # Verify user owns this analysis (or is admin)
+        if is_admin:
+            # Admins can see all analyses
+            analysis = Analysis.query.get(analysis_id)
+        else:
+            # Regular users can only see their own
+            analysis = Analysis.query.filter_by(id=analysis_id, user_id=user_id).first()
+
         if not analysis:
             return jsonify({'error': 'Analysis not found'}), 404
 
@@ -122,8 +132,16 @@ def get_skills_summary(analysis_id):
     try:
         user_id = int(get_jwt_identity())
 
-        # Verify user owns this analysis
-        analysis = Analysis.query.filter_by(id=analysis_id, user_id=user_id).first()
+        # Get current user to check if admin
+        user = User.query.get(user_id)
+        is_admin = user and user.is_admin
+
+        # Verify user owns this analysis (or is admin)
+        if is_admin:
+            analysis = Analysis.query.get(analysis_id)
+        else:
+            analysis = Analysis.query.filter_by(id=analysis_id, user_id=user_id).first()
+
         if not analysis:
             return jsonify({'error': 'Analysis not found'}), 404
 
@@ -263,8 +281,16 @@ def get_extraction_quality_metrics(analysis_id):
     try:
         user_id = int(get_jwt_identity())
 
-        # Verify user owns this analysis
-        analysis = Analysis.query.filter_by(id=analysis_id, user_id=user_id).first()
+        # Get current user to check if admin
+        user = User.query.get(user_id)
+        is_admin = user and user.is_admin
+
+        # Verify user owns this analysis (or is admin)
+        if is_admin:
+            analysis = Analysis.query.get(analysis_id)
+        else:
+            analysis = Analysis.query.filter_by(id=analysis_id, user_id=user_id).first()
+
         if not analysis:
             return jsonify({'error': 'Analysis not found'}), 404
 
