@@ -665,8 +665,8 @@ class JobPostingKeyword(db.Model):
 
     __table_args__ = (
         db.Index('idx_job_keyword', 'keyword_id'),
-        db.Index('idx_job_location', 'location'),
-        db.Index('idx_job_industry', 'industry'),
+        db.Index('idx_job_posting_keyword_location', 'location'),
+        db.Index('idx_job_posting_keyword_industry', 'industry'),
         db.Index('idx_job_extracted_at', 'extracted_at'),
     )
 
