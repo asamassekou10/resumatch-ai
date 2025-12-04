@@ -136,7 +136,7 @@ def check_skill_extraction():
 
         # Count analyses without extractions
         analyses_without_extractions = db.session.execute(text("""
-            SELECT COUNT(*) FROM analysis a
+            SELECT COUNT(*) FROM analyses a
             WHERE NOT EXISTS (
                 SELECT 1 FROM skill_extraction se
                 WHERE se.analysis_id = a.id
@@ -154,7 +154,7 @@ def check_skill_extraction():
                 se.user_rejected,
                 a.job_title
             FROM skill_extraction se
-            JOIN analysis a ON se.analysis_id = a.id
+            JOIN analyses a ON se.analysis_id = a.id
             ORDER BY se.created_at DESC
             LIMIT 10
         """)).fetchall()
@@ -220,7 +220,7 @@ def fix_skill_extractions():
                 a.job_title,
                 a.keywords_found,
                 a.keywords_missing
-            FROM analysis a
+            FROM analyses a
             WHERE NOT EXISTS (
                 SELECT 1 FROM skill_extraction se
                 WHERE se.analysis_id = a.id
