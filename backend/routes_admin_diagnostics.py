@@ -5,7 +5,7 @@ Only accessible by admin users
 
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import db, User, Analysis, SkillExtraction, JobPosting, Skill, JobSkill
+from models import db, User, Analysis, SkillExtraction, JobPosting, JobPostingKeyword
 from sqlalchemy import text, func
 from datetime import datetime, timedelta
 import logging
@@ -34,11 +34,11 @@ def check_market_data():
         # Count job postings
         job_count = db.session.query(func.count(JobPosting.id)).scalar()
 
-        # Count skills
-        skill_count = db.session.query(func.count(Skill.id)).scalar()
+        # Count unique keywords/skills from job postings
+        skill_count = db.session.query(func.count(func.distinct(JobPostingKeyword.keyword_id))).scalar()
 
-        # Count job-skill relationships
-        job_skill_count = db.session.query(func.count(JobSkill.id)).scalar()
+        # Count job-skill relationships (total job posting keywords)
+        job_skill_count = db.session.query(func.count(JobPostingKeyword.id)).scalar()
 
         # Count recent jobs (last 30 days)
         thirty_days_ago = datetime.utcnow() - timedelta(days=30)
@@ -49,14 +49,15 @@ def check_market_data():
         sample_jobs = db.session.execute(text("""
             SELECT
                 jp.title,
-                jp.company_name,
+                jp.company,
                 jp.location,
                 jp.salary_min,
                 jp.salary_max,
-                COUNT(js.skill_id) as skill_count
+                COUNT(jpk.id) as skill_count
             FROM job_posting jp
-            LEFT JOIN job_skill js ON jp.id = js.job_posting_id
-            GROUP BY jp.id, jp.title, jp.company_name, jp.location, jp.salary_min, jp.salary_max
+            LEFT JOIN job_posting_keyword jpk ON jp.title = jpk.job_title
+                AND jp.company = jpk.company_name
+            GROUP BY jp.id, jp.title, jp.company, jp.location, jp.salary_min, jp.salary_max
             ORDER BY jp.created_at DESC
             LIMIT 5
         """)).fetchall()
