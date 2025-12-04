@@ -4,6 +4,7 @@ Quick solution to populate market intelligence pages
 """
 
 import os
+import json
 from datetime import datetime
 from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
@@ -21,59 +22,79 @@ def insert_sample_jobs():
     # Sample job data - realistic tech jobs
     sample_jobs = [
         {
-            'job_title': 'Senior Software Engineer',
-            'company_name': 'TechCorp Solutions',
+            'title': 'Senior Software Engineer',
+            'company': 'TechCorp Solutions',
             'location': 'San Francisco, CA',
+            'industry': 'Technology',
             'salary_min': 130000,
             'salary_max': 180000,
-            'requirements': 'Python, React, AWS, Docker, Kubernetes, 5+ years experience, Bachelor\'s degree in Computer Science',
-            'job_description': 'We are seeking a Senior Software Engineer to join our growing team. You will work on building scalable web applications using modern technologies.',
-            'posted_date': datetime.utcnow(),
-            'application_url': 'https://example.com/jobs/senior-software-engineer'
+            'requirements': ['Python', 'React', 'AWS', 'Docker', 'Kubernetes', '5+ years experience'],
+            'description': 'We are seeking a Senior Software Engineer to join our growing team. You will work on building scalable web applications using modern technologies.',
+            'employment_type': 'full-time',
+            'experience_level': 'Senior',
+            'remote_type': 'hybrid',
+            'external_url': 'https://example.com/jobs/senior-software-engineer',
+            'source': 'Demo Data'
         },
         {
-            'job_title': 'Full Stack Developer',
-            'company_name': 'InnovateTech Inc',
+            'title': 'Full Stack Developer',
+            'company': 'InnovateTech Inc',
             'location': 'New York, NY',
+            'industry': 'Technology',
             'salary_min': 100000,
             'salary_max': 140000,
-            'requirements': 'JavaScript, Node.js, React, PostgreSQL, Git, 3+ years experience',
-            'job_description': 'Join our dynamic team to build cutting-edge web applications. Work with modern JavaScript frameworks and contribute to our microservices architecture.',
-            'posted_date': datetime.utcnow(),
-            'application_url': 'https://example.com/jobs/full-stack-developer'
+            'requirements': ['JavaScript', 'Node.js', 'React', 'PostgreSQL', 'Git', '3+ years experience'],
+            'description': 'Join our dynamic team to build cutting-edge web applications. Work with modern JavaScript frameworks and contribute to our microservices architecture.',
+            'employment_type': 'full-time',
+            'experience_level': 'Mid',
+            'remote_type': 'remote',
+            'external_url': 'https://example.com/jobs/full-stack-developer',
+            'source': 'Demo Data'
         },
         {
-            'job_title': 'Data Scientist',
-            'company_name': 'DataDriven Analytics',
+            'title': 'Data Scientist',
+            'company': 'DataDriven Analytics',
             'location': 'Boston, MA',
+            'industry': 'Analytics',
             'salary_min': 115000,
             'salary_max': 160000,
-            'requirements': 'Python, Machine Learning, TensorFlow, scikit-learn, SQL, Statistics, PhD or Master\'s degree preferred',
-            'job_description': 'Seeking a Data Scientist to develop ML models and drive data-driven decision making. Experience with deep learning and NLP is a plus.',
-            'posted_date': datetime.utcnow(),
-            'application_url': 'https://example.com/jobs/data-scientist'
+            'requirements': ['Python', 'Machine Learning', 'TensorFlow', 'scikit-learn', 'SQL', 'Statistics'],
+            'description': 'Seeking a Data Scientist to develop ML models and drive data-driven decision making. Experience with deep learning and NLP is a plus.',
+            'employment_type': 'full-time',
+            'experience_level': 'Mid',
+            'remote_type': 'hybrid',
+            'external_url': 'https://example.com/jobs/data-scientist',
+            'source': 'Demo Data'
         },
         {
-            'job_title': 'DevOps Engineer',
-            'company_name': 'CloudFirst Systems',
+            'title': 'DevOps Engineer',
+            'company': 'CloudFirst Systems',
             'location': 'Seattle, WA',
+            'industry': 'Technology',
             'salary_min': 120000,
             'salary_max': 165000,
-            'requirements': 'AWS, Terraform, Docker, Kubernetes, CI/CD, Jenkins, Python, Linux',
-            'job_description': 'Looking for a DevOps Engineer to manage our cloud infrastructure and implement automation solutions. Strong AWS experience required.',
-            'posted_date': datetime.utcnow(),
-            'application_url': 'https://example.com/jobs/devops-engineer'
+            'requirements': ['AWS', 'Terraform', 'Docker', 'Kubernetes', 'CI/CD', 'Jenkins', 'Python', 'Linux'],
+            'description': 'Looking for a DevOps Engineer to manage our cloud infrastructure and implement automation solutions. Strong AWS experience required.',
+            'employment_type': 'full-time',
+            'experience_level': 'Senior',
+            'remote_type': 'remote',
+            'external_url': 'https://example.com/jobs/devops-engineer',
+            'source': 'Demo Data'
         },
         {
-            'job_title': 'Machine Learning Engineer',
-            'company_name': 'AI Innovations Lab',
+            'title': 'Machine Learning Engineer',
+            'company': 'AI Innovations Lab',
             'location': 'Austin, TX',
+            'industry': 'Artificial Intelligence',
             'salary_min': 125000,
             'salary_max': 175000,
-            'requirements': 'Python, PyTorch, TensorFlow, MLOps, Docker, REST APIs, Computer Vision, 4+ years experience',
-            'job_description': 'Join our AI team to build and deploy production ML systems. Work on exciting projects in computer vision and NLP.',
-            'posted_date': datetime.utcnow(),
-            'application_url': 'https://example.com/jobs/ml-engineer'
+            'requirements': ['Python', 'PyTorch', 'TensorFlow', 'MLOps', 'Docker', 'REST APIs', 'Computer Vision'],
+            'description': 'Join our AI team to build and deploy production ML systems. Work on exciting projects in computer vision and NLP.',
+            'employment_type': 'full-time',
+            'experience_level': 'Senior',
+            'remote_type': 'hybrid',
+            'external_url': 'https://example.com/jobs/ml-engineer',
+            'source': 'Demo Data'
         }
     ]
 
@@ -102,16 +123,35 @@ def insert_sample_jobs():
         print()
 
         for i, job in enumerate(sample_jobs, 1):
+            # Convert requirements list to JSON
+            job_data = {
+                'title': job['title'],
+                'company': job['company'],
+                'location': job['location'],
+                'industry': job['industry'],
+                'salary_min': job['salary_min'],
+                'salary_max': job['salary_max'],
+                'requirements': json.dumps(job['requirements']),
+                'description': job['description'],
+                'employment_type': job['employment_type'],
+                'experience_level': job['experience_level'],
+                'remote_type': job['remote_type'],
+                'external_url': job['external_url'],
+                'source': job['source']
+            }
+
             conn.execute(text('''
                 INSERT INTO job_postings
-                (job_title, company_name, location, salary_min, salary_max,
-                 requirements, job_description, posted_date, application_url, created_at)
+                (title, company, location, industry, salary_min, salary_max,
+                 requirements, description, employment_type, experience_level,
+                 remote_type, external_url, source, is_active, created_at, posted_date)
                 VALUES
-                (:job_title, :company_name, :location, :salary_min, :salary_max,
-                 :requirements, :job_description, :posted_date, :application_url, CURRENT_TIMESTAMP)
-            '''), job)
+                (:title, :company, :location, :industry, :salary_min, :salary_max,
+                 :requirements, :description, :employment_type, :experience_level,
+                 :remote_type, :external_url, :source, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            '''), job_data)
 
-            print(f"  ✅ {i}. {job['job_title']} at {job['company_name']}")
+            print(f"  ✅ {i}. {job['title']} at {job['company']}")
 
         conn.commit()
 
@@ -129,7 +169,7 @@ def insert_sample_jobs():
 
         # Show the jobs
         result = conn.execute(text('''
-            SELECT job_title, company_name, location, salary_min, salary_max
+            SELECT title, company, location, salary_min, salary_max
             FROM job_postings
             ORDER BY created_at DESC
         '''))
