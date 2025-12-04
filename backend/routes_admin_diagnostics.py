@@ -54,7 +54,7 @@ def check_market_data():
                 jp.salary_min,
                 jp.salary_max,
                 COUNT(jpk.id) as skill_count
-            FROM job_posting jp
+            FROM job_postings jp
             LEFT JOIN job_posting_keyword jpk ON jp.title = jpk.job_title
                 AND jp.company = jpk.company_name
             GROUP BY jp.id, jp.title, jp.company, jp.location, jp.salary_min, jp.salary_max
