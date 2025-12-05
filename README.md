@@ -1,4 +1,4 @@
-# ResuMatch AI - AI-Powered Resume Analysis & Job Matching Platform
+# ResumeAnalyzer AI - AI-Powered Resume Analysis & Job Matching Platform
 
 [![CI](https://github.com/asamassekou10/resumatch-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/asamassekou10/resumatch-ai/actions)
 [![pytest](https://img.shields.io/badge/tests-pytest-blue.svg)](https://github.com/asamassekou10/resumatch-ai)
