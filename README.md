@@ -215,27 +215,6 @@ Access admin diagnostics at: `/api/v1/admin/diagnostics/full-diagnostic`
 
 Edit environment variables in `docker-compose.yml` or in a local `.env` file. Important variables include `DATABASE_URL`, `JWT_SECRET_KEY`, `GEMINI_API_KEY`, and email/sendgrid settings. See `SETUP_GUIDE.md` for more details.
 
-## Contributing
-
-1. Fork the repo
-2. Create a feature branch
-3. Run tests and linters locally
-4. Open a PR with a clear description and tested changes
-
-## License & attribution
-
-This project is provided for educational purposes. See the repository license for details.
-
----
-
-If you'd like, I can also:
-- Add CI badges to the top of this README
-- Create a concise `README_FRONTEND.md` and `README_BACKEND.md` with step-by-step commands
-- Run backend tests and report results now
-
-Next step: I'll run backend tests (quick) if you'd like — tell me to proceed.
-Course: ITAI 2277 – Artificial Intelligence
-
 ## 🙏 Acknowledgments
 
 - spaCy for NLP capabilities
@@ -252,7 +231,7 @@ For issues or questions:
 ## 🎓 Academic Context
 
 **Course**: ITAI 2277 – Artificial Intelligence
-**Institution**: [Your Institution]
+**Institution**: HOUSTON COMMUNITY COLLEGE
 **Project Phase**: Complete Full-Stack AI Application
 
 This project demonstrates mastery of:
@@ -264,26 +243,3 @@ This project demonstrates mastery of:
 - **Software Engineering**: Testing (pytest), version control (Git), Docker containerization
 - **Data Visualization**: Interactive dashboards and analytics
 - **Ethical AI**: Transparent scoring, user feedback loops, bias consideration
-
-## 📊 Project Metrics
-
-- **Lines of Code**: 15,000+ (Python + JavaScript)
-- **Database Tables**: 28 tables with proper relationships
-- **API Endpoints**: 50+ RESTful endpoints
-- **Test Coverage**: 80%+ with pytest
-- **Features**: Resume analysis, job matching, market intelligence, admin dashboard
-- **Deployment**: Auto-deploy via GitHub → Render pipeline
-
----
-
-## ⚠️ Security Notes
-
-- Change `JWT_SECRET_KEY` before production deployment
-- Never commit `.env` files with real credentials
-- Use environment variables for all secrets
-- Admin passwords should be rotated regularly
-- Review security headers in production
-
-## 📝 License
-
-This project is provided for educational purposes. See LICENSE file for details.
