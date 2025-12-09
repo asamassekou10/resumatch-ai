@@ -827,6 +827,8 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
           setView={setView}
           token={token}
           handleLogout={handleLogout}
+          user={userProfile}
+          isAdmin={isAdmin}
           showBackButton={true}
           backButtonText="Back to Dashboard"
           onBackClick={() => setView('dashboard')}
@@ -852,6 +854,8 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
           setView={setView}
           token={token}
           handleLogout={handleLogout}
+          user={userProfile}
+          isAdmin={isAdmin}
           showBackButton={true}
           backButtonText="Back to Dashboard"
           onBackClick={() => setView('dashboard')}
@@ -1048,6 +1052,8 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
           setView={setView}
           token={token}
           handleLogout={handleLogout}
+          user={userProfile}
+          isAdmin={isAdmin}
         />
         <GuestAnalyze setView={setView} navigate={navigate} />
       </div>
@@ -1107,6 +1113,8 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
           setView={setView}
           token={token}
           handleLogout={handleLogout}
+          user={userProfile}
+          isAdmin={isAdmin}
         />
 
         <LandingPageV2 setView={setView} token={token} />
@@ -1124,6 +1132,8 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
           setView={setView}
           token={token}
           handleLogout={handleLogout}
+          user={userProfile}
+          isAdmin={isAdmin}
         />
 
         {/* Hero Section */}
@@ -1283,11 +1293,13 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         {/* Navigation */}
-        <Navigation 
+        <Navigation
           view={view}
           setView={setView}
           token={token}
           handleLogout={handleLogout}
+          user={userProfile}
+          isAdmin={isAdmin}
           showBackButton={true}
           backButtonText="Back to Home"
           onBackClick={() => setView('landing')}
@@ -1492,11 +1504,13 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Navigation */}
-      <Navigation 
+      <Navigation
         view={view}
         setView={setView}
         token={token}
         handleLogout={handleLogout}
+        user={userProfile}
+        isAdmin={isAdmin}
         showBackButton={view === 'result'}
         backButtonText="Back to Dashboard"
         onBackClick={() => setView('dashboard')}

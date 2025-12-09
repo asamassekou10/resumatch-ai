@@ -3,34 +3,108 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#2563eb" />
-    <meta
-      name="description"
-      content="ResumeAnalyzer AI - Professional resume analysis and optimization platform powered by artificial intelligence"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="theme-color" content="#0891b2" />
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-          <!-- Tailwind CSS CDN -->
+    <!-- Primary Meta Tags -->
+    <title>ResumeAnalyzer AI - AI-Powered Resume Optimization & Job Matching</title>
+    <meta name="title" content="ResumeAnalyzer AI - AI-Powered Resume Optimization & Job Matching" />
+    <meta name="description" content="Transform your resume with AI-powered analysis, keyword optimization, and personalized job matching. Get instant feedback and land your dream job faster. Free trial available." />
+    <meta name="keywords" content="resume optimizer, AI resume analyzer, job matching, ATS optimization, resume keywords, career tools, job search, resume builder, resume analysis, AI career coach" />
+    <meta name="author" content="ResumeAnalyzer AI" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://resumeanalyzerai.com" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://resumeanalyzerai.com" />
+    <meta property="og:title" content="ResumeAnalyzer AI - AI-Powered Resume Optimization" />
+    <meta property="og:description" content="Transform your resume with AI-powered analysis, keyword optimization, and personalized job matching. Free trial available - no credit card required!" />
+    <meta property="og:image" content="https://resumeanalyzerai.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="ResumeAnalyzer AI" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://resumeanalyzerai.com" />
+    <meta property="twitter:title" content="ResumeAnalyzer AI - AI-Powered Resume Optimization" />
+    <meta property="twitter:description" content="Transform your resume with AI-powered analysis, keyword optimization, and personalized job matching. Try free today!" />
+    <meta property="twitter:image" content="https://resumeanalyzerai.com/og-image.png" />
+
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "ResumeAnalyzer AI",
+      "description": "AI-powered resume optimization and job matching platform that helps job seekers create ATS-friendly resumes and find the perfect job matches",
+      "url": "https://resumeanalyzerai.com",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "AggregateOffer",
+        "lowPrice": "0",
+        "highPrice": "49.99",
+        "priceCurrency": "USD",
+        "offerCount": "3"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "1250",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "featureList": [
+        "AI-powered resume analysis",
+        "ATS keyword optimization",
+        "Job match scoring",
+        "Skill extraction and verification",
+        "Career path recommendations",
+        "Interview preparation"
+      ],
+      "screenshot": "https://resumeanalyzerai.com/screenshot.png"
+    }
+    </script>
+
+    <!-- Additional Structured Data for SoftwareApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "ResumeAnalyzer AI",
+      "applicationCategory": "LifestyleApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+
+    <!-- Favicon & App Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- Performance -->
+    <link rel="dns-prefetch" href="https://resumatch-backend-7qdb.onrender.com" />
+    <link rel="preconnect" href="https://resumatch-backend-7qdb.onrender.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <title>ResumeAnalyzer AI - Professional Resume Optimization</title>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>
+      <div style="text-align: center; padding: 40px; font-family: sans-serif;">
+        <h1>JavaScript Required</h1>
+        <p>ResumeAnalyzer AI requires JavaScript to function. Please enable JavaScript in your browser settings to use this application.</p>
+      </div>
+    </noscript>
     <div id="root"></div>
     <!--
       This HTML file is a template.

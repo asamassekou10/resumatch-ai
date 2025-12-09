@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import '../styles/CareerPath.css';
 
+const API_URL = process.env.REACT_APP_API_URL || '${API_URL}';
+
 const CareerPath = ({ industry, userProfile }) => {
   const [paths, setPaths] = useState([]);
   const [selectedPath, setSelectedPath] = useState(null);
@@ -52,7 +54,7 @@ const CareerPath = ({ industry, userProfile }) => {
 
   const fetchCareerPaths = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/career-path/', {
+      const response = await axios.get('${API_URL}/career-path/', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPaths(response.data.paths || []);
@@ -78,7 +80,7 @@ const CareerPath = ({ industry, userProfile }) => {
       };
 
       const response = await axios.post(
-        'http://localhost:5000/api/career-path/generate',
+        '${API_URL}/career-path/generate',
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -109,7 +111,7 @@ const CareerPath = ({ industry, userProfile }) => {
     const endpoint = path.is_saved ? 'unsave' : 'save';
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/career-path/${pathId}/${endpoint}`,
+        `${API_URL}/career-path/${pathId}/${endpoint}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -128,7 +130,7 @@ const CareerPath = ({ industry, userProfile }) => {
 
     try {
       await axios.delete(
-        `http://localhost:5000/api/career-path/${pathId}`,
+        `${API_URL}/career-path/${pathId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -146,7 +148,7 @@ const CareerPath = ({ industry, userProfile }) => {
 
     try {
       const response = await axios.put(
-        `http://localhost:5000/api/career-path/${selectedPath.id}/notes`,
+        `${API_URL}/career-path/${selectedPath.id}/notes`,
         { notes: notesText },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -164,7 +166,7 @@ const CareerPath = ({ industry, userProfile }) => {
 
     try {
       const response = await axios.put(
-        `http://localhost:5000/api/career-path/${selectedPath.id}/progress`,
+        `${API_URL}/career-path/${selectedPath.id}/progress`,
         {
           step_key: stepKey,
           completed: completed,

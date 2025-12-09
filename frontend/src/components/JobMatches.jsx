@@ -7,6 +7,8 @@ import {
 import axios from 'axios';
 import '../styles/JobMatches.css';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 const JobMatches = ({ industry, userProfile }) => {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +26,7 @@ const JobMatches = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        `http://localhost:5000/api/job-matches/?industry=${industry}&limit=20&refresh=${forceRefresh}`,
+        `${API_URL}/job-matches/?industry=${industry}&limit=20&refresh=${forceRefresh}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setMatches(response.data.matches || []);
@@ -54,14 +56,14 @@ const JobMatches = ({ industry, userProfile }) => {
       if (match.is_saved) {
         // Unsave
         await axios.post(
-          `http://localhost:5000/api/job-matches/${matchId}/unsave`,
+          `${API_URL}/job-matches/${matchId}/unsave`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
         // Save
         await axios.post(
-          `http://localhost:5000/api/job-matches/${matchId}/save`,
+          `${API_URL}/job-matches/${matchId}/save`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -80,7 +82,7 @@ const JobMatches = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:5000/api/job-matches/${matchId}/apply`,
+        `${API_URL}/job-matches/${matchId}/apply`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -98,7 +100,7 @@ const JobMatches = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:5000/api/job-matches/${matchId}/dismiss`,
+        `${API_URL}/job-matches/${matchId}/dismiss`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

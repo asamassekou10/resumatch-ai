@@ -8,6 +8,8 @@ import {
 import axios from 'axios';
 import '../styles/InterviewPrep.css';
 
+const API_URL = process.env.REACT_APP_API_URL || '${API_URL}';
+
 const InterviewPrep = ({ industry, userProfile }) => {
   const [preps, setPreps] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,7 @@ const InterviewPrep = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        'http://localhost:5000/api/interview-prep/',
+        '${API_URL}/interview-prep/',
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setPreps(response.data.preps || []);
@@ -70,7 +72,7 @@ const InterviewPrep = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        'http://localhost:5000/api/interview-prep/generate',
+        '${API_URL}/interview-prep/generate',
         generateForm,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -95,13 +97,13 @@ const InterviewPrep = ({ industry, userProfile }) => {
 
       if (prep.is_saved) {
         await axios.post(
-          `http://localhost:5000/api/interview-prep/${prepId}/unsave`,
+          `${API_URL}/interview-prep/${prepId}/unsave`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
         await axios.post(
-          `http://localhost:5000/api/interview-prep/${prepId}/save`,
+          `${API_URL}/interview-prep/${prepId}/save`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -127,7 +129,7 @@ const InterviewPrep = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(
-        `http://localhost:5000/api/interview-prep/${prepId}`,
+        `${API_URL}/interview-prep/${prepId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -145,7 +147,7 @@ const InterviewPrep = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        `http://localhost:5000/api/interview-prep/${prepId}/practice`,
+        `${API_URL}/interview-prep/${prepId}/practice`,
         { question_index: questionIndex },
         { headers: { Authorization: `Bearer ${token}` } }
       );

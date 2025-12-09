@@ -109,7 +109,7 @@ const LandingPageV2 = ({ setView, token }) => {
               custom={1}
             >
               Land Your Dream Job
-              <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mt-2">
+              <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mt-2 pb-2">
                 with AI-Powered Insights
               </span>
             </motion.h1>
@@ -295,12 +295,12 @@ const LandingPageV2 = ({ setView, token }) => {
             Join thousands of job seekers who have already improved their applications
           </p>
           <motion.button
-            onClick={() => setView('analyze')}
+            onClick={() => setView(token ? 'dashboard' : 'guest-analyze')}
             className="px-10 py-4 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg flex items-center gap-2 hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 mx-auto"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Get Started Now
+            {token ? 'Go to Dashboard' : 'Try Free Analysis'}
             <ArrowRight className="w-5 h-5" />
           </motion.button>
         </motion.div>

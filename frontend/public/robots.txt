@@ -1,3 +1,23 @@
-# https://www.robotstxt.org/robotstxt.html
+# Allow all search engines
 User-agent: *
-Disallow:
+Allow: /
+
+# Disallow private pages
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /analyze
+Disallow: /result
+Disallow: /checkout
+
+# Allow public pages
+Allow: /
+Allow: /pricing
+Allow: /guest-analyze
+Allow: /login
+Allow: /register
+
+# Sitemap location
+Sitemap: https://resumeanalyzerai.com/sitemap.xml
+
+# Crawl delay (optional, be nice to servers)
+Crawl-delay: 1

@@ -9,6 +9,8 @@ import {
 import axios from 'axios';
 import '../styles/CompanyIntel.css';
 
+const API_URL = process.env.REACT_APP_API_URL || '${API_URL}';
+
 const CompanyIntel = ({ industry, userProfile }) => {
   const [intels, setIntels] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,7 @@ const CompanyIntel = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        'http://localhost:5000/api/company-intel/',
+        '${API_URL}/company-intel/',
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setIntels(response.data.intels || []);
@@ -70,7 +72,7 @@ const CompanyIntel = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        'http://localhost:5000/api/company-intel/generate',
+        '${API_URL}/company-intel/generate',
         generateForm,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -95,13 +97,13 @@ const CompanyIntel = ({ industry, userProfile }) => {
 
       if (intel.is_saved) {
         await axios.post(
-          `http://localhost:5000/api/company-intel/${intelId}/unsave`,
+          `${API_URL}/company-intel/${intelId}/unsave`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
         await axios.post(
-          `http://localhost:5000/api/company-intel/${intelId}/save`,
+          `${API_URL}/company-intel/${intelId}/save`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -124,7 +126,7 @@ const CompanyIntel = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(
-        `http://localhost:5000/api/company-intel/${intelId}`,
+        `${API_URL}/company-intel/${intelId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -143,7 +145,7 @@ const CompanyIntel = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.put(
-        `http://localhost:5000/api/company-intel/${selectedIntel.id}/notes`,
+        `${API_URL}/company-intel/${selectedIntel.id}/notes`,
         { notes: notesText },
         { headers: { Authorization: `Bearer ${token}` } }
       );
