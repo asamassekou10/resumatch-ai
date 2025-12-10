@@ -17,6 +17,10 @@ import PricingPageV2 from './components/PricingPageV2';
 import GuestAnalyze from './components/GuestAnalyze';
 import GuestModeBanner from './components/GuestModeBanner';
 import SubscriptionRequired from './components/SubscriptionRequired';
+import ProfilePage from './components/ProfilePage';
+import SettingsPage from './components/SettingsPage';
+import BillingPage from './components/BillingPage';
+import HelpPage from './components/HelpPage';
 import guestService from './services/guestService';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -45,6 +49,10 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       '/market/job-stats': 'job-stats',
       '/market/skill-relationships': 'skill-relationships',
       '/market/insights': 'market-insights',
+      '/profile': 'profile',
+      '/settings': 'settings',
+      '/billing': 'billing',
+      '/help': 'help',
     };
 
     // Initialize view from URL path
@@ -71,6 +79,10 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       'job-stats': '/market/job-stats',
       'skill-relationships': '/market/skill-relationships',
       'market-insights': '/market/insights',
+      'profile': '/profile',
+      'settings': '/settings',
+      'billing': '/billing',
+      'help': '/help',
     };
 
     const [view, setViewState] = useState(() => getViewFromPath(location.pathname));
@@ -829,9 +841,6 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
           handleLogout={handleLogout}
           user={userProfile}
           isAdmin={isAdmin}
-          showBackButton={true}
-          backButtonText="Back to Dashboard"
-          onBackClick={() => setView('dashboard')}
         />
 
         <PricingPageV2
@@ -840,6 +849,70 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
           handleUpgradeToElite={handleUpgradeToElite}
           token={token}
         />
+      </div>
+    );
+  }
+
+  if (view === 'profile') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <Navigation
+          view={view}
+          setView={setView}
+          token={token}
+          handleLogout={handleLogout}
+          user={userProfile}
+          isAdmin={isAdmin}
+        />
+        <ProfilePage user={userProfile} setView={setView} />
+      </div>
+    );
+  }
+
+  if (view === 'settings') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <Navigation
+          view={view}
+          setView={setView}
+          token={token}
+          handleLogout={handleLogout}
+          user={userProfile}
+          isAdmin={isAdmin}
+        />
+        <SettingsPage user={userProfile} />
+      </div>
+    );
+  }
+
+  if (view === 'billing') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <Navigation
+          view={view}
+          setView={setView}
+          token={token}
+          handleLogout={handleLogout}
+          user={userProfile}
+          isAdmin={isAdmin}
+        />
+        <BillingPage user={userProfile} setView={setView} />
+      </div>
+    );
+  }
+
+  if (view === 'help') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <Navigation
+          view={view}
+          setView={setView}
+          token={token}
+          handleLogout={handleLogout}
+          user={userProfile}
+          isAdmin={isAdmin}
+        />
+        <HelpPage />
       </div>
     );
   }
