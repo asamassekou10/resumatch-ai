@@ -1824,6 +1824,9 @@ app.register_blueprint(company_intel_bp)
 app.register_blueprint(career_path_bp)
 app.register_blueprint(admin_diag_bp)
 
+# Exempt health check endpoints from rate limiting
+limiter.exempt(health_bp)
+
 
 # ============== INITIALIZE SCHEDULER ==============
 
