@@ -260,11 +260,15 @@ def get_job_postings_statistics():
     """
     Get statistics about ingested job postings.
 
+    Query parameters:
+        - industry: Filter by industry (optional)
+
     Returns:
         - Total postings
         - Sources
         - Industries
         - Salary statistics
+        - Industry filter applied
     """
     from models import JobPostingKeyword
     from app import db
@@ -274,13 +278,24 @@ def get_job_postings_statistics():
     try:
         user_id = int(get_jwt_identity())
 
-        # Get all postings
-        postings = JobPostingKeyword.query.all()
+        # Get industry filter from query parameter
+        industry_filter = request.args.get('industry')
+
+        # Build query with optional industry filter
+        query = JobPostingKeyword.query
+
+        if industry_filter and industry_filter.lower() != 'general':
+            # Apply case-insensitive industry filter
+            query = query.filter(JobPostingKeyword.industry.ilike(f'%{industry_filter}%'))
+            logger.info(f"Filtering statistics by industry: {industry_filter}")
+
+        postings = query.all()
 
         if not postings:
             return jsonify({
                 'total_postings': 0,
-                'message': 'No job posting data available'
+                'message': f'No job posting data available' + (f' for {industry_filter}' if industry_filter else ''),
+                'industry_filter': industry_filter
             }), 200
 
         # Group by source
@@ -313,6 +328,7 @@ def get_job_postings_statistics():
 
         return jsonify({
             'total_postings': len(postings),
+            'industry_filter': industry_filter,  # Include filter in response
             'sources': sources,
             'industries': industries,
             'salary_statistics': {

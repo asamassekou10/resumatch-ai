@@ -98,7 +98,7 @@ class CareerPathService:
                 # Update existing
                 self._update_path_object(existing_path, path_data)
                 existing_path.updated_at = datetime.utcnow()
-                existing_path.cached_until = datetime.utcnow() + timedelta(days=30)
+                existing_path.cached_until = datetime.utcnow() + timedelta(days=90)  # Increased from 30 to 90 days
                 path_obj = existing_path
             else:
                 # Create new
@@ -593,7 +593,7 @@ Provide a detailed, realistic career progression plan in the following JSON stru
             job_market_outlook=data.get('job_market_outlook'),
             demand_trend=data.get('demand_trend'),
 
-            cached_until=datetime.utcnow() + timedelta(days=30)
+            cached_until=datetime.utcnow() + timedelta(days=90)  # Increased from 30 to 90 days
         )
 
     def _update_path_object(self, path_obj: CareerPath, data: Dict):

@@ -95,7 +95,7 @@ class InterviewPrepService:
                 existing_prep.interview_tips = prep_data['interview_tips']
                 existing_prep.common_topics = prep_data['common_topics']
                 existing_prep.updated_at = datetime.utcnow()
-                existing_prep.cached_until = datetime.utcnow() + timedelta(days=7)
+                existing_prep.cached_until = datetime.utcnow() + timedelta(days=90)  # Increased from 7 to 90 days
                 prep_obj = existing_prep
             else:
                 # Create new
@@ -109,7 +109,7 @@ class InterviewPrepService:
                     interview_process=prep_data['interview_process'],
                     interview_tips=prep_data['interview_tips'],
                     common_topics=prep_data['common_topics'],
-                    cached_until=datetime.utcnow() + timedelta(days=7)
+                    cached_until=datetime.utcnow() + timedelta(days=90)  # Increased from 7 to 90 days
                 )
                 db.session.add(prep_obj)
 

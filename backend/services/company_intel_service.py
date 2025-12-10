@@ -80,7 +80,7 @@ class CompanyIntelService:
                 # Update existing
                 self._update_intel_object(existing_intel, intel_data)
                 existing_intel.updated_at = datetime.utcnow()
-                existing_intel.cached_until = datetime.utcnow() + timedelta(days=14)
+                existing_intel.cached_until = datetime.utcnow() + timedelta(days=90)  # Increased from 14 to 90 days
                 intel_obj = existing_intel
             else:
                 # Create new
@@ -357,7 +357,7 @@ Provide detailed, factual information (as of 2024) about this company in the fol
             ai_summary=data.get('ai_summary'),
             key_insights=data.get('key_insights'),
             recommendations=data.get('recommendations'),
-            cached_until=datetime.utcnow() + timedelta(days=14)
+            cached_until=datetime.utcnow() + timedelta(days=90)  # Increased from 14 to 90 days
         )
 
     def _update_intel_object(self, intel_obj: CompanyIntel, data: Dict):

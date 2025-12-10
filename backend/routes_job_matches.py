@@ -48,6 +48,20 @@ def get_job_matches():
         # Get job matcher service
         matcher = get_job_matcher()
 
+        # Auto-fetch jobs if database is empty (first-time setup)
+        total_jobs = JobPosting.query.filter_by(is_active=True).count()
+        if total_jobs == 0:
+            logger.warning("No jobs in database - triggering initial Adzuna fetch")
+            try:
+                fetched_count = matcher.fetch_and_store_jobs(
+                    industry=industry,
+                    max_results=30
+                )
+                logger.info(f"Auto-fetched {fetched_count} jobs for industry: {industry}")
+            except Exception as e:
+                logger.error(f"Auto-fetch failed: {e}")
+                # Continue anyway - generate_job_matches will handle empty results
+
         # Generate matches (with Adzuna integration)
         matches = matcher.generate_job_matches(
             user_id=user.id,
@@ -58,7 +72,8 @@ def get_job_matches():
             use_adzuna=use_adzuna
         )
 
-        return jsonify({
+        # Prepare response with helpful message for empty results
+        response_data = {
             'matches': matches,
             'total': len(matches),
             'industry': industry,
@@ -68,7 +83,14 @@ def get_job_matches():
                 'experience_level': user.experience_level,
                 'detected_industries': user.detected_industries or []
             }
-        }), 200
+        }
+
+        # Add helpful message when no matches found
+        if len(matches) == 0:
+            response_data['message'] = f'No job matches available for {industry}. We are fetching fresh opportunities.'
+            response_data['suggestion'] = 'Try lowering your minimum score or check back in a few minutes.'
+
+        return jsonify(response_data), 200
 
     except ValueError as e:
         logger.error(f"Validation error: {str(e)}")

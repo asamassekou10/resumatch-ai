@@ -258,7 +258,7 @@ class JobMatchingService:
 
             if not jobs:
                 logger.warning(f"No active jobs found for industry: {industry}")
-                return []
+                return []  # Return empty list to maintain consistent API
 
             # Generate matches for each job
             matches = []
