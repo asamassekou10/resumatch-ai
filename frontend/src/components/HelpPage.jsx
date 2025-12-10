@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, ChevronDown, Mail, MessageSquare, BookOpen } from 'lucide-react';
+import { Search, ChevronDown, Mail, MessageSquare, BookOpen, FileText, Shield } from 'lucide-react';
 
 const HelpPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedFaq, setExpandedFaq] = useState(null);
+  const [activeView, setActiveView] = useState('help'); // 'help', 'terms', 'privacy'
 
   const categories = [
     {
@@ -86,10 +87,49 @@ const HelpPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="max-w-5xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">How can we help you?</h1>
-          <p className="text-slate-400 mb-8">Search our knowledge base or browse categories below</p>
+        {/* View Tabs */}
+        <div className="flex justify-center gap-2 mb-8 border-b border-slate-700 pb-4">
+          <button
+            onClick={() => setActiveView('help')}
+            className={`px-6 py-3 rounded-t-lg transition font-medium ${
+              activeView === 'help'
+                ? 'bg-cyan-600 text-white'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            Help & FAQs
+          </button>
+          <button
+            onClick={() => setActiveView('terms')}
+            className={`px-6 py-3 rounded-t-lg transition font-medium flex items-center gap-2 ${
+              activeView === 'terms'
+                ? 'bg-cyan-600 text-white'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            Terms of Service
+          </button>
+          <button
+            onClick={() => setActiveView('privacy')}
+            className={`px-6 py-3 rounded-t-lg transition font-medium flex items-center gap-2 ${
+              activeView === 'privacy'
+                ? 'bg-cyan-600 text-white'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <Shield className="w-4 h-4" />
+            Privacy Policy
+          </button>
+        </div>
+
+        {/* Help & FAQs View */}
+        {activeView === 'help' && (
+          <>
+            {/* Header */}
+            <div className="text-center mb-12">
+              <h1 className="text-4xl font-bold text-white mb-4">How can we help you?</h1>
+              <p className="text-slate-400 mb-8">Search our knowledge base or browse categories below</p>
 
           {/* Search Bar */}
           <div className="relative max-w-2xl mx-auto">
@@ -216,6 +256,358 @@ const HelpPage = () => {
             </div>
           </div>
         </div>
+          </>
+        )}
+
+        {/* Terms of Service View */}
+        {activeView === 'terms' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 max-w-4xl mx-auto"
+          >
+            <h1 className="text-3xl font-bold text-white mb-6">Terms of Service</h1>
+            <p className="text-slate-400 mb-8">Last updated: December 9, 2024</p>
+
+            <div className="space-y-6 text-slate-300">
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">1. Acceptance of Terms</h2>
+                <p className="leading-relaxed">
+                  By accessing and using ResumeAnalyzer AI ("Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to these Terms of Service, please do not use our Service.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">2. Description of Service</h2>
+                <p className="leading-relaxed mb-3">
+                  ResumeAnalyzer AI provides an AI-powered platform for resume analysis, optimization, and job matching. Our services include but are not limited to:
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li>Resume analysis and scoring</li>
+                  <li>ATS (Applicant Tracking System) optimization</li>
+                  <li>Keyword optimization recommendations</li>
+                  <li>Job matching and recommendations</li>
+                  <li>Career path analysis</li>
+                  <li>Interview preparation tools</li>
+                  <li>Skill extraction and verification</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">3. User Accounts</h2>
+                <p className="leading-relaxed mb-3">
+                  To access certain features of the Service, you must register for an account. You agree to:
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li>Provide accurate, current, and complete information during registration</li>
+                  <li>Maintain and promptly update your account information</li>
+                  <li>Maintain the security of your password and account</li>
+                  <li>Accept responsibility for all activities that occur under your account</li>
+                  <li>Notify us immediately of any unauthorized use of your account</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">4. Subscription Plans and Billing</h2>
+                <p className="leading-relaxed mb-3">
+                  We offer multiple subscription tiers (Free, Pro, Elite) with varying features and credit allocations:
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li>Subscription fees are billed in advance on a monthly basis</li>
+                  <li>Credits are allocated monthly and do not roll over to the next billing period</li>
+                  <li>All fees are non-refundable except as required by law</li>
+                  <li>You may cancel your subscription at any time, effective at the end of the current billing period</li>
+                  <li>We reserve the right to change subscription prices with 30 days notice</li>
+                  <li>Payment processing is handled securely through Stripe</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">5. Acceptable Use</h2>
+                <p className="leading-relaxed mb-3">
+                  You agree not to:
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li>Use the Service for any illegal or unauthorized purpose</li>
+                  <li>Attempt to gain unauthorized access to any portion of the Service</li>
+                  <li>Interfere with or disrupt the Service or servers</li>
+                  <li>Upload malicious code, viruses, or any harmful content</li>
+                  <li>Scrape, crawl, or use automated means to access the Service without permission</li>
+                  <li>Impersonate another person or entity</li>
+                  <li>Share your account credentials with others</li>
+                  <li>Use the Service to spam or send unsolicited communications</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">6. Intellectual Property Rights</h2>
+                <p className="leading-relaxed mb-3">
+                  The Service and its original content, features, and functionality are owned by ResumeAnalyzer AI and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
+                </p>
+                <p className="leading-relaxed">
+                  You retain all rights to your resume content. By using our Service, you grant us a limited license to process and analyze your content solely for the purpose of providing our services to you.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">7. AI-Generated Content</h2>
+                <p className="leading-relaxed mb-3">
+                  Our Service uses artificial intelligence to analyze resumes and provide recommendations. You acknowledge that:
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li>AI-generated recommendations are suggestions and not guarantees</li>
+                  <li>You are responsible for reviewing and verifying all AI-generated content</li>
+                  <li>Results may vary based on your specific circumstances</li>
+                  <li>We do not guarantee job placement or interview success</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">8. Data Privacy and Security</h2>
+                <p className="leading-relaxed">
+                  Your privacy is important to us. Please review our Privacy Policy to understand how we collect, use, and protect your personal information. By using the Service, you consent to our data practices as described in the Privacy Policy.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">9. Disclaimer of Warranties</h2>
+                <p className="leading-relaxed">
+                  THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, OR COMPLETELY SECURE.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">10. Limitation of Liability</h2>
+                <p className="leading-relaxed">
+                  TO THE MAXIMUM EXTENT PERMITTED BY LAW, RESUMEANALYZER AI SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES RESULTING FROM YOUR USE OF THE SERVICE.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">11. Termination</h2>
+                <p className="leading-relaxed">
+                  We may terminate or suspend your account and access to the Service immediately, without prior notice or liability, for any reason, including breach of these Terms. Upon termination, your right to use the Service will immediately cease.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">12. Changes to Terms</h2>
+                <p className="leading-relaxed">
+                  We reserve the right to modify these Terms at any time. We will notify users of any material changes via email or through the Service. Your continued use of the Service after such modifications constitutes acceptance of the updated Terms.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">13. Governing Law</h2>
+                <p className="leading-relaxed">
+                  These Terms shall be governed by and construed in accordance with the laws of the United States, without regard to its conflict of law provisions.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">14. Contact Information</h2>
+                <p className="leading-relaxed">
+                  If you have any questions about these Terms, please contact us at:
+                  <br />
+                  Email: support@resumeanalyzerai.com
+                </p>
+              </section>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Privacy Policy View */}
+        {activeView === 'privacy' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 max-w-4xl mx-auto"
+          >
+            <h1 className="text-3xl font-bold text-white mb-6">Privacy Policy</h1>
+            <p className="text-slate-400 mb-8">Last updated: December 9, 2024</p>
+
+            <div className="space-y-6 text-slate-300">
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">1. Introduction</h2>
+                <p className="leading-relaxed">
+                  ResumeAnalyzer AI ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Service. Please read this policy carefully.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">2. Information We Collect</h2>
+
+                <h3 className="text-lg font-semibold text-white mb-2 mt-4">2.1 Personal Information</h3>
+                <p className="leading-relaxed mb-3">
+                  We collect information that you provide directly to us:
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li>Name and email address</li>
+                  <li>Account credentials (username and password)</li>
+                  <li>Payment information (processed securely through Stripe)</li>
+                  <li>Resume content and job descriptions you upload</li>
+                  <li>Profile information and preferences</li>
+                  <li>Communications with our support team</li>
+                </ul>
+
+                <h3 className="text-lg font-semibold text-white mb-2 mt-4">2.2 Automatically Collected Information</h3>
+                <p className="leading-relaxed mb-3">
+                  When you use our Service, we automatically collect:
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li>IP address and device information</li>
+                  <li>Browser type and version</li>
+                  <li>Usage data (pages visited, features used, time spent)</li>
+                  <li>Cookies and similar tracking technologies</li>
+                  <li>Error logs and performance data</li>
+                </ul>
+
+                <h3 className="text-lg font-semibold text-white mb-2 mt-4">2.3 AI Analysis Data</h3>
+                <p className="leading-relaxed">
+                  We process your resume content using AI technology to provide analysis and recommendations. This includes extracting skills, education, experience, and other relevant information from your resume.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">3. How We Use Your Information</h2>
+                <p className="leading-relaxed mb-3">
+                  We use the collected information for the following purposes:
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li>To provide, maintain, and improve our Service</li>
+                  <li>To process your resume and generate analysis reports</li>
+                  <li>To match you with relevant job opportunities</li>
+                  <li>To process payments and manage subscriptions</li>
+                  <li>To send you service-related notifications and updates</li>
+                  <li>To respond to your inquiries and provide customer support</li>
+                  <li>To detect, prevent, and address technical issues and security threats</li>
+                  <li>To analyze usage patterns and improve our AI algorithms</li>
+                  <li>To comply with legal obligations</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">4. Data Sharing and Disclosure</h2>
+                <p className="leading-relaxed mb-3">
+                  We do not sell your personal information. We may share your information in the following circumstances:
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li><strong>Service Providers:</strong> Third-party vendors who perform services on our behalf (e.g., Stripe for payments, cloud hosting providers)</li>
+                  <li><strong>AI Processing:</strong> OpenAI and other AI service providers for resume analysis (data is processed securely and not used for training)</li>
+                  <li><strong>Legal Requirements:</strong> When required by law or to protect our rights and safety</li>
+                  <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets</li>
+                  <li><strong>With Your Consent:</strong> When you explicitly authorize us to share your information</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">5. Data Security</h2>
+                <p className="leading-relaxed mb-3">
+                  We implement appropriate technical and organizational measures to protect your information:
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li>Encryption of data in transit using HTTPS/TLS</li>
+                  <li>Encryption of sensitive data at rest</li>
+                  <li>Secure password hashing using industry-standard algorithms</li>
+                  <li>Regular security audits and updates</li>
+                  <li>Access controls and authentication requirements</li>
+                  <li>Secure payment processing through PCI-compliant providers</li>
+                </ul>
+                <p className="leading-relaxed mt-3">
+                  However, no method of transmission over the Internet or electronic storage is 100% secure. While we strive to protect your information, we cannot guarantee absolute security.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">6. Data Retention</h2>
+                <p className="leading-relaxed">
+                  We retain your personal information for as long as necessary to provide our Service and fulfill the purposes outlined in this Privacy Policy. You may delete your account at any time, which will result in the deletion of your personal data within 30 days, except where we are required to retain it for legal purposes.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">7. Your Rights and Choices</h2>
+                <p className="leading-relaxed mb-3">
+                  You have the following rights regarding your personal information:
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li><strong>Access:</strong> Request a copy of your personal data</li>
+                  <li><strong>Correction:</strong> Update or correct inaccurate information</li>
+                  <li><strong>Deletion:</strong> Request deletion of your personal data</li>
+                  <li><strong>Export:</strong> Download your data in a portable format</li>
+                  <li><strong>Opt-out:</strong> Unsubscribe from marketing communications</li>
+                  <li><strong>Data Portability:</strong> Receive your data in a structured, machine-readable format</li>
+                </ul>
+                <p className="leading-relaxed mt-3">
+                  To exercise these rights, please contact us at support@resumeanalyzerai.com or use the settings in your account dashboard.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">8. Cookies and Tracking Technologies</h2>
+                <p className="leading-relaxed mb-3">
+                  We use cookies and similar technologies to:
+                </p>
+                <ul className="list-disc list-inside space-y-2 ml-4">
+                  <li>Maintain your session and keep you logged in</li>
+                  <li>Remember your preferences and settings</li>
+                  <li>Analyze usage patterns and improve our Service</li>
+                  <li>Provide personalized content and recommendations</li>
+                </ul>
+                <p className="leading-relaxed mt-3">
+                  You can control cookies through your browser settings. However, disabling cookies may limit your ability to use certain features of our Service.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">9. Third-Party Links</h2>
+                <p className="leading-relaxed">
+                  Our Service may contain links to third-party websites or services. We are not responsible for the privacy practices of these external sites. We encourage you to review their privacy policies before providing any personal information.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">10. Children's Privacy</h2>
+                <p className="leading-relaxed">
+                  Our Service is not intended for children under 13 years of age. We do not knowingly collect personal information from children. If you become aware that a child has provided us with personal information, please contact us immediately.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">11. International Data Transfers</h2>
+                <p className="leading-relaxed">
+                  Your information may be transferred to and processed in countries other than your country of residence. We ensure appropriate safeguards are in place to protect your information in accordance with this Privacy Policy.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">12. California Privacy Rights</h2>
+                <p className="leading-relaxed">
+                  If you are a California resident, you have additional rights under the California Consumer Privacy Act (CCPA), including the right to know what personal information we collect, the right to delete your information, and the right to opt-out of the sale of your information (we do not sell personal information).
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">13. Changes to This Privacy Policy</h2>
+                <p className="leading-relaxed">
+                  We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new Privacy Policy on this page and updating the "Last updated" date. We encourage you to review this Privacy Policy periodically.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-white mb-3">14. Contact Us</h2>
+                <p className="leading-relaxed">
+                  If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us at:
+                </p>
+                <div className="mt-3 p-4 bg-slate-900/50 rounded-lg">
+                  <p className="font-semibold text-white">ResumeAnalyzer AI</p>
+                  <p>Email: support@resumeanalyzerai.com</p>
+                  <p>Email (Privacy): privacy@resumeanalyzerai.com</p>
+                </div>
+              </section>
+            </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );

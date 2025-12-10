@@ -103,7 +103,7 @@ const UserMenu = ({ user, onLogout, setView }) => {
               Billing & Subscription
             </button>
             <button
-              onClick={() => { window.open('/help', '_blank'); setIsOpen(false); }}
+              onClick={() => { setView('help'); setIsOpen(false); }}
               className="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition"
             >
               <HelpCircle className="w-4 h-4" />
