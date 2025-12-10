@@ -18,7 +18,10 @@ const UserMenu = ({ user, onLogout, setView }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  const creditPercentage = (user.credits / 100) * 100;
+  // Don't render if no user (must be after hooks)
+  if (!user) return null;
+
+  const creditPercentage = ((user.credits || 0) / 100) * 100;
   const creditColor = creditPercentage > 50 ? 'cyan' : creditPercentage > 20 ? 'yellow' : 'red';
 
   return (
