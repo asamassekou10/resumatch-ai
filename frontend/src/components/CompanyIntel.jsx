@@ -9,7 +9,7 @@ import {
 import axios from 'axios';
 import '../styles/CompanyIntel.css';
 
-const API_URL = process.env.REACT_APP_API_URL || '${API_URL}';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const CompanyIntel = ({ industry, userProfile }) => {
   const [intels, setIntels] = useState([]);
@@ -41,7 +41,7 @@ const CompanyIntel = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        '${API_URL}/company-intel/',
+        `${API_URL}/company-intel/`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setIntels(response.data.intels || []);
@@ -72,7 +72,7 @@ const CompanyIntel = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        '${API_URL}/company-intel/generate',
+        `${API_URL}/company-intel/generate`,
         generateForm,
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import '../styles/CareerPath.css';
 
-const API_URL = process.env.REACT_APP_API_URL || '${API_URL}';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const CareerPath = ({ industry, userProfile }) => {
   const [paths, setPaths] = useState([]);
@@ -54,7 +54,7 @@ const CareerPath = ({ industry, userProfile }) => {
 
   const fetchCareerPaths = async () => {
     try {
-      const response = await axios.get('${API_URL}/career-path/', {
+      const response = await axios.get(`${API_URL}/career-path/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPaths(response.data.paths || []);
@@ -80,7 +80,7 @@ const CareerPath = ({ industry, userProfile }) => {
       };
 
       const response = await axios.post(
-        '${API_URL}/career-path/generate',
+        `${API_URL}/career-path/generate`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );

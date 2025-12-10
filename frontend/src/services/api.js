@@ -158,10 +158,12 @@ class ApiService {
   }
 
   // Market Intelligence endpoints
-  static async getTopDemandedSkills(limit = 10, days = 90) {
-    const response = await api.get(config.api.endpoints.market.demandSkills, {
-      params: { limit, days }
-    });
+  static async getTopDemandedSkills(limit = 10, days = 90, industry = null) {
+    const params = { limit, days };
+    if (industry) {
+      params.industry = industry;
+    }
+    const response = await api.get(config.api.endpoints.market.demandSkills, { params });
     return response.data;
   }
 
@@ -200,8 +202,10 @@ class ApiService {
     return response.data;
   }
 
-  static async getMarketSummary() {
-    const response = await api.get(config.api.endpoints.market.summary);
+  static async getMarketSummary(industry = null) {
+    const response = await api.get(config.api.endpoints.market.summary, {
+      params: industry ? { industry } : {}
+    });
     return response.data;
   }
 
@@ -219,8 +223,10 @@ class ApiService {
     return response.data;
   }
 
-  static async getJobStatistics() {
-    const response = await api.get(config.api.endpoints.jobs.statistics);
+  static async getJobStatistics(industry = null) {
+    const response = await api.get(config.api.endpoints.jobs.statistics, {
+      params: industry ? { industry } : {}
+    });
     return response.data;
   }
 

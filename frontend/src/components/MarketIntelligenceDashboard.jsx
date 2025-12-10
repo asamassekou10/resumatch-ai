@@ -101,13 +101,13 @@ export default function MarketIntelligenceDashboard({ userProfile, onRepersonali
     setLoading(true);
     setError('');
     try {
-      const summaryData = await ApiService.getMarketSummary();
+      const summaryData = await ApiService.getMarketSummary(selectedIndustry);
       setMarketData(summaryData);
 
-      const jobData = await ApiService.getJobStatistics();
+      const jobData = await ApiService.getJobStatistics(selectedIndustry);
       setJobStats(jobData);
 
-      const skillsData = await ApiService.getTopDemandedSkills(15, 90);
+      const skillsData = await ApiService.getTopDemandedSkills(15, 90, selectedIndustry);
       setTopSkills(skillsData.top_skills || []);
     } catch (err) {
       setError(handleApiError(err));

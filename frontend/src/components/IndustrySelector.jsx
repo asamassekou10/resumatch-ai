@@ -4,6 +4,8 @@ import { Target, ChevronDown, Check } from 'lucide-react';
 import axios from 'axios';
 import '../styles/IndustrySelector.css';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 const IndustrySelector = ({ currentIndustry, onChange, showDescription = false }) => {
   const [industries, setIndustries] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -17,7 +19,7 @@ const IndustrySelector = ({ currentIndustry, onChange, showDescription = false }
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        'http://localhost:5000/api/market/industries',
+        `${API_URL}/market/industries`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setIndustries(response.data.industries || []);

@@ -8,7 +8,7 @@ import {
 import axios from 'axios';
 import '../styles/InterviewPrep.css';
 
-const API_URL = process.env.REACT_APP_API_URL || '${API_URL}';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const InterviewPrep = ({ industry, userProfile }) => {
   const [preps, setPreps] = useState([]);
@@ -41,7 +41,7 @@ const InterviewPrep = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        '${API_URL}/interview-prep/',
+        `${API_URL}/interview-prep/`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setPreps(response.data.preps || []);
@@ -72,7 +72,7 @@ const InterviewPrep = ({ industry, userProfile }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        '${API_URL}/interview-prep/generate',
+        `${API_URL}/interview-prep/generate`,
         generateForm,
         { headers: { Authorization: `Bearer ${token}` } }
       );
