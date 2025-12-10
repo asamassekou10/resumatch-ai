@@ -360,6 +360,7 @@ def transfer_guest_analyses_to_user(guest_token, user_id):
 
 # Routes
 @app.route('/api/health', methods=['GET'])
+@limiter.exempt
 def health_check():
     return jsonify({'status': 'healthy', 'message': 'AI Resume Optimizer API is running'}), 200
 

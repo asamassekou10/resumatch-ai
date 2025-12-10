@@ -10,6 +10,9 @@ logger = logging.getLogger(__name__)
 
 health_bp = Blueprint('health', __name__, url_prefix='/api/v1')
 
+# Import limiter to exempt health endpoints
+from app import limiter
+
 def create_success_response(message: str, data: dict = None, status_code: int = 200):
     """Create standardized success response"""
     response = {
@@ -22,6 +25,7 @@ def create_success_response(message: str, data: dict = None, status_code: int = 
     return jsonify(response), status_code
 
 @health_bp.route('/health', methods=['GET'])
+@limiter.exempt
 def health_check():
     """Basic health check endpoint with environment diagnostics"""
     try:
@@ -57,6 +61,7 @@ def health_check():
 
 @health_bp.route('/health/detailed', methods=['GET'])
 @jwt_required()
+@limiter.exempt
 def detailed_health_check():
     """Detailed health check for authenticated users"""
     try:
