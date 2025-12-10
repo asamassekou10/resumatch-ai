@@ -159,14 +159,37 @@ const Navigation = ({ view, setView, token, handleLogout, showBackButton = false
                 <UserMenu user={user} onLogout={handleLogout} setView={setView} />
               </>
             )}
-            
-            {!token && view !== 'landing' && (
-              <button
-                onClick={() => setView('landing')}
-                className="text-slate-300 hover:text-white transition font-medium"
-              >
-                Home
-              </button>
+
+            {/* Logged Out Navigation */}
+            {!token && (
+              <div className="hidden md:flex items-center gap-4">
+                {view !== 'landing' && (
+                  <button
+                    onClick={() => setView('landing')}
+                    className="text-slate-300 hover:text-white transition font-medium"
+                  >
+                    Home
+                  </button>
+                )}
+                <button
+                  onClick={() => setView('pricing')}
+                  className="text-slate-300 hover:text-white transition font-medium"
+                >
+                  Pricing
+                </button>
+                <button
+                  onClick={() => setView('login')}
+                  className="px-4 py-2 text-slate-300 hover:text-white transition font-medium rounded-lg hover:bg-slate-800"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => setView('register')}
+                  className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition"
+                >
+                  Sign Up
+                </button>
+              </div>
             )}
           </div>
         </div>

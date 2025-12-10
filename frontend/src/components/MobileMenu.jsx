@@ -17,7 +17,8 @@ const MobileMenu = ({ isOpen, onClose, user, view, setView, handleLogout, isAdmi
     onClose();
   };
 
-  const menuItems = [
+  // Different menu items for logged-in vs logged-out users
+  const menuItems = user ? [
     { label: 'Dashboard', view: 'dashboard', icon: '🏠' },
     { label: 'Analyze Resume', view: 'analyze', icon: '📄' },
     {
@@ -36,9 +37,16 @@ const MobileMenu = ({ isOpen, onClose, user, view, setView, handleLogout, isAdmi
     { label: 'Pricing', view: 'pricing', icon: '💳' },
     { label: 'Settings', view: 'settings', icon: '⚙️' },
     { label: 'Help & Support', view: 'help', icon: '❓' },
+  ] : [
+    // Logged out menu items
+    { label: 'Home', view: 'landing', icon: '🏠' },
+    { label: 'Try Free', view: 'guest-analyze', icon: '📄' },
+    { label: 'Pricing', view: 'pricing', icon: '💳' },
+    { label: 'Login', view: 'login', icon: '🔑' },
+    { label: 'Sign Up', view: 'register', icon: '✨' },
   ];
 
-  if (isAdmin) {
+  if (user && isAdmin) {
     menuItems.push({
       label: 'Admin',
       icon: '👑',
