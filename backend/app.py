@@ -78,9 +78,11 @@ allowed_origins = list(set(filter(None, allowed_origins)))
 CORS(app, resources={
     r"/*": {
         "origins": allowed_origins,
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"],
-        "supports_credentials": True
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+        "expose_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True,
+        "max_age": 3600
     }
 })
 
@@ -115,6 +117,13 @@ migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 oauth = OAuth(app)
+
+# Handle OPTIONS requests for CORS preflight - bypass authentication
+@app.before_request
+def handle_preflight():
+    if request.method == 'OPTIONS':
+        response = app.make_default_options_response()
+        return response
 
 # Initialize Configuration Manager
 config_manager = init_config_manager(db)

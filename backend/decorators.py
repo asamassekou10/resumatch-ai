@@ -3,7 +3,7 @@ Custom decorators for route protection and access control
 """
 
 from functools import wraps
-from flask import jsonify, g
+from flask import jsonify, g, request
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from models import User
 
@@ -24,6 +24,10 @@ def subscription_required(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Allow OPTIONS requests (CORS preflight) to pass through without authentication
+        if request.method == 'OPTIONS':
+            return f(*args, **kwargs)
+
         # Ensure JWT is verified first
         verify_jwt_in_request()
 
@@ -74,6 +78,10 @@ def admin_required(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Allow OPTIONS requests (CORS preflight) to pass through without authentication
+        if request.method == 'OPTIONS':
+            return f(*args, **kwargs)
+
         verify_jwt_in_request()
 
         current_user_id = get_jwt_identity()
@@ -112,6 +120,10 @@ def role_required(role_name):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            # Allow OPTIONS requests (CORS preflight) to pass through without authentication
+            if request.method == 'OPTIONS':
+                return f(*args, **kwargs)
+
             verify_jwt_in_request()
 
             current_user_id = get_jwt_identity()
