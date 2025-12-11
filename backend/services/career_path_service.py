@@ -296,9 +296,22 @@ Provide a detailed, realistic career progression plan in the following JSON stru
 - Salary ranges should be realistic for the industry and roles
 """
 
-            # Call Gemini API
-            response = self.model.generate_content(prompt)
-            result_text = response.text.strip()
+            # Call Gemini API with timeout
+            import asyncio
+            from concurrent.futures import TimeoutError as FutureTimeoutError
+
+            try:
+                # Set 30-second timeout for API call
+                response = self.model.generate_content(
+                    prompt,
+                    request_options={'timeout': 30}
+                )
+                result_text = response.text.strip()
+            except (TimeoutError, FutureTimeoutError, Exception) as e:
+                if 'timeout' in str(e).lower():
+                    logger.warning(f"Gemini API timeout for career path {current_role} -> {target_role}, using fallback")
+                    return self._generate_path_fallback(current_role, target_role, industry)
+                raise
 
             # Parse AI response
             path_data = self._parse_ai_response(result_text)

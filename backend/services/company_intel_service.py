@@ -189,9 +189,22 @@ Provide detailed, factual information (as of 2024) about this company in the fol
 - Focus on information valuable for job seekers
 """
 
-            # Call Gemini API
-            response = self.model.generate_content(prompt)
-            result_text = response.text.strip()
+            # Call Gemini API with timeout
+            import asyncio
+            from concurrent.futures import TimeoutError as FutureTimeoutError
+
+            try:
+                # Set 30-second timeout for API call
+                response = self.model.generate_content(
+                    prompt,
+                    request_options={'timeout': 30}
+                )
+                result_text = response.text.strip()
+            except (TimeoutError, FutureTimeoutError, Exception) as e:
+                if 'timeout' in str(e).lower():
+                    logger.warning(f"Gemini API timeout for {company}, using fallback")
+                    return self._generate_intel_fallback(company, industry)
+                raise
 
             # Parse AI response
             intel_data = self._parse_ai_response(result_text)

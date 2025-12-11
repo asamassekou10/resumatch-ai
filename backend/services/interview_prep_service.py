@@ -208,9 +208,22 @@ Generate comprehensive interview preparation for this company and role:
 Provide ONLY the JSON, no other text. Make it specific to {company}.
 """
 
-            # Call Gemini API
-            response = self.model.generate_content(prompt)
-            result_text = response.text.strip()
+            # Call Gemini API with timeout
+            import asyncio
+            from concurrent.futures import TimeoutError as FutureTimeoutError
+
+            try:
+                # Set 30-second timeout for API call
+                response = self.model.generate_content(
+                    prompt,
+                    request_options={'timeout': 30}
+                )
+                result_text = response.text.strip()
+            except (TimeoutError, FutureTimeoutError, Exception) as e:
+                if 'timeout' in str(e).lower():
+                    logger.warning(f"Gemini API timeout for {company} interview prep, using fallback")
+                    return self._generate_prep_fallback(company, job_title, industry)
+                raise
 
             # Parse AI response
             prep_data = self._parse_ai_response(result_text)
