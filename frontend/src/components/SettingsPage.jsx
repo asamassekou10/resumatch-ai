@@ -199,12 +199,6 @@ const SettingsPage = ({ user }) => {
                   </label>
                 </div>
               </div>
-
-              <div className="flex justify-end pt-4">
-                <button className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition">
-                  Save Changes
-                </button>
-              </div>
             </div>
           )}
 
@@ -232,12 +226,6 @@ const SettingsPage = ({ user }) => {
                     description="Get notified when resume analysis is complete"
                   />
                   <ToggleSwitch
-                    enabled={settings.jobMatches}
-                    onChange={(val) => updateSetting('jobMatches', val)}
-                    label="Job Match Notifications"
-                    description="Receive alerts for new job matches"
-                  />
-                  <ToggleSwitch
                     enabled={settings.lowCredits}
                     onChange={(val) => updateSetting('lowCredits', val)}
                     label="Low Credit Warnings"
@@ -257,12 +245,6 @@ const SettingsPage = ({ user }) => {
                     description="Receive product updates and promotions"
                   />
                 </div>
-              </div>
-
-              <div className="flex justify-end pt-4">
-                <button className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition">
-                  Save Changes
-                </button>
               </div>
             </div>
           )}
@@ -311,30 +293,6 @@ const SettingsPage = ({ user }) => {
                   </div>
                 </div>
               </div>
-
-              <div className="border-t border-slate-700 pt-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <Download className="w-5 h-5 text-cyan-400" />
-                  Data Management
-                </h3>
-
-                <div className="space-y-3">
-                  <button className="w-full px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition flex items-center justify-center gap-2">
-                    <Download className="w-4 h-4" />
-                    Download My Data
-                  </button>
-                  <button className="w-full px-6 py-3 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition flex items-center justify-center gap-2">
-                    <Trash2 className="w-4 h-4" />
-                    Delete Account
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-4">
-                <button className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition">
-                  Save Changes
-                </button>
-              </div>
             </div>
           )}
 
@@ -344,56 +302,11 @@ const SettingsPage = ({ user }) => {
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   <Lock className="w-5 h-5 text-cyan-400" />
-                  Password & Authentication
+                  Security
                 </h3>
-
-                <div className="space-y-4">
-                  <button className="w-full px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition text-left flex items-center justify-between">
-                    <span>Change Password</span>
-                    <span className="text-slate-400">→</span>
-                  </button>
-
-                  <div className="border-t border-slate-700 pt-4">
-                    <div className="flex items-center justify-between p-4 bg-slate-900/50 rounded-lg">
-                      <div className="flex-1">
-                        <p className="text-white font-medium">Two-Factor Authentication</p>
-                        <p className="text-slate-400 text-sm mt-1">Add an extra layer of security to your account</p>
-                      </div>
-                      <button
-                        onClick={() => updateSetting('twoFactorEnabled', !settings.twoFactorEnabled)}
-                        className={`px-4 py-2 rounded-lg transition ${
-                          settings.twoFactorEnabled
-                            ? 'bg-green-600/20 text-green-400 hover:bg-green-600/30'
-                            : 'bg-cyan-600 text-white hover:bg-cyan-700'
-                        }`}
-                      >
-                        {settings.twoFactorEnabled ? 'Enabled' : 'Enable'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-t border-slate-700 pt-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <Smartphone className="w-5 h-5 text-cyan-400" />
-                  Active Sessions
-                </h3>
-
-                <div className="space-y-3">
-                  <div className="p-4 bg-slate-900/50 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-white font-medium">Windows PC • Chrome</p>
-                      <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">Current</span>
-                    </div>
-                    <p className="text-slate-400 text-sm">Last active: Just now</p>
-                    <p className="text-slate-400 text-sm">Location: New York, USA</p>
-                  </div>
-
-                  <button className="w-full px-6 py-3 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition">
-                    Sign Out All Other Sessions
-                  </button>
-                </div>
+                <p className="text-slate-400">
+                  Security features are coming soon. You can currently manage your password through your profile settings.
+                </p>
               </div>
             </div>
           )}

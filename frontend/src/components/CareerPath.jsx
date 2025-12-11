@@ -242,6 +242,8 @@ const CareerPath = ({ industry, userProfile }) => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
             >
               <div className="modal-header">
                 <h2>Generate Career Roadmap</h2>

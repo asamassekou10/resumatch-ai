@@ -48,7 +48,7 @@ const MobileMenu = ({ isOpen, onClose, user, view, setView, handleLogout, isAdmi
   if (user && isAdmin) {
     menuItems.push({
       label: 'Admin',
-      icon: '👑',
+      icon: Shield,
       expandable: true,
       children: [
         { label: 'Dashboard', view: 'admin' },
@@ -120,7 +120,7 @@ const MobileMenu = ({ isOpen, onClose, user, view, setView, handleLogout, isAdmi
                         className="w-full flex items-center justify-between px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition"
                       >
                         <span className="flex items-center gap-3">
-                          <span className="text-xl">{item.icon}</span>
+                          {item.icon && <item.icon className="w-5 h-5" />}
                           <span className="font-medium">{item.label}</span>
                         </span>
                         {expandedSections[item.label] ? (
@@ -157,7 +157,7 @@ const MobileMenu = ({ isOpen, onClose, user, view, setView, handleLogout, isAdmi
                           : 'text-slate-300 hover:text-white hover:bg-slate-800'
                       }`}
                     >
-                      <span className="text-xl">{item.icon}</span>
+                      {item.icon && <item.icon className="w-5 h-5" />}
                       <span className="font-medium">{item.label}</span>
                     </button>
                   )}
@@ -175,7 +175,7 @@ const MobileMenu = ({ isOpen, onClose, user, view, setView, handleLogout, isAdmi
                   }}
                   className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition"
                 >
-                  <span className="text-xl">🚪</span>
+                  <LogOut className="w-5 h-5" />
                   <span className="font-medium">Logout</span>
                 </button>
               </div>

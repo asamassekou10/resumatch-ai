@@ -238,10 +238,7 @@ const HelpPage = () => {
                 <MessageSquare className="w-8 h-8 text-purple-400" />
               </div>
               <h3 className="text-white font-semibold mb-2">Live Chat</h3>
-              <p className="text-slate-400 text-sm mb-3">Pro & Elite users only</p>
-              <button className="text-purple-400 hover:text-purple-300 text-sm">
-                Start Chat →
-              </button>
+              <p className="text-slate-400 text-sm">Coming soon for Pro & Elite users</p>
             </div>
 
             <div className="text-center">
@@ -249,10 +246,7 @@ const HelpPage = () => {
                 <BookOpen className="w-8 h-8 text-green-400" />
               </div>
               <h3 className="text-white font-semibold mb-2">Documentation</h3>
-              <p className="text-slate-400 text-sm mb-3">Comprehensive guides</p>
-              <button className="text-green-400 hover:text-green-300 text-sm">
-                Browse Docs →
-              </button>
+              <p className="text-slate-400 text-sm">Comprehensive guides coming soon</p>
             </div>
           </div>
         </div>
