@@ -2427,6 +2427,39 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
             <JobSeekerInsights userProfile={userProfile} onRepersonalize={handleOpenRepersonalize} />
           </div>
         )}
+
+        {view === 'company-intel' && (
+          <div>
+            <Breadcrumb view={view} setView={setView} token={token} />
+            {userProfile && (userProfile.subscription_status === 'active' || userProfile.is_admin) ? (
+              <CompanyIntel userProfile={userProfile} />
+            ) : (
+              <SubscriptionRequired feature="Company Intelligence" setView={setView} />
+            )}
+          </div>
+        )}
+
+        {view === 'interview-prep' && (
+          <div>
+            <Breadcrumb view={view} setView={setView} token={token} />
+            {userProfile && (userProfile.subscription_status === 'active' || userProfile.is_admin) ? (
+              <InterviewPrep userProfile={userProfile} />
+            ) : (
+              <SubscriptionRequired feature="Interview Preparation" setView={setView} />
+            )}
+          </div>
+        )}
+
+        {view === 'career-path' && (
+          <div>
+            <Breadcrumb view={view} setView={setView} token={token} />
+            {userProfile && (userProfile.subscription_status === 'active' || userProfile.is_admin) ? (
+              <CareerPath userProfile={userProfile} />
+            ) : (
+              <SubscriptionRequired feature="Career Path" setView={setView} />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Upgrade Modal */}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ChevronRight, ChevronDown } from 'lucide-react';
+import { X, ChevronRight, ChevronDown, Home, FileText, TrendingUp, CreditCard, Settings, HelpCircle, LogIn, UserPlus, Shield, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const MobileMenu = ({ isOpen, onClose, user, view, setView, handleLogout, isAdmin }) => {
@@ -19,31 +19,30 @@ const MobileMenu = ({ isOpen, onClose, user, view, setView, handleLogout, isAdmi
 
   // Different menu items for logged-in vs logged-out users
   const menuItems = user ? [
-    { label: 'Dashboard', view: 'dashboard', icon: '🏠' },
-    { label: 'Analyze Resume', view: 'analyze', icon: '📄' },
+    { label: 'Dashboard', view: 'dashboard', icon: Home },
+    { label: 'Analyze Resume', view: 'analyze', icon: FileText },
     {
       label: 'Market Intelligence',
-      icon: '📊',
+      icon: TrendingUp,
       expandable: true,
       children: [
         { label: 'Overview', view: 'market-dashboard' },
-        { label: 'Job Matches', view: 'job-matches' },
         { label: 'Interview Prep', view: 'interview-prep' },
         { label: 'Company Intel', view: 'company-intel' },
         { label: 'Career Path', view: 'career-path' },
         { label: 'Skill Gap', view: 'skill-gap' },
       ]
     },
-    { label: 'Pricing', view: 'pricing', icon: '💳' },
-    { label: 'Settings', view: 'settings', icon: '⚙️' },
-    { label: 'Help & Support', view: 'help', icon: '❓' },
+    { label: 'Pricing', view: 'pricing', icon: CreditCard },
+    { label: 'Settings', view: 'settings', icon: Settings },
+    { label: 'Help & Support', view: 'help', icon: HelpCircle },
   ] : [
     // Logged out menu items
-    { label: 'Home', view: 'landing', icon: '🏠' },
-    { label: 'Try Free', view: 'guest-analyze', icon: '📄' },
-    { label: 'Pricing', view: 'pricing', icon: '💳' },
-    { label: 'Login', view: 'login', icon: '🔑' },
-    { label: 'Sign Up', view: 'register', icon: '✨' },
+    { label: 'Home', view: 'landing', icon: Home },
+    { label: 'Try Free', view: 'guest-analyze', icon: FileText },
+    { label: 'Pricing', view: 'pricing', icon: CreditCard },
+    { label: 'Login', view: 'login', icon: LogIn },
+    { label: 'Sign Up', view: 'register', icon: UserPlus },
   ];
 
   if (user && isAdmin) {

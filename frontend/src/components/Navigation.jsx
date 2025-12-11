@@ -7,7 +7,7 @@ const Navigation = ({ view, setView, token, handleLogout, showBackButton = false
   const [showMarketMenu, setShowMarketMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const marketIntelligenceViews = ['market-dashboard', 'skill-gap', 'job-stats', 'skill-relationships', 'market-insights', 'job-matches', 'interview-prep', 'company-intel', 'career-path'];
+  const marketIntelligenceViews = ['market-dashboard', 'skill-gap', 'job-stats', 'skill-relationships', 'market-insights', 'interview-prep', 'company-intel', 'career-path'];
   const isMarketView = marketIntelligenceViews.includes(view);
 
   return (
@@ -93,15 +93,6 @@ const Navigation = ({ view, setView, token, handleLogout, showBackButton = false
                           className="w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition first:rounded-t-lg"
                         >
                           Overview & Dashboard
-                        </button>
-                        <button
-                          onClick={() => {
-                            setView('job-matches');
-                            setShowMarketMenu(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition"
-                        >
-                          Job Matches
                         </button>
                         <button
                           onClick={() => {
