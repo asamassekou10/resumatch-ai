@@ -123,6 +123,15 @@ oauth = OAuth(app)
 def handle_preflight():
     if request.method == 'OPTIONS':
         response = app.make_default_options_response()
+        # Explicitly add CORS headers to OPTIONS response
+        origin = request.headers.get('Origin')
+        if origin in allowed_origins:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Accept'
+            response.headers['Access-Control-Expose-Headers'] = 'Content-Type, Authorization'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Max-Age'] = '3600'
         return response
 
 # Initialize Configuration Manager
