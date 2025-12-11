@@ -110,44 +110,101 @@ def ingest_job_postings():
 @jwt_required()
 def load_sample_data():
     """
-    Load sample job postings for testing (admin only).
+    Load sample job postings for testing.
 
-    This endpoint loads realistic sample data from 10 different companies
-    across multiple industries for testing the market intelligence system.
+    This endpoint loads realistic sample data from 25 job postings
+    across multiple industries (Technology, Finance, Healthcare, Marketing)
+    for testing the market intelligence system.
 
     Returns:
         - Sample postings loaded
-        - Skills extracted
+        - Skills extracted and stored in JobPostingKeyword table
     """
     from sample_job_postings import load_sample_postings
-    from models import User
+    from models import User, JobPostingKeyword, Keyword
     from app import db
 
     try:
         user_id = int(get_jwt_identity())
-
-        # Verify user is admin (optional - can remove for testing)
-        # user = User.query.get(user_id)
-        # if not user or not user.is_admin:
-        #     return jsonify({'error': 'Admin access required'}), 403
-
         logger.info(f"User {user_id} requested sample data loading")
 
-        # Load sample postings
-        result = load_sample_postings(db)
+        # Load sample postings (returns list of dicts)
+        sample_postings = load_sample_postings()
 
-        if 'error' in result:
-            return jsonify(result), 500
+        if not sample_postings:
+            return jsonify({'error': 'No sample data available'}), 500
+
+        # Get all existing keywords for mapping
+        all_keywords = Keyword.query.all()
+        keyword_map = {kw.name.lower(): kw for kw in all_keywords}
+
+        # Track statistics
+        inserted_count = 0
+        duplicate_count = 0
+        new_keywords_created = 0
+
+        for posting in sample_postings:
+            for skill_name in posting.get('skills', []):
+                # Find or create keyword
+                keyword = keyword_map.get(skill_name.lower())
+                if not keyword:
+                    keyword = Keyword(name=skill_name, category='technical', frequency=1)
+                    db.session.add(keyword)
+                    db.session.flush()  # Get ID for the new keyword
+                    keyword_map[skill_name.lower()] = keyword
+                    new_keywords_created += 1
+                    logger.info(f"Created new keyword: {skill_name}")
+
+                # Check if this job-skill combination already exists
+                existing = JobPostingKeyword.query.filter_by(
+                    job_posting_url=posting['job_posting_url'],
+                    keyword_id=keyword.id
+                ).first()
+
+                if existing:
+                    duplicate_count += 1
+                    continue
+
+                # Create JobPostingKeyword record
+                job_keyword = JobPostingKeyword(
+                    job_posting_url=posting['job_posting_url'],
+                    job_title=posting['job_title'],
+                    company_name=posting.get('company_name'),
+                    keyword_id=keyword.id,
+                    frequency=1,
+                    salary_min=posting.get('salary_min'),
+                    salary_max=posting.get('salary_max'),
+                    location=posting.get('location'),
+                    industry=posting.get('industry'),
+                    source='sample_data'
+                )
+                db.session.add(job_keyword)
+                inserted_count += 1
+
+        # Commit all changes
+        db.session.commit()
+
+        # Get total count in database
+        total_records = JobPostingKeyword.query.count()
+
+        logger.info(f"Sample data loaded: {inserted_count} new records, {duplicate_count} duplicates skipped")
 
         return jsonify({
             'success': True,
             'message': 'Sample job postings loaded successfully',
-            'details': result
+            'details': {
+                'sample_postings': len(sample_postings),
+                'new_records_inserted': inserted_count,
+                'duplicates_skipped': duplicate_count,
+                'new_keywords_created': new_keywords_created,
+                'total_records_in_db': total_records
+            }
         }), 200
 
     except Exception as e:
-        logger.error(f"Error loading sample data: {str(e)}")
-        return jsonify({'error': 'Failed to load sample data'}), 500
+        db.session.rollback()
+        logger.error(f"Error loading sample data: {str(e)}", exc_info=True)
+        return jsonify({'error': f'Failed to load sample data: {str(e)}'}), 500
 
 
 @job_bp.route('/ingest-real', methods=['POST'])

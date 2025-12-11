@@ -15,6 +15,8 @@ export default function JobMarketStats({ userProfile, onRepersonalize }) {
                        null;
 
   useEffect(() => {
+    console.log('[JobMarketStats] UserProfile:', userProfile);
+    console.log('[JobMarketStats] Derived industry:', userIndustry);
     loadStats();
   }, [userIndustry]); // Re-fetch when user's industry changes
 
@@ -22,8 +24,10 @@ export default function JobMarketStats({ userProfile, onRepersonalize }) {
     setLoading(true);
     setError('');
     try {
+      console.log('[JobMarketStats] Fetching stats with industry filter:', userIndustry);
       // Pass industry parameter to filter stats by user's industry
       const data = await ApiService.getJobStatistics(userIndustry);
+      console.log('[JobMarketStats] Stats response:', data);
       setStats(data);
     } catch (err) {
       setError(handleApiError(err));
@@ -39,7 +43,10 @@ export default function JobMarketStats({ userProfile, onRepersonalize }) {
       <div className="stats-header">
         <div className="header-title">
           <ChartBarIcon className="w-8 h-8" />
-          <h1>Job Market Statistics</h1>
+          <div>
+            <h1>Job Market Statistics</h1>
+            {userIndustry && <p className="subtitle" style={{ fontSize: '0.875rem', opacity: 0.8, marginTop: '0.25rem' }}>Filtering by: {userIndustry}</p>}
+          </div>
         </div>
         <div className="header-actions">
           {userProfile?.preferences_completed && onRepersonalize && (
