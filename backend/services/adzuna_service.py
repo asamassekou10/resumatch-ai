@@ -117,8 +117,8 @@ class AdzunaService:
 
             logger.info(f"Searching Adzuna for: {query} (industry: {industry})")
 
-            # Make API request
-            response = requests.get(url, params=params, timeout=10)
+            # Make API request with extended timeout to prevent intermittent failures
+            response = requests.get(url, params=params, timeout=30)
             response.raise_for_status()
 
             data = response.json()
@@ -293,7 +293,8 @@ class AdzunaService:
                 'app_key': self.app_key
             }
 
-            response = requests.get(url, params=params, timeout=10)
+            # Extended timeout to prevent intermittent failures
+            response = requests.get(url, params=params, timeout=30)
             response.raise_for_status()
 
             job_data = response.json()

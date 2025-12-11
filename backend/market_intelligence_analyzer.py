@@ -43,13 +43,16 @@ class MarketIntelligenceAnalyzer:
             from app import app
             from models import JobPostingKeyword, Keyword
             from sqlalchemy import func
+            from sqlalchemy.orm import joinedload
 
             with app.app_context():
                 # Get cutoff date
                 cutoff_date = datetime.utcnow() - timedelta(days=limit_days)
 
-                # Query job postings with skills
-                query = JobPostingKeyword.query.filter(JobPostingKeyword.extracted_at >= cutoff_date)
+                # Query job postings with skills - EAGERLY LOAD keywords to avoid N+1 queries
+                query = JobPostingKeyword.query.options(
+                    joinedload(JobPostingKeyword.keyword)
+                ).filter(JobPostingKeyword.extracted_at >= cutoff_date)
 
                 # Apply industry filter if specified
                 if industry:
@@ -63,7 +66,7 @@ class MarketIntelligenceAnalyzer:
                 if not postings:
                     return {}
 
-                # Aggregate by keyword
+                # Aggregate by keyword and build keyword map (no N+1 queries!)
                 skill_data = defaultdict(lambda: {
                     'occurrences': 0,
                     'total_frequency': 0,
@@ -72,9 +75,15 @@ class MarketIntelligenceAnalyzer:
                     'industries': Counter(),
                     'locations': Counter()
                 })
+                keyword_map = {}  # Cache keywords to avoid repeated queries
 
                 for posting in postings:
                     kid = posting.keyword_id
+
+                    # Store keyword object (already loaded via joinedload)
+                    if kid not in keyword_map and posting.keyword:
+                        keyword_map[kid] = posting.keyword
+
                     skill_data[kid]['occurrences'] += 1
                     skill_data[kid]['total_frequency'] += posting.frequency
 
@@ -96,7 +105,8 @@ class MarketIntelligenceAnalyzer:
                 total_postings = len(postings)
 
                 for skill_id, data in skill_data.items():
-                    keyword = Keyword.query.get(skill_id)
+                    # Use cached keyword (no database query!)
+                    keyword = keyword_map.get(skill_id)
                     if not keyword:
                         continue
 
@@ -329,13 +339,15 @@ class MarketIntelligenceAnalyzer:
         try:
             from app import app
             from models import JobPostingKeyword, Keyword
+            from sqlalchemy.orm import joinedload
 
             with app.app_context():
                 cutoff_date = datetime.utcnow() - timedelta(days=limit_days)
 
-                # Get postings for this industry
+                # Get postings for this industry - EAGERLY LOAD keywords to avoid N+1 queries
                 postings = (
                     JobPostingKeyword.query
+                    .options(joinedload(JobPostingKeyword.keyword))
                     .filter(JobPostingKeyword.industry.ilike(f"%{industry}%"))
                     .filter(JobPostingKeyword.extracted_at >= cutoff_date)
                     .all()
@@ -344,12 +356,17 @@ class MarketIntelligenceAnalyzer:
                 if not postings:
                     return {'industry': industry, 'message': 'No data available'}
 
-                # Count skill occurrences
+                # Count skill occurrences and build keyword map (no N+1 queries!)
                 skill_counts = Counter()
                 skill_salaries = defaultdict(list)
+                keyword_map = {}  # Cache keywords to avoid repeated queries
 
                 for posting in postings:
                     skill_counts[posting.keyword_id] += posting.frequency
+
+                    # Store keyword object (already loaded via joinedload)
+                    if posting.keyword_id not in keyword_map and posting.keyword:
+                        keyword_map[posting.keyword_id] = posting.keyword
 
                     if posting.salary_min and posting.salary_max:
                         avg_salary = (posting.salary_min + posting.salary_max) / 2
@@ -358,7 +375,8 @@ class MarketIntelligenceAnalyzer:
                 # Get top skills
                 top_skills = []
                 for skill_id, count in skill_counts.most_common(15):
-                    keyword = Keyword.query.get(skill_id)
+                    # Use cached keyword (no database query!)
+                    keyword = keyword_map.get(skill_id)
                     if not keyword:
                         continue
 
@@ -405,10 +423,13 @@ class MarketIntelligenceAnalyzer:
             from app import app
             from models import JobPostingKeyword, Keyword
             from sqlalchemy import func
+            from sqlalchemy.orm import joinedload
 
             with app.app_context():
-                # Build query
-                query = JobPostingKeyword.query.filter(
+                # Build query with eager loading
+                query = JobPostingKeyword.query.options(
+                    joinedload(JobPostingKeyword.keyword)
+                ).filter(
                     JobPostingKeyword.location.ilike(f"%{location}%")
                 )
 
@@ -444,9 +465,9 @@ class MarketIntelligenceAnalyzer:
                     'max_salary': round(max_salary, 2) if max_salary else None
                 }
 
-                # If skill-specific, add skill name
-                if skill_id:
-                    keyword = Keyword.query.get(skill_id)
+                # If skill-specific, add skill name (use cached keyword, no database query!)
+                if skill_id and postings:
+                    keyword = postings[0].keyword  # Use eagerly loaded keyword
                     if keyword:
                         result['skill_name'] = keyword.keyword
 

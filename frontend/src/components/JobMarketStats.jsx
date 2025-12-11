@@ -9,15 +9,21 @@ export default function JobMarketStats({ userProfile, onRepersonalize }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Derive industry from user profile
+  const userIndustry = userProfile?.preferred_industry ||
+                       userProfile?.detected_industries?.[0]?.industry ||
+                       null;
+
   useEffect(() => {
     loadStats();
-  }, []);
+  }, [userIndustry]); // Re-fetch when user's industry changes
 
   const loadStats = async () => {
     setLoading(true);
     setError('');
     try {
-      const data = await ApiService.getJobStatistics();
+      // Pass industry parameter to filter stats by user's industry
+      const data = await ApiService.getJobStatistics(userIndustry);
       setStats(data);
     } catch (err) {
       setError(handleApiError(err));

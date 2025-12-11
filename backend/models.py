@@ -648,6 +648,7 @@ class JobPostingKeyword(db.Model):
     company_name = db.Column(db.String(200), nullable=True)
 
     keyword_id = db.Column(db.Integer, db.ForeignKey('keywords.id'), nullable=False)
+    keyword = db.relationship('Keyword', backref='job_postings', lazy='select')  # Relationship to enable joinedload
     frequency = db.Column(db.Integer, default=1)  # How many times mentioned in job description
 
     # Salary and market data
