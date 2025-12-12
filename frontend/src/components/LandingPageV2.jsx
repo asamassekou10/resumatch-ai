@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, ArrowUpRight, Star } from 'lucide-react';
 import { ROUTES } from '../config/routes';
+import SEO from './common/SEO';
 
 const LandingPageV2 = ({ token }) => {
   const navigate = useNavigate();
@@ -82,8 +83,15 @@ const LandingPageV2 = ({ token }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
-      {/* Hero Section */}
+    <>
+      <SEO
+        title="AI-Powered Resume Analysis & Job Matching"
+        description="Optimize your resume with AI-powered analysis, ATS scoring, skill gap analysis, and personalized job matching. Get hired faster with ResuMatch AI."
+        keywords="resume analyzer, AI resume, ATS score, job matching, career tools, resume optimization"
+        url="https://resumeanalyzerai.com/"
+      />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+        {/* Hero Section */}
       <div className="relative pt-20 pb-32 px-4 sm:px-6 lg:px-8">
         {/* Animated background elements */}
         <motion.div
@@ -308,7 +316,8 @@ const LandingPageV2 = ({ token }) => {
           </motion.button>
         </motion.div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

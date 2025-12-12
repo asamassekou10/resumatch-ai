@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FileUp, LogIn, Zap, ArrowRight, AlertCircle, CheckCircle, Loader, Clock } from 'lucide-react';
 import guestService from '../services/guestService';
 import { ROUTES } from '../config/routes';
+import SEO from './common/SEO';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -151,8 +152,15 @@ const GuestAnalyze = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4">
-      <AnimatePresence mode="wait">
+    <>
+      <SEO
+        title="Free Resume Analysis"
+        description="Try ResuMatch AI for free! Get instant AI-powered resume analysis, ATS scoring, and personalized improvement suggestions without signing up."
+        keywords="free resume analysis, AI resume checker, ATS score free, resume feedback"
+        url="https://resumeanalyzerai.com/guest-analyze"
+      />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4">
+        <AnimatePresence mode="wait">
         {/* Welcome Step */}
         {step === 'welcome' && (
           <motion.div
@@ -612,8 +620,9 @@ const GuestAnalyze = () => {
             </motion.button>
           </motion.div>
         )}
-      </AnimatePresence>
-    </div>
+        </AnimatePresence>
+      </div>
+    </>
   );
 };
 
