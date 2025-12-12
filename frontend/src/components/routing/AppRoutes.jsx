@@ -12,25 +12,29 @@ import { ROUTES } from '../../config/routes';
 
 // Public Pages
 const LandingPageV2 = lazy(() => import('../LandingPageV2'));
-const LoginPage = lazy(() => import('../LoginPage'));
-const RegisterPage = lazy(() => import('../RegisterPage'));
+// TODO: Create separate LoginPage and RegisterPage components
+// For now, using LandingPageV2 which contains auth UI
+const LoginPage = LandingPageV2;
+const RegisterPage = LandingPageV2;
 const GuestAnalyze = lazy(() => import('../GuestAnalyze'));
-const PricingPage = lazy(() => import('../PricingPage'));
+const PricingPage = lazy(() => import('../PricingPageV2'));
 const HelpPage = lazy(() => import('../HelpPage'));
 
 // Protected Pages
-const Dashboard = lazy(() => import('../Dashboard'));
-const AnalyzePage = lazy(() => import('../AnalyzePage'));
+// TODO: Create separate Dashboard and AnalyzePage components
+// For now, using existing components as placeholders
+const Dashboard = lazy(() => import('../MarketIntelligenceDashboard'));
+const AnalyzePage = GuestAnalyze; // Temporary - reuse GuestAnalyze
 const ProfilePage = lazy(() => import('../ProfilePage'));
 const SettingsPage = lazy(() => import('../SettingsPage'));
 const BillingPage = lazy(() => import('../BillingPage'));
 
 // Market Intelligence Pages
-const MarketDashboard = lazy(() => import('../MarketDashboard'));
-const SkillGap = lazy(() => import('../SkillGap'));
+const MarketDashboard = lazy(() => import('../MarketIntelligenceDashboard'));
+const SkillGap = lazy(() => import('../SkillGapAnalysis'));
 const JobMarketStats = lazy(() => import('../JobMarketStats'));
 const SkillRelationships = lazy(() => import('../SkillRelationships'));
-const MarketInsights = lazy(() => import('../MarketInsights'));
+const MarketInsights = lazy(() => import('../JobSeekerInsights'));
 const InterviewPrep = lazy(() => import('../InterviewPrep'));
 const CompanyIntel = lazy(() => import('../CompanyIntel'));
 const CareerPath = lazy(() => import('../CareerPath'));
