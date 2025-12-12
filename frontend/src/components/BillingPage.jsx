@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CreditCard, Crown, CheckCircle, Download, AlertCircle } from 'lucide-react';
+import { ROUTES } from '../config/routes';
 
-const BillingPage = ({ user, setView }) => {
+const BillingPage = ({ user }) => {
+  const navigate = useNavigate();
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   // Don't render if no user
@@ -111,7 +114,7 @@ const BillingPage = ({ user, setView }) => {
               <div className="flex gap-3">
                 {currentPlan === 'free' && (
                   <button
-                    onClick={() => setView('pricing')}
+                    onClick={() => navigate(ROUTES.PRICING)}
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition"
                   >
                     Upgrade to Pro
@@ -120,7 +123,7 @@ const BillingPage = ({ user, setView }) => {
                 {currentPlan === 'pro' && (
                   <>
                     <button
-                      onClick={() => setView('pricing')}
+                      onClick={() => navigate(ROUTES.PRICING)}
                       className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition"
                     >
                       Upgrade to Elite

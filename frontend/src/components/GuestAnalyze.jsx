@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileUp, LogIn, Zap, ArrowRight, AlertCircle, CheckCircle, Loader, Clock } from 'lucide-react';
 import guestService from '../services/guestService';
+import { ROUTES } from '../config/routes';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-const GuestAnalyze = ({ setView, navigate }) => {
+const GuestAnalyze = () => {
+  const navigate = useNavigate();
   const [step, setStep] = useState('welcome'); // welcome, analyze, results
   const [guestToken, setGuestToken] = useState(null);
   const [guestCredits, setGuestCredits] = useState(2);
@@ -140,11 +143,11 @@ const GuestAnalyze = ({ setView, navigate }) => {
   };
 
   const handleUpgrade = () => {
-    setView('pricing');
+    navigate(ROUTES.PRICING);
   };
 
   const handleSignIn = () => {
-    setView('login');
+    navigate(ROUTES.LOGIN);
   };
 
   return (
@@ -177,7 +180,7 @@ const GuestAnalyze = ({ setView, navigate }) => {
                         Sign In
                       </button>
                       <button
-                        onClick={() => setView('pricing')}
+                        onClick={() => navigate(ROUTES.PRICING)}
                         className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg"
                       >
                         View Pricing

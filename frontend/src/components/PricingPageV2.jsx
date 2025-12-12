@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, Zap, Crown, Sparkles, ArrowRight } from 'lucide-react';
+import { ROUTES } from '../config/routes';
 
-const PricingPageV2 = ({ setView, handleUpgradeToPro, handleUpgradeToElite, token }) => {
+const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userProfile }) => {
+  const navigate = useNavigate();
   const [isYearly, setIsYearly] = useState(false);
 
   const fadeInUp = {
@@ -36,7 +39,7 @@ const PricingPageV2 = ({ setView, handleUpgradeToPro, handleUpgradeToElite, toke
       highlighted: false,
       icon: Sparkles,
       buttonText: 'Current Plan',
-      buttonAction: () => setView('dashboard'),
+      buttonAction: () => navigate(ROUTES.DASHBOARD),
       buttonVariant: 'secondary'
     },
     {

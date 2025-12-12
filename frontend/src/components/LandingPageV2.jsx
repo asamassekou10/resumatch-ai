@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, ArrowUpRight, Star } from 'lucide-react';
+import { ROUTES } from '../config/routes';
 
-const LandingPageV2 = ({ setView, token }) => {
+const LandingPageV2 = ({ token }) => {
+  const navigate = useNavigate();
   const [hoveredFeature, setHoveredFeature] = useState(null);
 
   // Animation variants
@@ -129,7 +132,7 @@ const LandingPageV2 = ({ setView, token }) => {
               custom={3}
             >
               <motion.button
-                onClick={() => setView('guest-analyze')}
+                onClick={() => navigate(ROUTES.GUEST_ANALYZE)}
                 className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg flex items-center gap-2 hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -138,7 +141,7 @@ const LandingPageV2 = ({ setView, token }) => {
                 <ArrowRight className="w-5 h-5" />
               </motion.button>
               <motion.button
-                onClick={() => setView('pricing')}
+                onClick={() => navigate(ROUTES.PRICING)}
                 className="px-8 py-4 border-2 border-cyan-500/50 text-white font-semibold rounded-lg hover:bg-slate-800/50 transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -295,7 +298,7 @@ const LandingPageV2 = ({ setView, token }) => {
             Join thousands of job seekers who have already improved their applications
           </p>
           <motion.button
-            onClick={() => setView(token ? 'dashboard' : 'guest-analyze')}
+            onClick={() => navigate(token ? ROUTES.DASHBOARD : ROUTES.GUEST_ANALYZE)}
             className="px-10 py-4 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg flex items-center gap-2 hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 mx-auto"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

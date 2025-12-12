@@ -1,8 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Lock, Sparkles, TrendingUp, Target, Zap, ArrowRight, CheckCircle } from 'lucide-react';
+import { ROUTES } from '../config/routes';
 
-const SubscriptionRequired = ({ feature, setView }) => {
+const SubscriptionRequired = ({ feature }) => {
+  const navigate = useNavigate();
   const features = [
     {
       icon: <TrendingUp className="w-5 h-5" />,
@@ -162,7 +165,7 @@ const SubscriptionRequired = ({ feature, setView }) => {
           transition={{ delay: 0.6, duration: 0.5 }}
         >
           <motion.button
-            onClick={() => setView('pricing')}
+            onClick={() => navigate(ROUTES.PRICING)}
             className="px-8 py-4 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white rounded-lg font-semibold text-lg flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -173,7 +176,7 @@ const SubscriptionRequired = ({ feature, setView }) => {
           </motion.button>
 
           <motion.button
-            onClick={() => setView('dashboard')}
+            onClick={() => navigate(ROUTES.DASHBOARD)}
             className="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-semibold text-lg border border-slate-700 hover:border-slate-600 transition-all"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
