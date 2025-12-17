@@ -580,10 +580,14 @@ def login():
                 'id': user.id,
                 'email': user.email,
                 'name': user.name,
+                'profile_picture': user.profile_picture,
                 'auth_provider': user.auth_provider,
                 'email_verified': user.email_verified,
                 'subscription_tier': user.subscription_tier,
-                'credits': user.credits
+                'subscription_status': user.subscription_status,
+                'credits': user.credits,
+                'is_admin': user.is_admin,
+                'is_active': user.is_active
             }
         }), 200
 
@@ -612,8 +616,12 @@ def refresh():
                 'id': user.id,
                 'email': user.email,
                 'name': user.name,
+                'profile_picture': user.profile_picture,
                 'subscription_tier': user.subscription_tier,
-                'credits': user.credits
+                'subscription_status': user.subscription_status,
+                'credits': user.credits,
+                'is_admin': user.is_admin,
+                'is_active': user.is_active
             }
         }), 200
 

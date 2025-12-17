@@ -64,11 +64,15 @@ const ProtectedRoute = ({
   }
 
   // Check 3: Subscription Access
-  const hasSubscription = userProfile.subscription_status === 'active';
+  // Allow access if: user has active subscription, is admin, or is on paid tier
+  const paidTiers = ['pro', 'premium', 'elite'];
+  const hasSubscription =
+    userProfile.subscription_status === 'active' ||
+    paidTiers.includes(userProfile.subscription_tier);
   const isAdmin = userProfile.is_admin;
 
   if (requireSubscription && !hasSubscription && !isAdmin) {
-    console.log('[ProtectedRoute] Subscription required but user does not have active subscription');
+    console.log('[ProtectedRoute] Subscription required. User status:', userProfile.subscription_status, 'tier:', userProfile.subscription_tier);
     return (
       <Navigate
         to={ROUTES.PRICING}
