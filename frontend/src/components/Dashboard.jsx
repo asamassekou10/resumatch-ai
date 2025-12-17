@@ -58,6 +58,7 @@ const Dashboard = ({ userProfile }) => {
 
   const fetchDashboardData = async () => {
     setLoading(true);
+    setError('');
     try {
       // Fetch analyses and stats in parallel
       const [analysesRes, statsRes] = await Promise.all([
@@ -68,6 +69,19 @@ const Dashboard = ({ userProfile }) => {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
+
+      // Check for HTTP errors
+      if (!analysesRes.ok || !statsRes.ok) {
+        const status = !analysesRes.ok ? analysesRes.status : statsRes.status;
+        if (status === 401) {
+          // Token expired or invalid - redirect to login
+          localStorage.removeItem('token');
+          localStorage.removeItem('userProfile');
+          window.location.href = '/login';
+          return;
+        }
+        throw new Error(`Server error: ${status}`);
+      }
 
       const analysesData = await analysesRes.json();
       const statsData = await statsRes.json();
@@ -83,7 +97,7 @@ const Dashboard = ({ userProfile }) => {
       });
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
-      setError('Failed to load dashboard data');
+      setError('Failed to load dashboard data. Please try refreshing the page.');
     } finally {
       setLoading(false);
     }
