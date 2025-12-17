@@ -1,8 +1,28 @@
+// Determine the API URL with HTTPS enforcement in production
+const getApiBaseUrl = () => {
+  // If explicitly set via env var, use that
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+
+  // In production, default to HTTPS
+  if (process.env.NODE_ENV === 'production') {
+    // Use the current host with HTTPS if no API URL is set
+    const host = window.location.hostname;
+    if (host !== 'localhost' && host !== '127.0.0.1') {
+      return `https://${host}/api`;
+    }
+  }
+
+  // Development fallback
+  return 'http://localhost:5000/api';
+};
+
 // Application configuration
 const config = {
   // API Configuration
   api: {
-    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+    baseURL: getApiBaseUrl(),
     timeout: parseInt(process.env.REACT_APP_API_TIMEOUT) || 30000,
     endpoints: {
       auth: {

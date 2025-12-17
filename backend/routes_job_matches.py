@@ -4,6 +4,7 @@ Job Matches API Routes - AI-powered job matching endpoints
 
 from flask import Blueprint, request, jsonify, g
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy.orm import joinedload
 from decorators import subscription_required
 from models import User, JobMatch, JobPosting, db
 from services.job_matcher import get_job_matcher
@@ -120,7 +121,9 @@ def get_job_match_detail(match_id):
     try:
         user = g.current_user
 
-        match = JobMatch.query.filter_by(
+        match = JobMatch.query.options(
+            joinedload(JobMatch.job_posting)
+        ).filter_by(
             id=match_id,
             user_id=user.id
         ).first()
@@ -288,14 +291,27 @@ def get_saved_jobs():
     try:
         user = g.current_user
 
-        saved_matches = JobMatch.query.filter_by(
+        # Pagination parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = min(request.args.get('per_page', 20, type=int), 50)
+
+        pagination = JobMatch.query.options(
+            joinedload(JobMatch.job_posting)
+        ).filter_by(
             user_id=user.id,
             is_saved=True
-        ).order_by(JobMatch.saved_at.desc()).all()
+        ).order_by(JobMatch.saved_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
 
         return jsonify({
-            'matches': [match.to_dict() for match in saved_matches],
-            'total': len(saved_matches)
+            'matches': [match.to_dict() for match in pagination.items],
+            'total': pagination.total,
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'pages': pagination.pages,
+                'has_next': pagination.has_next,
+                'has_prev': pagination.has_prev
+            }
         }), 200
 
     except Exception as e:
@@ -319,14 +335,27 @@ def get_applied_jobs():
     try:
         user = g.current_user
 
-        applied_matches = JobMatch.query.filter_by(
+        # Pagination parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = min(request.args.get('per_page', 20, type=int), 50)
+
+        pagination = JobMatch.query.options(
+            joinedload(JobMatch.job_posting)
+        ).filter_by(
             user_id=user.id,
             is_applied=True
-        ).order_by(JobMatch.applied_at.desc()).all()
+        ).order_by(JobMatch.applied_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
 
         return jsonify({
-            'matches': [match.to_dict() for match in applied_matches],
-            'total': len(applied_matches)
+            'matches': [match.to_dict() for match in pagination.items],
+            'total': pagination.total,
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'pages': pagination.pages,
+                'has_next': pagination.has_next,
+                'has_prev': pagination.has_prev
+            }
         }), 200
 
     except Exception as e:

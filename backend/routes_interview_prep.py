@@ -101,16 +101,29 @@ def get_user_interview_preps():
         user = g.current_user
         saved_only = request.args.get('saved_only', 'false').lower() == 'true'
 
+        # Pagination parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = min(request.args.get('per_page', 20, type=int), 50)
+
         query = InterviewPrep.query.filter_by(user_id=user.id)
 
         if saved_only:
             query = query.filter_by(is_saved=True)
 
-        preps = query.order_by(InterviewPrep.created_at.desc()).all()
+        pagination = query.order_by(InterviewPrep.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
 
         return jsonify({
-            'preps': [prep.to_dict() for prep in preps],
-            'total': len(preps)
+            'preps': [prep.to_dict() for prep in pagination.items],
+            'total': pagination.total,
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'pages': pagination.pages,
+                'has_next': pagination.has_next,
+                'has_prev': pagination.has_prev
+            }
         }), 200
 
     except Exception as e:
