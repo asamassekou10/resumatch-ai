@@ -135,7 +135,7 @@ class EmailService:
             return False
 
         try:
-            subject = "Welcome to ResuMatch AI - Verify Your Email"
+            subject = "Welcome to ResumeAnalyzer AI - Verify Your Email"
             
             html_content = f"""
             <!DOCTYPE html>
@@ -220,7 +220,7 @@ class EmailService:
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>Welcome to ResuMatch AI!</h1>
+                        <h1>Welcome to ResumeAnalyzer AI!</h1>
                         <p style="margin: 0; opacity: 0.9;">Your AI-Powered Career Assistant</p>
                     </div>
                     
@@ -259,7 +259,7 @@ class EmailService:
                     </div>
                     
                     <div class="footer">
-                        <p><strong>ResuMatch AI</strong></p>
+                        <p><strong>ResumeAnalyzer AI</strong></p>
                         <p>This is an automated message, please do not reply to this email.</p>
                     </div>
                 </div>
@@ -442,7 +442,7 @@ class EmailService:
                 </div>
                 
                 <div class="footer">
-                    <p><strong>ResuMatch AI</strong></p>
+                    <p><strong>ResumeAnalyzer AI</strong></p>
                     <p>Remember to review and personalize before sending</p>
                     <p style="margin-top: 10px;">
                         <a href="{website_url}" style="color: #667eea; text-decoration: none;">Visit Website</a>
@@ -555,7 +555,7 @@ class EmailService:
                 </div>
                 
                 <div class="footer">
-                    <p><strong>ResuMatch AI</strong></p>
+                    <p><strong>ResumeAnalyzer AI</strong></p>
                     <p>Review and format according to your preferences</p>
                     <p style="margin-top: 10px;">
                         <a href="{website_url}" style="color: #10b981; text-decoration: none;">Visit Website</a>
@@ -666,7 +666,7 @@ class EmailService:
                 </div>
                 
                 <div class="footer">
-                    <p>ResuMatch AI &copy; 2025</p>
+                    <p>ResumeAnalyzer AI &copy; 2025</p>
                 </div>
             </div>
         </body>

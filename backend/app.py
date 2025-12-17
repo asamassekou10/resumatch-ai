@@ -1674,7 +1674,7 @@ def confirm_subscription():
                 'price_data': {
                     'currency': 'usd',
                     'product_data': {
-                        'name': f'ResuMatch AI {tier_name}',
+                        'name': f'ResumeAnalyzer AI {tier_name}',
                     },
                     'unit_amount': price,
                     'recurring': {

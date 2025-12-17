@@ -35,16 +35,14 @@ const Navigation = ({ token, onLogout, user }) => {
           <div className="flex justify-between items-center h-16">
             {/* Mobile Hamburger & Logo */}
             <div className="flex items-center gap-3">
-              {/* Hamburger Menu - Only show on mobile when logged in */}
-              {token && (
-                <button
-                  onClick={() => setIsMobileMenuOpen(true)}
-                  className="md:hidden p-2 rounded-lg hover:bg-slate-800 transition"
-                  aria-label="Open menu"
-                >
-                  <Menu className="w-6 h-6 text-slate-300" />
-                </button>
-              )}
+              {/* Hamburger Menu - Show on mobile for all users */}
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="md:hidden p-2 rounded-lg hover:bg-slate-800 transition"
+                aria-label="Open menu"
+              >
+                <Menu className="w-6 h-6 text-slate-300" />
+              </button>
 
               {/* Logo - Clickable */}
               <Link
@@ -53,10 +51,10 @@ const Navigation = ({ token, onLogout, user }) => {
               >
                 <img
                   src="/logo192.png"
-                  alt="ResuMatch AI Logo"
+                  alt="ResumeAnalyzer AI Logo"
                   className="w-8 h-8 object-contain"
                 />
-                <h1 className="text-xl font-bold text-white">ResuMatch AI</h1>
+                <h1 className="text-xl font-bold text-white">ResumeAnalyzer AI</h1>
               </Link>
             </div>
 
