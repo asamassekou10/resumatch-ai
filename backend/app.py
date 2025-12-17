@@ -17,7 +17,8 @@ from security_config import (
     validate_email,
     validate_password,
     validate_file_upload,
-    sanitize_text_input
+    sanitize_text_input,
+    RequestLogger
 )
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
@@ -131,6 +132,9 @@ migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 oauth = OAuth(app)
+
+# Initialize request logging for monitoring
+request_logger = RequestLogger(app)
 
 # JWT Token Blacklist for secure logout
 # Uses Redis if available, falls back to in-memory set (not suitable for multi-worker production)
