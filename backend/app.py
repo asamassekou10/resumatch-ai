@@ -1080,6 +1080,7 @@ def get_analysis(analysis_id):
         'keywords_found': analysis.keywords_found,
         'keywords_missing': analysis.keywords_missing,
         'suggestions': analysis.suggestions,
+        'resume_filename': analysis.resume_filename,
         'created_at': analysis.created_at.isoformat()
     }), 200
 
@@ -1097,7 +1098,9 @@ def get_user_profile():
         'id': user.id,
         'email': user.email,
         'name': user.name,
+        'profile_picture': user.profile_picture,
         'subscription_tier': user.subscription_tier,
+        'subscription_status': user.subscription_status,
         'credits': user.credits,
         'email_verified': user.email_verified,
         'is_admin': user.is_admin,
@@ -1595,7 +1598,7 @@ def create_checkout_session():
                 'price_data': {
                     'currency': 'usd',
                     'product_data': {
-                        'name': f'ResuMatch AI {tier_name}',
+                        'name': f'ResumeAnalyzer AI {tier_name}',
                         'description': description,
                     },
                     'unit_amount': price,
@@ -1678,6 +1681,129 @@ def stripe_webhook():
             logging.info(f"User {user.id} downgraded to free tier (5 credits)")
     
     return jsonify({'status': 'success'}), 200
+
+@app.route('/api/billing/payment-method', methods=['GET'])
+@jwt_required()
+def get_payment_method():
+    """Get user's payment method from Stripe"""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        # If user doesn't have a Stripe customer ID, return no payment method
+        if not user.stripe_customer_id:
+            return jsonify({'payment_method': None}), 200
+
+        # Retrieve customer from Stripe
+        customer = stripe.Customer.retrieve(user.stripe_customer_id)
+
+        # Get default payment method
+        if customer.invoice_settings.default_payment_method:
+            payment_method = stripe.PaymentMethod.retrieve(
+                customer.invoice_settings.default_payment_method
+            )
+
+            return jsonify({
+                'payment_method': {
+                    'id': payment_method.id,
+                    'type': payment_method.type,
+                    'card': {
+                        'brand': payment_method.card.brand,
+                        'last4': payment_method.card.last4,
+                        'exp_month': payment_method.card.exp_month,
+                        'exp_year': payment_method.card.exp_year
+                    }
+                }
+            }), 200
+        else:
+            return jsonify({'payment_method': None}), 200
+
+    except stripe.error.StripeError as e:
+        logging.error(f"Stripe error retrieving payment method: {str(e)}")
+        return jsonify({'error': 'Failed to retrieve payment method'}), 500
+    except Exception as e:
+        logging.error(f"Error retrieving payment method: {str(e)}")
+        return jsonify({'error': 'Failed to retrieve payment method'}), 500
+
+@app.route('/api/billing/history', methods=['GET'])
+@jwt_required()
+def get_billing_history():
+    """Get user's billing history from Stripe"""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        # If user doesn't have a Stripe customer ID, return empty history
+        if not user.stripe_customer_id:
+            return jsonify({'invoices': []}), 200
+
+        # Retrieve invoices from Stripe (last 12 months)
+        invoices = stripe.Invoice.list(
+            customer=user.stripe_customer_id,
+            limit=12
+        )
+
+        invoice_list = []
+        for invoice in invoices.data:
+            invoice_list.append({
+                'id': invoice.id,
+                'date': invoice.created,
+                'amount': invoice.amount_paid / 100,  # Convert cents to dollars
+                'currency': invoice.currency.upper(),
+                'status': invoice.status,
+                'description': invoice.lines.data[0].description if invoice.lines.data else 'Subscription',
+                'invoice_pdf': invoice.invoice_pdf,
+                'hosted_invoice_url': invoice.hosted_invoice_url
+            })
+
+        return jsonify({'invoices': invoice_list}), 200
+
+    except stripe.error.StripeError as e:
+        logging.error(f"Stripe error retrieving billing history: {str(e)}")
+        return jsonify({'error': 'Failed to retrieve billing history'}), 500
+    except Exception as e:
+        logging.error(f"Error retrieving billing history: {str(e)}")
+        return jsonify({'error': 'Failed to retrieve billing history'}), 500
+
+@app.route('/api/billing/cancel-subscription', methods=['POST'])
+@jwt_required()
+def cancel_subscription():
+    """Cancel user's subscription"""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        if not user.subscription_id:
+            return jsonify({'error': 'No active subscription'}), 400
+
+        # Cancel subscription at period end
+        subscription = stripe.Subscription.modify(
+            user.subscription_id,
+            cancel_at_period_end=True
+        )
+
+        logging.info(f"User {user_id} scheduled subscription cancellation")
+
+        return jsonify({
+            'message': 'Subscription will be canceled at the end of the billing period',
+            'cancel_at': subscription.cancel_at
+        }), 200
+
+    except stripe.error.StripeError as e:
+        logging.error(f"Stripe error canceling subscription: {str(e)}")
+        return jsonify({'error': 'Failed to cancel subscription'}), 500
+    except Exception as e:
+        logging.error(f"Error canceling subscription: {str(e)}")
+        return jsonify({'error': 'Failed to cancel subscription'}), 500
 
 
 # ============== ADMIN ROUTES ==============

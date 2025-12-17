@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import ProtectedRoute from './ProtectedRoute';
+import PublicLayout from '../layouts/PublicLayout';
 import MainLayout from '../layouts/MainLayout';
 import MarketLayout from '../layouts/MarketLayout';
 import LoadingSpinner from '../common/LoadingSpinner';
@@ -12,19 +13,14 @@ import { ROUTES } from '../../config/routes';
 
 // Public Pages
 const LandingPageV2 = lazy(() => import('../LandingPageV2'));
-// TODO: Create separate LoginPage and RegisterPage components
-// For now, using LandingPageV2 which contains auth UI
-const LoginPage = LandingPageV2;
-const RegisterPage = LandingPageV2;
+const AuthPage = lazy(() => import('../AuthPage'));
 const GuestAnalyze = lazy(() => import('../GuestAnalyze'));
 const PricingPage = lazy(() => import('../PricingPageV2'));
 const HelpPage = lazy(() => import('../HelpPage'));
 
 // Protected Pages
-// TODO: Create separate Dashboard and AnalyzePage components
-// For now, using existing components as placeholders
-const Dashboard = lazy(() => import('../MarketIntelligenceDashboard'));
-const AnalyzePage = GuestAnalyze; // Temporary - reuse GuestAnalyze
+const Dashboard = lazy(() => import('../Dashboard'));
+const AnalyzePage = lazy(() => import('../AnalyzePage'));
 const ProfilePage = lazy(() => import('../ProfilePage'));
 const SettingsPage = lazy(() => import('../SettingsPage'));
 const BillingPage = lazy(() => import('../BillingPage'));
@@ -72,42 +68,54 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin }) => {
     <Suspense fallback={<LoadingSpinner message="Loading page..." />}>
       <Routes>
         {/* ============================================ */}
-        {/* PUBLIC ROUTES (No Authentication Required) */}
+        {/* PUBLIC ROUTES (No Authentication Required)  */}
+        {/* Uses PublicLayout for consistent navigation */}
         {/* ============================================ */}
 
-        <Route path={ROUTES.LANDING} element={<LandingPageV2 token={token} />} />
-
         <Route
-          path={ROUTES.LOGIN}
-          element={<LoginPage onLogin={handleLogin} />}
-        />
+          element={
+            <PublicLayout
+              userProfile={userProfile}
+              token={token}
+              handleLogout={handleLogout}
+              handleLogin={handleLogin}
+            />
+          }
+        >
+          <Route path={ROUTES.LANDING} element={<LandingPageV2 token={token} />} />
 
-        <Route
-          path={ROUTES.REGISTER}
-          element={<RegisterPage onRegister={handleLogin} />}
-        />
+          <Route
+            path={ROUTES.LOGIN}
+            element={token ? <Navigate to={ROUTES.DASHBOARD} replace /> : <AuthPage mode="login" onLogin={handleLogin} />}
+          />
 
-        <Route
-          path={ROUTES.GUEST_ANALYZE}
-          element={<GuestAnalyze />}
-        />
+          <Route
+            path={ROUTES.REGISTER}
+            element={token ? <Navigate to={ROUTES.DASHBOARD} replace /> : <AuthPage mode="register" onLogin={handleLogin} />}
+          />
 
-        <Route
-          path={ROUTES.PRICING}
-          element={<PricingPage userProfile={userProfile} />}
-        />
+          <Route
+            path={ROUTES.GUEST_ANALYZE}
+            element={<GuestAnalyze />}
+          />
 
-        <Route path={ROUTES.HELP} element={<HelpPage />} />
+          <Route
+            path={ROUTES.PRICING}
+            element={<PricingPage token={token} userProfile={userProfile} />}
+          />
 
-        <Route
-          path={ROUTES.HELP_TERMS}
-          element={<HelpPage defaultTab="terms" />}
-        />
+          <Route path={ROUTES.HELP} element={<HelpPage />} />
 
-        <Route
-          path={ROUTES.HELP_PRIVACY}
-          element={<HelpPage defaultTab="privacy" />}
-        />
+          <Route
+            path={ROUTES.HELP_TERMS}
+            element={<HelpPage defaultTab="terms" />}
+          />
+
+          <Route
+            path={ROUTES.HELP_PRIVACY}
+            element={<HelpPage defaultTab="privacy" />}
+          />
+        </Route>
 
         {/* ============================================ */}
         {/* PROTECTED ROUTES (Main Application)         */}
@@ -164,6 +172,15 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin }) => {
             element={
               <ProtectedRoute>
                 <BillingPage user={userProfile} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/result/:id"
+            element={
+              <ProtectedRoute>
+                <AnalyzePage userProfile={userProfile} viewMode="result" />
               </ProtectedRoute>
             }
           />

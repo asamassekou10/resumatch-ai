@@ -86,7 +86,7 @@ const LandingPageV2 = ({ token }) => {
     <>
       <SEO
         title="AI-Powered Resume Analysis & Job Matching"
-        description="Optimize your resume with AI-powered analysis, ATS scoring, skill gap analysis, and personalized job matching. Get hired faster with ResuMatch AI."
+        description="Optimize your resume with AI-powered analysis, ATS scoring, skill gap analysis, and personalized job matching. Get hired faster with ResumeAnalyzer AI."
         keywords="resume analyzer, AI resume, ATS score, job matching, career tools, resume optimization"
         url="https://resumeanalyzerai.com/"
       />
@@ -120,7 +120,7 @@ const LandingPageV2 = ({ token }) => {
               custom={1}
             >
               Land Your Dream Job
-              <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mt-2 pb-2">
+              <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mt-2 pb-4">
                 with AI-Powered Insights
               </span>
             </motion.h1>

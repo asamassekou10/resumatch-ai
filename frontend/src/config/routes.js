@@ -24,6 +24,7 @@ export const ROUTES = {
   // ============================================
   DASHBOARD: '/dashboard',
   ANALYZE: '/analyze',
+  RESULT: '/result/:id',
   PROFILE: '/profile',
   SETTINGS: '/settings',
   BILLING: '/billing',

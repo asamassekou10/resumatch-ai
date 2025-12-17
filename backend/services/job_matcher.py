@@ -415,8 +415,11 @@ Analyze how well this candidate matches the job requirements. Consider:
 Provide ONLY the JSON, no other text.
 """
 
-            # Call Gemini API
-            response = self.model.generate_content(prompt)
+            # Call Gemini API with timeout
+            response = self.model.generate_content(
+                prompt,
+                request_options={'timeout': 30}
+            )
             result_text = response.text.strip()
 
             # Extract JSON from response

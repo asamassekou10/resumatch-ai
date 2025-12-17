@@ -728,6 +728,12 @@
   max-width: 400px;
 }
 
+.empty-state .btn-primary {
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  min-width: auto;
+}
+
 .company-intel-loading {
   display: flex;
   flex-direction: column;

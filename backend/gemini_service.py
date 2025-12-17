@@ -67,8 +67,11 @@ class GeminiService:
         for attempt in range(self.max_retries):
             try:
                 logger.info(f"Calling Gemini API for {operation_name} (attempt {attempt + 1})")
-                response = self.model.generate_content(prompt)
-                
+                response = self.model.generate_content(
+                    prompt,
+                    request_options={'timeout': 30}
+                )
+
                 if response and response.text:
                     logger.info(f"Gemini API {operation_name} completed successfully")
                     return self._sanitize_response(response.text)
