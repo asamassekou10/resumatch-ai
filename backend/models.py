@@ -73,32 +73,38 @@ class User(db.Model):
     google_id = db.Column(db.String(100), unique=True, nullable=True)
     profile_picture = db.Column(db.String(500), nullable=True)
     auth_provider = db.Column(db.String(20), default='email')  # 'email' or 'google'
-    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    is_active = db.Column(db.Boolean, default=True, nullable=False, index=True)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     email_verified = db.Column(db.Boolean, default=False, nullable=False)
     verification_token = db.Column(db.String(255), nullable=True)
     # Subscription and credit fields
-    subscription_tier = db.Column(db.String(50), default='free', nullable=False)
-    subscription_status = db.Column(db.String(50), default='inactive', nullable=False)  # inactive, active, cancelled, expired, past_due
+    subscription_tier = db.Column(db.String(50), default='free', nullable=False, index=True)
+    subscription_status = db.Column(db.String(50), default='inactive', nullable=False, index=True)  # inactive, active, cancelled, expired, past_due
     credits = db.Column(db.Integer, default=0, nullable=False)
     stripe_customer_id = db.Column(db.String(255), nullable=True, unique=True)
     subscription_id = db.Column(db.String(255), nullable=True, unique=True)
 
     # Market preferences for personalized insights
-    preferred_industry = db.Column(db.String(100), nullable=True)  # 'Technology', 'Healthcare', 'Security', etc.
+    preferred_industry = db.Column(db.String(100), nullable=True, index=True)  # 'Technology', 'Healthcare', 'Security', etc.
     preferred_job_titles = db.Column(db.JSON, default=[])  # List of target job titles
     preferred_location = db.Column(db.String(200), nullable=True)  # City/region preference
     experience_level = db.Column(db.String(50), nullable=True)  # 'Entry', 'Mid', 'Senior', 'Executive'
     preferences_completed = db.Column(db.Boolean, default=False)  # Has user completed preference setup?
     detected_industries = db.Column(db.JSON, default=[])  # Industries detected from their resumes
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    last_login = db.Column(db.DateTime)
+    last_login = db.Column(db.DateTime, index=True)
 
     # Relationships
     analyses = db.relationship('Analysis', backref='user', lazy=True, cascade='all, delete-orphan')
     admin_logs = db.relationship('AdminLog', backref='admin_user', lazy=True)
+
+    # Table-level composite indexes for common queries
+    __table_args__ = (
+        db.Index('idx_user_subscription', 'subscription_tier', 'subscription_status'),
+        db.Index('idx_user_active_tier', 'is_active', 'subscription_tier'),
+    )
 
     def __repr__(self):
         return f'<User {self.email}>'
@@ -173,6 +179,8 @@ class Analysis(db.Model):
     __table_args__ = (
         db.Index('idx_user_created', 'user_id', 'created_at'),
         db.Index('idx_analysis_match_score', 'match_score'),
+        db.Index('idx_analysis_industry', 'detected_industry'),
+        db.Index('idx_analysis_user_industry', 'user_id', 'detected_industry'),
     )
     
     def __repr__(self):
@@ -730,6 +738,8 @@ class GuestSession(db.Model):
         db.Index('idx_session_token', 'session_token'),
         db.Index('idx_expires_at', 'expires_at'),
         db.Index('idx_ip_address', 'ip_address'),
+        db.Index('idx_device_fingerprint', 'device_fingerprint'),
+        db.Index('idx_guest_status', 'status'),
     )
 
     def __repr__(self):

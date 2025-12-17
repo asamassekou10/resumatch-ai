@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, ArrowUpRight, Star } from 'lucide-react';
+import { ROUTES } from '../config/routes';
+import SEO from './common/SEO';
 
-const LandingPageV2 = ({ setView, token }) => {
+const LandingPageV2 = ({ token }) => {
+  const navigate = useNavigate();
   const [hoveredFeature, setHoveredFeature] = useState(null);
 
   // Animation variants
@@ -79,8 +83,15 @@ const LandingPageV2 = ({ setView, token }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
-      {/* Hero Section */}
+    <>
+      <SEO
+        title="AI-Powered Resume Analysis & Job Matching"
+        description="Optimize your resume with AI-powered analysis, ATS scoring, skill gap analysis, and personalized job matching. Get hired faster with ResumeAnalyzer AI."
+        keywords="resume analyzer, AI resume, ATS score, job matching, career tools, resume optimization"
+        url="https://resumeanalyzerai.com/"
+      />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+        {/* Hero Section */}
       <div className="relative pt-20 pb-32 px-4 sm:px-6 lg:px-8">
         {/* Animated background elements */}
         <motion.div
@@ -109,7 +120,7 @@ const LandingPageV2 = ({ setView, token }) => {
               custom={1}
             >
               Land Your Dream Job
-              <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mt-2 pb-2">
+              <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mt-2 pb-4">
                 with AI-Powered Insights
               </span>
             </motion.h1>
@@ -129,7 +140,7 @@ const LandingPageV2 = ({ setView, token }) => {
               custom={3}
             >
               <motion.button
-                onClick={() => setView('guest-analyze')}
+                onClick={() => navigate(ROUTES.GUEST_ANALYZE)}
                 className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg flex items-center gap-2 hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -138,7 +149,7 @@ const LandingPageV2 = ({ setView, token }) => {
                 <ArrowRight className="w-5 h-5" />
               </motion.button>
               <motion.button
-                onClick={() => setView('pricing')}
+                onClick={() => navigate(ROUTES.PRICING)}
                 className="px-8 py-4 border-2 border-cyan-500/50 text-white font-semibold rounded-lg hover:bg-slate-800/50 transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -295,7 +306,7 @@ const LandingPageV2 = ({ setView, token }) => {
             Join thousands of job seekers who have already improved their applications
           </p>
           <motion.button
-            onClick={() => setView(token ? 'dashboard' : 'guest-analyze')}
+            onClick={() => navigate(token ? ROUTES.DASHBOARD : ROUTES.GUEST_ANALYZE)}
             className="px-10 py-4 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg flex items-center gap-2 hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 mx-auto"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -305,7 +316,8 @@ const LandingPageV2 = ({ setView, token }) => {
           </motion.button>
         </motion.div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

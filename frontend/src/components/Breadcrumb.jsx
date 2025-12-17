@@ -1,60 +1,66 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ROUTES } from '../config/routes';
 
-const Breadcrumb = ({ view, setView, token, currentAnalysis }) => {
+const Breadcrumb = ({ token, currentAnalysis }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
+
   const getBreadcrumbItems = () => {
     const items = [];
-    
+
     if (token) {
       items.push({
         label: 'Dashboard',
-        onClick: () => setView('dashboard'),
-        active: view === 'dashboard'
+        onClick: () => navigate(ROUTES.DASHBOARD),
+        active: currentPath === ROUTES.DASHBOARD
       });
     }
-    
-    if (view === 'analyze') {
+
+    if (currentPath === ROUTES.ANALYZE) {
       items.push({
         label: 'Analyze Resume',
         active: true
       });
     }
-    
-    if (view === 'result' && currentAnalysis) {
+
+    if (currentPath === '/result' && currentAnalysis) {
       items.push({
         label: 'Analysis Results',
         active: true
       });
     }
-    
-    if (view === 'pricing') {
+
+    if (currentPath === ROUTES.PRICING) {
       items.push({
         label: 'Pricing',
         active: true
       });
     }
 
-    if (view === 'market-dashboard') {
+    if (currentPath === ROUTES.MARKET_DASHBOARD) {
       items.push({
         label: 'Market Intelligence',
         active: true
       });
     }
 
-    if (view === 'skill-gap') {
+    if (currentPath === ROUTES.MARKET_SKILL_GAP) {
       items.push({
         label: 'Skill Gap Analysis',
         active: true
       });
     }
 
-    if (view === 'job-stats') {
+    if (currentPath === ROUTES.MARKET_JOB_STATS) {
       items.push({
         label: 'Job Market Statistics',
         active: true
       });
     }
 
-    if (view === 'skill-relationships') {
+    if (currentPath === ROUTES.MARKET_SKILL_RELATIONSHIPS) {
       items.push({
         label: 'Skill Relationships',
         active: true

@@ -1,9 +1,26 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { X, ChevronRight, ChevronDown, Home, FileText, TrendingUp, CreditCard, Settings, HelpCircle, LogIn, UserPlus, Shield, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ROUTES } from '../config/routes';
 
-const MobileMenu = ({ isOpen, onClose, user, view, setView, handleLogout, isAdmin }) => {
+/**
+ * MobileMenu Component
+ *
+ * Sliding mobile navigation menu with React Router integration.
+ * Supports authenticated and unauthenticated states, expandable sections, and admin access.
+ *
+ * @param {Object} props
+ * @param {boolean} props.isOpen - Whether menu is open
+ * @param {Function} props.onClose - Close menu callback
+ * @param {Object} props.user - User profile data
+ * @param {Function} props.handleLogout - Logout handler
+ * @param {boolean} props.isAdmin - Whether user is admin
+ */
+const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
   const [expandedSections, setExpandedSections] = useState({});
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
@@ -12,51 +29,63 @@ const MobileMenu = ({ isOpen, onClose, user, view, setView, handleLogout, isAdmi
     }));
   };
 
-  const handleNavClick = (newView) => {
-    setView(newView);
+  const handleNavClick = (route) => {
+    navigate(route);
     onClose();
   };
 
-  // Different menu items for logged-in vs logged-out users
-  const menuItems = user ? [
-    { label: 'Dashboard', view: 'dashboard', icon: Home },
-    { label: 'Analyze Resume', view: 'analyze', icon: FileText },
+  // Menu configuration for logged-in users
+  const authenticatedMenuItems = [
+    { label: 'Dashboard', route: ROUTES.DASHBOARD, icon: Home },
+    { label: 'Analyze Resume', route: ROUTES.ANALYZE, icon: FileText },
     {
       label: 'Market Intelligence',
       icon: TrendingUp,
       expandable: true,
       children: [
-        { label: 'Overview', view: 'market-dashboard' },
-        { label: 'Interview Prep', view: 'interview-prep' },
-        { label: 'Company Intel', view: 'company-intel' },
-        { label: 'Career Path', view: 'career-path' },
-        { label: 'Skill Gap', view: 'skill-gap' },
+        { label: 'Overview', route: ROUTES.MARKET_DASHBOARD },
+        { label: 'Interview Prep', route: ROUTES.MARKET_INTERVIEW_PREP },
+        { label: 'Company Intel', route: ROUTES.MARKET_COMPANY_INTEL },
+        { label: 'Career Path', route: ROUTES.MARKET_CAREER_PATH },
+        { label: 'Skill Gap', route: ROUTES.MARKET_SKILL_GAP },
       ]
     },
-    { label: 'Pricing', view: 'pricing', icon: CreditCard },
-    { label: 'Settings', view: 'settings', icon: Settings },
-    { label: 'Help & Support', view: 'help', icon: HelpCircle },
-  ] : [
-    // Logged out menu items
-    { label: 'Home', view: 'landing', icon: Home },
-    { label: 'Try Free', view: 'guest-analyze', icon: FileText },
-    { label: 'Pricing', view: 'pricing', icon: CreditCard },
-    { label: 'Login', view: 'login', icon: LogIn },
-    { label: 'Sign Up', view: 'register', icon: UserPlus },
+    { label: 'Pricing', route: ROUTES.PRICING, icon: CreditCard },
+    { label: 'Settings', route: ROUTES.SETTINGS, icon: Settings },
+    { label: 'Help & Support', route: ROUTES.HELP, icon: HelpCircle },
   ];
 
+  // Menu configuration for logged-out users
+  const publicMenuItems = [
+    { label: 'Home', route: ROUTES.LANDING, icon: Home },
+    { label: 'Try Free', route: ROUTES.GUEST_ANALYZE, icon: FileText },
+    { label: 'Pricing', route: ROUTES.PRICING, icon: CreditCard },
+    { label: 'Login', route: ROUTES.LOGIN, icon: LogIn },
+    { label: 'Sign Up', route: ROUTES.REGISTER, icon: UserPlus },
+  ];
+
+  // Admin menu items
+  const adminMenuItem = {
+    label: 'Admin',
+    icon: Shield,
+    expandable: true,
+    children: [
+      { label: 'Dashboard', route: ROUTES.ADMIN },
+      { label: 'Users', route: ROUTES.ADMIN_USERS },
+      { label: 'Analytics', route: ROUTES.ADMIN_ANALYTICS },
+    ]
+  };
+
+  // Build menu items based on user state
+  let menuItems = user ? [...authenticatedMenuItems] : [...publicMenuItems];
+
+  // Add admin section if user is admin
   if (user && isAdmin) {
-    menuItems.push({
-      label: 'Admin',
-      icon: Shield,
-      expandable: true,
-      children: [
-        { label: 'Dashboard', view: 'admin' },
-        { label: 'Users', view: 'admin-users' },
-        { label: 'Analytics', view: 'admin-analytics' },
-      ]
-    });
+    menuItems.push(adminMenuItem);
   }
+
+  // Check if route is active
+  const isActiveRoute = (route) => location.pathname === route;
 
   return (
     <AnimatePresence>
@@ -81,40 +110,38 @@ const MobileMenu = ({ isOpen, onClose, user, view, setView, handleLogout, isAdmi
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-slate-700">
-              <h2 className="text-lg font-semibold text-white">MENU</h2>
+              <h2 className="text-xl font-bold text-white">Menu</h2>
               <button
                 onClick={onClose}
                 className="p-2 rounded-lg hover:bg-slate-800 transition"
                 aria-label="Close menu"
               >
-                <X className="w-5 h-5 text-slate-400" />
+                <X className="w-6 h-6 text-slate-300" />
               </button>
             </div>
 
-            {/* User Info */}
+            {/* User Info (if logged in) */}
             {user && (
-              <div className="p-4 border-b border-slate-700">
+              <div className="p-4 border-b border-slate-700 bg-slate-800/50">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
                     {user.name?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white truncate">{user.name}</p>
-                    <p className="text-xs text-slate-400 truncate">{user.email}</p>
-                    <p className="text-xs text-cyan-400 mt-1 capitalize">
-                      {user.subscription_tier} • {user.credits} credits
-                    </p>
+                    <p className="text-white font-semibold truncate">{user.name || 'User'}</p>
+                    <p className="text-slate-400 text-sm truncate">{user.email}</p>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Menu Items */}
-            <div className="p-2">
+            <nav className="p-2">
               {menuItems.map((item, index) => (
                 <div key={index}>
                   {item.expandable ? (
-                    <>
+                    // Expandable section
+                    <div>
                       <button
                         onClick={() => toggleSection(item.label)}
                         className="w-full flex items-center justify-between px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition"
@@ -130,29 +157,39 @@ const MobileMenu = ({ isOpen, onClose, user, view, setView, handleLogout, isAdmi
                         )}
                       </button>
 
-                      {expandedSections[item.label] && (
-                        <div className="ml-8 mt-1 space-y-1">
-                          {item.children.map((child, childIndex) => (
-                            <button
-                              key={childIndex}
-                              onClick={() => handleNavClick(child.view)}
-                              className={`w-full text-left px-4 py-2 text-sm rounded-lg transition ${
-                                view === child.view
-                                  ? 'bg-cyan-500 text-white'
-                                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                              }`}
-                            >
-                              {child.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </>
+                      {/* Expanded children */}
+                      <AnimatePresence>
+                        {expandedSections[item.label] && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="ml-4 mt-1 space-y-1 overflow-hidden"
+                          >
+                            {item.children.map((child, childIndex) => (
+                              <button
+                                key={childIndex}
+                                onClick={() => handleNavClick(child.route)}
+                                className={`w-full text-left px-4 py-2 rounded-lg transition ${
+                                  isActiveRoute(child.route)
+                                    ? 'bg-cyan-500/20 text-cyan-400'
+                                    : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                                }`}
+                              >
+                                {child.label}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   ) : (
+                    // Regular menu item
                     <button
-                      onClick={() => handleNavClick(item.view)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                        view === item.view
+                      onClick={() => handleNavClick(item.route)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${
+                        isActiveRoute(item.route)
                           ? 'bg-cyan-500 text-white'
                           : 'text-slate-300 hover:text-white hover:bg-slate-800'
                       }`}
@@ -163,9 +200,9 @@ const MobileMenu = ({ isOpen, onClose, user, view, setView, handleLogout, isAdmi
                   )}
                 </div>
               ))}
-            </div>
+            </nav>
 
-            {/* Logout */}
+            {/* Logout Button (if logged in) */}
             {user && (
               <div className="p-2 border-t border-slate-700 mt-auto">
                 <button

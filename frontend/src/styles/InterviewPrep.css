@@ -697,6 +697,12 @@
   max-width: 400px;
 }
 
+.empty-state .btn-primary {
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  min-width: auto;
+}
+
 /* Loading State */
 .interview-prep-loading {
   display: flex;

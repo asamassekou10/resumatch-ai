@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, Zap, Crown, Sparkles, ArrowRight } from 'lucide-react';
+import { ROUTES } from '../config/routes';
+import SEO from './common/SEO';
 
-const PricingPageV2 = ({ setView, handleUpgradeToPro, handleUpgradeToElite, token }) => {
+const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userProfile }) => {
+  const navigate = useNavigate();
   const [isYearly, setIsYearly] = useState(false);
 
   const fadeInUp = {
@@ -36,7 +40,7 @@ const PricingPageV2 = ({ setView, handleUpgradeToPro, handleUpgradeToElite, toke
       highlighted: false,
       icon: Sparkles,
       buttonText: 'Current Plan',
-      buttonAction: () => setView('dashboard'),
+      buttonAction: () => navigate(ROUTES.DASHBOARD),
       buttonVariant: 'secondary'
     },
     {
@@ -99,9 +103,16 @@ const PricingPageV2 = ({ setView, handleUpgradeToPro, handleUpgradeToElite, toke
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
+    <>
+      <SEO
+        title="Pricing Plans"
+        description="Choose the perfect ResuMatch AI plan for your job search. Free, Pro, and Elite plans with AI-powered resume analysis, job matching, and career tools."
+        keywords="pricing, subscription, resume analyzer pricing, AI career tools pricing"
+        url="https://resumeanalyzerai.com/pricing"
+      />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
         <motion.div
           className="text-center mb-12"
           initial="hidden"
@@ -356,8 +367,9 @@ const PricingPageV2 = ({ setView, handleUpgradeToPro, handleUpgradeToElite, toke
             All plans include secure payment processing via Stripe. Cancel anytime, no questions asked.
           </p>
         </motion.div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -1,9 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, Settings, CreditCard, HelpCircle, LogOut, Crown, ChevronDown } from 'lucide-react';
+import { ROUTES } from '../config/routes';
 
-const UserMenu = ({ user, onLogout, setView }) => {
+const UserMenu = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
+  const navigate = useNavigate();
 
   // Close on outside click
   useEffect(() => {
@@ -82,28 +85,28 @@ const UserMenu = ({ user, onLogout, setView }) => {
           {/* Menu Items */}
           <div className="p-1">
             <button
-              onClick={() => { setView('profile'); setIsOpen(false); }}
+              onClick={() => { navigate(ROUTES.PROFILE); setIsOpen(false); }}
               className="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition"
             >
               <User className="w-4 h-4" />
               Profile
             </button>
             <button
-              onClick={() => { setView('settings'); setIsOpen(false); }}
+              onClick={() => { navigate(ROUTES.SETTINGS); setIsOpen(false); }}
               className="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition"
             >
               <Settings className="w-4 h-4" />
               Settings
             </button>
             <button
-              onClick={() => { setView('billing'); setIsOpen(false); }}
+              onClick={() => { navigate(ROUTES.BILLING); setIsOpen(false); }}
               className="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition"
             >
               <CreditCard className="w-4 h-4" />
               Billing & Subscription
             </button>
             <button
-              onClick={() => { setView('help'); setIsOpen(false); }}
+              onClick={() => { navigate(ROUTES.HELP); setIsOpen(false); }}
               className="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition"
             >
               <HelpCircle className="w-4 h-4" />

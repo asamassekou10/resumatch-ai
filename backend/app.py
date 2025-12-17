@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, redirect, url_for, session
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -17,9 +17,11 @@ from security_config import (
     validate_email,
     validate_password,
     validate_file_upload,
-    sanitize_text_input
+    sanitize_text_input,
+    RequestLogger
 )
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 from config_manager import init_config_manager
 from keyword_manager import init_keyword_manager
 from routes_config import config_bp
@@ -89,8 +91,21 @@ CORS(app, resources={
 # Configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://localhost/resume_optimizer')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Database connection pooling for production scalability
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_size': 20,              # Base pool size
+    'max_overflow': 40,           # Additional connections when needed
+    'pool_timeout': 30,           # Wait 30s for connection
+    'pool_recycle': 1800,         # Recycle connections after 30min
+    'pool_pre_ping': True,        # Test connections before use
+}
+
 app.config['JWT_SECRET_KEY'] = JWT_SECRET
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=7)
+# Shorter access token expiration for security (1 hour)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+# Refresh token lasts longer (7 days)
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=7)
 app.config['SECRET_KEY'] = SESSION_SECRET
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB max request size
 app.config['PREFERRED_URL_SCHEME'] = 'https'  # Force HTTPS URL generation
@@ -118,6 +133,53 @@ bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 oauth = OAuth(app)
 
+# Initialize request logging for monitoring
+request_logger = RequestLogger(app)
+
+# JWT Token Blacklist for secure logout
+# Uses Redis if available, falls back to in-memory set (not suitable for multi-worker production)
+jwt_blacklist = set()
+
+# Try to use Redis for blacklist if available
+try:
+    import redis
+    if REDIS_URL:
+        redis_client = redis.from_url(REDIS_URL)
+        redis_client.ping()  # Test connection
+        USE_REDIS_BLACKLIST = True
+        logging.info("JWT blacklist using Redis storage")
+    else:
+        USE_REDIS_BLACKLIST = False
+        redis_client = None
+        logging.warning("JWT blacklist using in-memory storage - not suitable for production with multiple workers")
+except Exception as e:
+    USE_REDIS_BLACKLIST = False
+    redis_client = None
+    logging.warning(f"Redis not available for JWT blacklist, using in-memory: {e}")
+
+
+def add_token_to_blacklist(jti, expires_in_seconds=3600):
+    """Add a token JTI to the blacklist"""
+    if USE_REDIS_BLACKLIST and redis_client:
+        redis_client.setex(f"jwt_blacklist:{jti}", expires_in_seconds, "1")
+    else:
+        jwt_blacklist.add(jti)
+
+
+def is_token_blacklisted(jti):
+    """Check if a token JTI is blacklisted"""
+    if USE_REDIS_BLACKLIST and redis_client:
+        return redis_client.get(f"jwt_blacklist:{jti}") is not None
+    return jti in jwt_blacklist
+
+
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+    """Check if the token has been revoked"""
+    jti = jwt_payload.get("jti")
+    return is_token_blacklisted(jti)
+
+
 # Handle OPTIONS requests for CORS preflight - bypass authentication
 @app.before_request
 def handle_preflight():
@@ -140,12 +202,18 @@ config_manager = init_config_manager(db)
 # Initialize Keyword Manager
 keyword_manager = init_keyword_manager()
 
-# Rate Limiting
+# Rate Limiting - Use Redis in production for multi-worker support
+REDIS_URL = os.getenv('REDIS_URL')
+rate_limit_storage = REDIS_URL if REDIS_URL else "memory://"
+
+if rate_limit_storage == "memory://" and not app.debug:
+    logging.warning("Rate limiting using in-memory storage - not suitable for production with multiple workers!")
+
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
     default_limits=["200 per day", "50 per hour"],
-    storage_uri="memory://"
+    storage_uri=rate_limit_storage
 )
 
 # Configure Google OAuth
@@ -504,22 +572,63 @@ def login():
         logging.info(f"Successful login: {email}")
 
         access_token = create_access_token(identity=str(user.id))
+        refresh_token = create_refresh_token(identity=str(user.id))
         return jsonify({
             'access_token': access_token,
+            'refresh_token': refresh_token,
             'user': {
                 'id': user.id,
                 'email': user.email,
                 'name': user.name,
+                'profile_picture': user.profile_picture,
                 'auth_provider': user.auth_provider,
                 'email_verified': user.email_verified,
                 'subscription_tier': user.subscription_tier,
-                'credits': user.credits
+                'subscription_status': user.subscription_status,
+                'credits': user.credits,
+                'is_admin': user.is_admin,
+                'is_active': user.is_active
             }
         }), 200
 
     except Exception as e:
         logging.error(f"Login error: {str(e)}", exc_info=True)
         return jsonify({'error': 'Login failed. Please try again.'}), 500
+
+
+@app.route('/api/auth/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh():
+    """Get a new access token using refresh token"""
+    try:
+        identity = get_jwt_identity()
+        user = User.query.get(int(identity))
+
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        # Create new access token
+        access_token = create_access_token(identity=str(user.id))
+
+        return jsonify({
+            'access_token': access_token,
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'name': user.name,
+                'profile_picture': user.profile_picture,
+                'subscription_tier': user.subscription_tier,
+                'subscription_status': user.subscription_status,
+                'credits': user.credits,
+                'is_admin': user.is_admin,
+                'is_active': user.is_active
+            }
+        }), 200
+
+    except Exception as e:
+        logging.error(f"Token refresh error: {str(e)}", exc_info=True)
+        return jsonify({'error': 'Token refresh failed'}), 500
+
 
 # Google OAuth Routes
 @app.route('/api/auth/google')
@@ -758,13 +867,23 @@ def google_callback():
 @app.route('/api/auth/logout', methods=['POST'])
 @jwt_required()
 def logout():
-    """Logout user (client-side token removal)"""
-    # In JWT, logout is typically handled client-side by removing the token
-    # But we can log the logout event
-    user_id = get_jwt_identity()
-    logging.info(f"User {user_id} logged out")
-    
-    return jsonify({'message': 'Logged out successfully'}), 200
+    """Logout user and blacklist the token"""
+    try:
+        # Get the JWT token identifier and blacklist it
+        jwt_data = get_jwt()
+        jti = jwt_data.get("jti")
+
+        if jti:
+            # Blacklist for 1 hour (same as access token expiry)
+            add_token_to_blacklist(jti, expires_in_seconds=3600)
+
+        user_id = get_jwt_identity()
+        logging.info(f"User {user_id} logged out, token blacklisted")
+
+        return jsonify({'message': 'Logged out successfully'}), 200
+    except Exception as e:
+        logging.error(f"Logout error: {str(e)}")
+        return jsonify({'message': 'Logged out'}), 200  # Still return success to client
 
 @app.route('/api/analyze', methods=['POST'])
 @jwt_required()
@@ -1052,16 +1171,36 @@ def analyze_resume_intelligent():
 @jwt_required()
 def get_analyses():
     user_id = int(get_jwt_identity())
-    analyses = Analysis.query.filter_by(user_id=user_id).order_by(Analysis.created_at.desc()).all()
-    
-    return jsonify([{
-        'id': a.id,
-        'job_title': a.job_title,
-        'company_name': a.company_name,
-        'match_score': a.match_score,
-        'resume_filename': a.resume_filename,
-        'created_at': a.created_at.isoformat()
-    } for a in analyses]), 200
+
+    # Pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 20, type=int), 100)  # Max 100 per page
+
+    # Query with pagination
+    pagination = Analysis.query.filter_by(user_id=user_id)\
+        .order_by(Analysis.created_at.desc())\
+        .paginate(page=page, per_page=per_page, error_out=False)
+
+    analyses = pagination.items
+
+    return jsonify({
+        'analyses': [{
+            'id': a.id,
+            'job_title': a.job_title,
+            'company_name': a.company_name,
+            'match_score': a.match_score,
+            'resume_filename': a.resume_filename,
+            'created_at': a.created_at.isoformat()
+        } for a in analyses],
+        'pagination': {
+            'page': page,
+            'per_page': per_page,
+            'total': pagination.total,
+            'pages': pagination.pages,
+            'has_next': pagination.has_next,
+            'has_prev': pagination.has_prev
+        }
+    }), 200
 
 @app.route('/api/analyses/<int:analysis_id>', methods=['GET'])
 @jwt_required()
@@ -1080,6 +1219,7 @@ def get_analysis(analysis_id):
         'keywords_found': analysis.keywords_found,
         'keywords_missing': analysis.keywords_missing,
         'suggestions': analysis.suggestions,
+        'resume_filename': analysis.resume_filename,
         'created_at': analysis.created_at.isoformat()
     }), 200
 
@@ -1097,7 +1237,9 @@ def get_user_profile():
         'id': user.id,
         'email': user.email,
         'name': user.name,
+        'profile_picture': user.profile_picture,
         'subscription_tier': user.subscription_tier,
+        'subscription_status': user.subscription_status,
         'credits': user.credits,
         'email_verified': user.email_verified,
         'is_admin': user.is_admin,
@@ -1108,38 +1250,53 @@ def get_user_profile():
 @jwt_required()
 def get_dashboard_stats():
     user_id = int(get_jwt_identity())
-    analyses = Analysis.query.filter_by(user_id=user_id).all()
-    
-    if not analyses:
+
+    # Use database aggregation for total count and avg score (more efficient)
+    stats = db.session.query(
+        func.count(Analysis.id).label('total'),
+        func.avg(Analysis.match_score).label('avg_score')
+    ).filter_by(user_id=user_id).first()
+
+    total = stats.total or 0
+    avg_score = stats.avg_score or 0
+
+    if total == 0:
         return jsonify({
             'total_analyses': 0,
             'average_score': 0,
             'score_trend': [],
             'top_missing_skills': []
         }), 200
-    
-    # Calculate statistics
-    total = len(analyses)
-    avg_score = sum(a.match_score for a in analyses) / total
-    
-    # Score trend (last 10 analyses)
+
+    # Score trend (last 10 analyses) - only fetch what we need
+    recent_analyses = Analysis.query.filter_by(user_id=user_id)\
+        .order_by(Analysis.created_at.desc())\
+        .limit(10)\
+        .all()
+
     score_trend = [{
         'date': a.created_at.isoformat(),
         'score': a.match_score,
         'job_title': a.job_title
-    } for a in sorted(analyses, key=lambda x: x.created_at)[-10:]]
-    
-    # Aggregate missing skills
+    } for a in reversed(recent_analyses)]  # Reverse for chronological order
+
+    # Aggregate missing skills - only fetch keywords_missing column
+    keyword_results = db.session.query(Analysis.keywords_missing)\
+        .filter_by(user_id=user_id)\
+        .filter(Analysis.keywords_missing.isnot(None))\
+        .all()
+
     skill_counts = {}
-    for a in analyses:
-        for skill in a.keywords_missing:
-            skill_counts[skill] = skill_counts.get(skill, 0) + 1
-    
+    for (keywords,) in keyword_results:
+        if keywords:
+            for skill in keywords:
+                skill_counts[skill] = skill_counts.get(skill, 0) + 1
+
     top_missing = sorted(skill_counts.items(), key=lambda x: x[1], reverse=True)[:10]
-    
+
     return jsonify({
         'total_analyses': total,
-        'average_score': round(avg_score, 2),
+        'average_score': round(float(avg_score), 2),
         'score_trend': score_trend,
         'top_missing_skills': [{'skill': s, 'count': c} for s, c in top_missing]
     }), 200
@@ -1595,7 +1752,7 @@ def create_checkout_session():
                 'price_data': {
                     'currency': 'usd',
                     'product_data': {
-                        'name': f'ResuMatch AI {tier_name}',
+                        'name': f'ResumeAnalyzer AI {tier_name}',
                         'description': description,
                     },
                     'unit_amount': price,
@@ -1678,6 +1835,129 @@ def stripe_webhook():
             logging.info(f"User {user.id} downgraded to free tier (5 credits)")
     
     return jsonify({'status': 'success'}), 200
+
+@app.route('/api/billing/payment-method', methods=['GET'])
+@jwt_required()
+def get_payment_method():
+    """Get user's payment method from Stripe"""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        # If user doesn't have a Stripe customer ID, return no payment method
+        if not user.stripe_customer_id:
+            return jsonify({'payment_method': None}), 200
+
+        # Retrieve customer from Stripe
+        customer = stripe.Customer.retrieve(user.stripe_customer_id)
+
+        # Get default payment method
+        if customer.invoice_settings.default_payment_method:
+            payment_method = stripe.PaymentMethod.retrieve(
+                customer.invoice_settings.default_payment_method
+            )
+
+            return jsonify({
+                'payment_method': {
+                    'id': payment_method.id,
+                    'type': payment_method.type,
+                    'card': {
+                        'brand': payment_method.card.brand,
+                        'last4': payment_method.card.last4,
+                        'exp_month': payment_method.card.exp_month,
+                        'exp_year': payment_method.card.exp_year
+                    }
+                }
+            }), 200
+        else:
+            return jsonify({'payment_method': None}), 200
+
+    except stripe.error.StripeError as e:
+        logging.error(f"Stripe error retrieving payment method: {str(e)}")
+        return jsonify({'error': 'Failed to retrieve payment method'}), 500
+    except Exception as e:
+        logging.error(f"Error retrieving payment method: {str(e)}")
+        return jsonify({'error': 'Failed to retrieve payment method'}), 500
+
+@app.route('/api/billing/history', methods=['GET'])
+@jwt_required()
+def get_billing_history():
+    """Get user's billing history from Stripe"""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        # If user doesn't have a Stripe customer ID, return empty history
+        if not user.stripe_customer_id:
+            return jsonify({'invoices': []}), 200
+
+        # Retrieve invoices from Stripe (last 12 months)
+        invoices = stripe.Invoice.list(
+            customer=user.stripe_customer_id,
+            limit=12
+        )
+
+        invoice_list = []
+        for invoice in invoices.data:
+            invoice_list.append({
+                'id': invoice.id,
+                'date': invoice.created,
+                'amount': invoice.amount_paid / 100,  # Convert cents to dollars
+                'currency': invoice.currency.upper(),
+                'status': invoice.status,
+                'description': invoice.lines.data[0].description if invoice.lines.data else 'Subscription',
+                'invoice_pdf': invoice.invoice_pdf,
+                'hosted_invoice_url': invoice.hosted_invoice_url
+            })
+
+        return jsonify({'invoices': invoice_list}), 200
+
+    except stripe.error.StripeError as e:
+        logging.error(f"Stripe error retrieving billing history: {str(e)}")
+        return jsonify({'error': 'Failed to retrieve billing history'}), 500
+    except Exception as e:
+        logging.error(f"Error retrieving billing history: {str(e)}")
+        return jsonify({'error': 'Failed to retrieve billing history'}), 500
+
+@app.route('/api/billing/cancel-subscription', methods=['POST'])
+@jwt_required()
+def cancel_subscription():
+    """Cancel user's subscription"""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        if not user.subscription_id:
+            return jsonify({'error': 'No active subscription'}), 400
+
+        # Cancel subscription at period end
+        subscription = stripe.Subscription.modify(
+            user.subscription_id,
+            cancel_at_period_end=True
+        )
+
+        logging.info(f"User {user_id} scheduled subscription cancellation")
+
+        return jsonify({
+            'message': 'Subscription will be canceled at the end of the billing period',
+            'cancel_at': subscription.cancel_at
+        }), 200
+
+    except stripe.error.StripeError as e:
+        logging.error(f"Stripe error canceling subscription: {str(e)}")
+        return jsonify({'error': 'Failed to cancel subscription'}), 500
+    except Exception as e:
+        logging.error(f"Error canceling subscription: {str(e)}")
+        return jsonify({'error': 'Failed to cancel subscription'}), 500
 
 
 # ============== ADMIN ROUTES ==============

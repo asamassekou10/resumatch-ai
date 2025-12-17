@@ -1,14 +1,32 @@
 import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import UserMenu from './UserMenu';
 import MobileMenu from './MobileMenu';
+import { ROUTES } from '../config/routes';
 
-const Navigation = ({ view, setView, token, handleLogout, showBackButton = false, backButtonText = "Back", onBackClick, user, isAdmin }) => {
+/**
+ * Navigation Component
+ *
+ * Main navigation bar with React Router integration.
+ * Supports both desktop and mobile layouts.
+ *
+ * @param {Object} props
+ * @param {string} props.token - Authentication token
+ * @param {Function} props.onLogout - Logout handler
+ * @param {Object} props.user - User profile data
+ */
+const Navigation = ({ token, onLogout, user }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [showMarketMenu, setShowMarketMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const marketIntelligenceViews = ['market-dashboard', 'skill-gap', 'job-stats', 'skill-relationships', 'market-insights', 'interview-prep', 'company-intel', 'career-path'];
-  const isMarketView = marketIntelligenceViews.includes(view);
+  // Check if current route is a market intelligence page
+  const isMarketRoute = location.pathname.startsWith('/market');
+
+  // Check if current path matches a route (for active styling)
+  const isActive = (path) => location.pathname === path;
 
   return (
     <>
@@ -29,175 +47,154 @@ const Navigation = ({ view, setView, token, handleLogout, showBackButton = false
               )}
 
               {/* Logo - Clickable */}
-              <button
-                onClick={() => setView(token ? 'dashboard' : 'landing')}
+              <Link
+                to={token ? ROUTES.DASHBOARD : ROUTES.LANDING}
                 className="flex items-center gap-3 hover:opacity-80 transition"
               >
                 <img
                   src="/logo192.png"
-                  alt="ResumeAnalyzer AI Logo"
+                  alt="ResuMatch AI Logo"
                   className="w-8 h-8 object-contain"
                 />
-                <h1 className="text-xl font-bold text-white">ResumeAnalyzer AI</h1>
-              </button>
+                <h1 className="text-xl font-bold text-white">ResuMatch AI</h1>
+              </Link>
             </div>
 
-          {/* Desktop Navigation Links - Hidden on mobile */}
-          <div className="flex items-center gap-4">
-            {showBackButton && (
-              <button
-                onClick={onBackClick}
-                className="text-slate-300 hover:text-white transition font-medium"
-              >
-                ← {backButtonText}
-              </button>
-            )}
-
-            {token && (
-              <>
-                <div className="hidden md:flex items-center gap-4">
-                  <button
-                    onClick={() => setView('dashboard')}
-                    className={`px-4 py-2 rounded-lg font-medium transition ${
-                      view === 'dashboard'
-                        ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/50'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                    }`}
-                  >
-                    Dashboard
-                  </button>
-
-                  {/* Market Intelligence Menu */}
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowMarketMenu(!showMarketMenu)}
-                      className={`px-4 py-2 rounded-lg font-medium transition flex items-center gap-1 ${
-                        isMarketView
+            {/* Desktop Navigation Links - Hidden on mobile */}
+            <div className="flex items-center gap-4">
+              {token && (
+                <>
+                  <div className="hidden md:flex items-center gap-4">
+                    <Link
+                      to={ROUTES.DASHBOARD}
+                      className={`px-4 py-2 rounded-lg font-medium transition ${
+                        isActive(ROUTES.DASHBOARD)
                           ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/50'
                           : 'text-slate-300 hover:text-white hover:bg-slate-800'
                       }`}
                     >
-                      Market Intelligence
-                      <svg className={`w-4 h-4 transition ${showMarketMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                      </svg>
-                    </button>
+                      Dashboard
+                    </Link>
 
-                    {showMarketMenu && (
-                      <div className="absolute right-0 mt-2 w-56 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
-                        <button
-                          onClick={() => {
-                            setView('market-dashboard');
-                            setShowMarketMenu(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition first:rounded-t-lg"
-                        >
-                          Overview & Dashboard
-                        </button>
-                        <button
-                          onClick={() => {
-                            setView('interview-prep');
-                            setShowMarketMenu(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition"
-                        >
-                          Interview Prep
-                        </button>
-                        <button
-                          onClick={() => {
-                            setView('company-intel');
-                            setShowMarketMenu(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition"
-                        >
-                          Company Intel
-                        </button>
-                        <button
-                          onClick={() => {
-                            setView('career-path');
-                            setShowMarketMenu(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition"
-                        >
-                          Career Path
-                        </button>
-                        <button
-                          onClick={() => {
-                            setView('skill-gap');
-                            setShowMarketMenu(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition last:rounded-b-lg"
-                        >
-                          Skill Gap Analysis
-                        </button>
-                      </div>
-                    )}
+                    {/* Market Intelligence Menu */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowMarketMenu(!showMarketMenu)}
+                        className={`px-4 py-2 rounded-lg font-medium transition flex items-center gap-1 ${
+                          isMarketRoute
+                            ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/50'
+                            : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                        }`}
+                      >
+                        Market Intelligence
+                        <svg className={`w-4 h-4 transition ${showMarketMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                      </button>
+
+                      {showMarketMenu && (
+                        <div className="absolute right-0 mt-2 w-56 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
+                          <Link
+                            to={ROUTES.MARKET_DASHBOARD}
+                            onClick={() => setShowMarketMenu(false)}
+                            className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition first:rounded-t-lg"
+                          >
+                            Overview & Dashboard
+                          </Link>
+                          <Link
+                            to={ROUTES.MARKET_INTERVIEW_PREP}
+                            onClick={() => setShowMarketMenu(false)}
+                            className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition"
+                          >
+                            Interview Prep
+                          </Link>
+                          <Link
+                            to={ROUTES.MARKET_COMPANY_INTEL}
+                            onClick={() => setShowMarketMenu(false)}
+                            className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition"
+                          >
+                            Company Intel
+                          </Link>
+                          <Link
+                            to={ROUTES.MARKET_CAREER_PATH}
+                            onClick={() => setShowMarketMenu(false)}
+                            className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition"
+                          >
+                            Career Path
+                          </Link>
+                          <Link
+                            to={ROUTES.MARKET_SKILL_GAP}
+                            onClick={() => setShowMarketMenu(false)}
+                            className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition last:rounded-b-lg"
+                          >
+                            Skill Gap Analysis
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+
+                    <Link
+                      to={ROUTES.PRICING}
+                      className={`px-4 py-2 rounded-lg font-medium transition ${
+                        isActive(ROUTES.PRICING)
+                          ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/50'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                      }`}
+                    >
+                      Pricing
+                    </Link>
                   </div>
 
-                  <button
-                    onClick={() => setView('pricing')}
-                    className={`px-4 py-2 rounded-lg font-medium transition ${
-                      view === 'pricing'
-                        ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/50'
-                        : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                    }`}
-                  >
-                    Pricing
-                  </button>
-                </div>
+                  {/* User Menu */}
+                  <UserMenu user={user} onLogout={onLogout} />
+                </>
+              )}
 
-                {/* User Menu - Replace Logout button */}
-                <UserMenu user={user} onLogout={handleLogout} setView={setView} />
-              </>
-            )}
-
-            {/* Logged Out Navigation */}
-            {!token && (
-              <div className="hidden md:flex items-center gap-4">
-                {view !== 'landing' && (
-                  <button
-                    onClick={() => setView('landing')}
+              {/* Logged Out Navigation */}
+              {!token && (
+                <div className="hidden md:flex items-center gap-4">
+                  {!isActive(ROUTES.LANDING) && (
+                    <Link
+                      to={ROUTES.LANDING}
+                      className="text-slate-300 hover:text-white transition font-medium"
+                    >
+                      Home
+                    </Link>
+                  )}
+                  <Link
+                    to={ROUTES.PRICING}
                     className="text-slate-300 hover:text-white transition font-medium"
                   >
-                    Home
-                  </button>
-                )}
-                <button
-                  onClick={() => setView('pricing')}
-                  className="text-slate-300 hover:text-white transition font-medium"
-                >
-                  Pricing
-                </button>
-                <button
-                  onClick={() => setView('login')}
-                  className="px-4 py-2 text-slate-300 hover:text-white transition font-medium rounded-lg hover:bg-slate-800"
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => setView('register')}
-                  className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition"
-                >
-                  Sign Up
-                </button>
-              </div>
-            )}
+                    Pricing
+                  </Link>
+                  <Link
+                    to={ROUTES.LOGIN}
+                    className="px-4 py-2 text-slate-300 hover:text-white transition font-medium rounded-lg hover:bg-slate-800"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to={ROUTES.REGISTER}
+                    className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
 
-    {/* Mobile Menu */}
-    <MobileMenu
-      isOpen={isMobileMenuOpen}
-      onClose={() => setIsMobileMenuOpen(false)}
-      user={user}
-      view={view}
-      setView={setView}
-      handleLogout={handleLogout}
-      isAdmin={isAdmin}
-    />
-  </>
+      {/* Mobile Menu */}
+      <MobileMenu
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        user={user}
+        handleLogout={onLogout}
+        isAdmin={user?.is_admin}
+      />
+    </>
   );
 };
 

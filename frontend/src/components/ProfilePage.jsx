@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { User, Upload, Mail, Calendar, Award, FileText } from 'lucide-react';
+import { ROUTES } from '../config/routes';
 
-const ProfilePage = ({ user, setView }) => {
+const ProfilePage = ({ user }) => {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(user?.name || '');
 
@@ -207,7 +210,7 @@ const ProfilePage = ({ user, setView }) => {
               </div>
 
               <button
-                onClick={() => setView('dashboard')}
+                onClick={() => navigate(ROUTES.DASHBOARD)}
                 className="w-full mt-4 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition"
               >
                 View All Analyses
