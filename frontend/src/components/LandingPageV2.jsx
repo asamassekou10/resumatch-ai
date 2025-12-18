@@ -1,9 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, ArrowUpRight, Star } from 'lucide-react';
+import { motion, useInView } from 'framer-motion';
+import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, ArrowUpRight, Star, Quote, TrendingUp } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
+
+// CountUp Component
+const CountUp = ({ from = 0, to, duration = 2, suffix = '' }) => {
+  const nodeRef = useRef();
+  const inView = useInView(nodeRef, { once: true, margin: "-50px" });
+  const [current, setCurrent] = useState(from);
+
+  useEffect(() => {
+    if (!inView) return;
+
+    let startTime;
+    let animationFrame;
+
+    const update = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
+
+      setCurrent(Math.floor(progress * (to - from) + from));
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(update);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [inView, from, to, duration]);
+
+  return <span ref={nodeRef}>{current.toLocaleString()}{suffix}</span>;
+};
 
 const LandingPageV2 = ({ token }) => {
   const navigate = useNavigate();
@@ -293,8 +323,187 @@ const LandingPageV2 = ({ token }) => {
         </div>
       </div>
 
-      {/* CTA Section */}
+      {/* Stats Section */}
+      <div className="py-24 px-4 sm:px-6 lg:px-8 bg-white/5 border-y border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display">
+                <CountUp to={10000} />+
+              </div>
+              <p className="text-gray-400">Resumes Analyzed</p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display">
+                <CountUp to={92} suffix="%" />
+              </div>
+              <p className="text-gray-400">Success Rate</p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display">
+                <CountUp to={500} />+
+              </div>
+              <p className="text-gray-400">Companies Hiring</p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display">
+                <CountUp to={4} suffix=".8" />
+                <Star className="inline w-6 h-6 text-yellow-400 fill-yellow-400 ml-2" />
+              </div>
+              <p className="text-gray-400">Average Rating</p>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+
+      {/* Testimonials Section */}
       <div className="py-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            className="text-center mb-16"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            custom={0}
+          >
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 font-display">
+              Success Stories
+            </h2>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+              Join thousands of professionals who accelerated their careers
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                name: "Sarah Johnson",
+                role: "Software Engineer @ Google",
+                text: "After using ResumeAnalyzer, I got 3 interviews in one week. The keyword optimization is a game changer.",
+                stars: 5
+              },
+              {
+                name: "David Chen",
+                role: "Product Manager @ Meta",
+                text: "The scoring system gave me a clear roadmap. It's like having a professional career coach in your pocket.",
+                stars: 5
+              },
+              {
+                name: "Elena Rodriguez",
+                role: "Marketing Director @ Amazon",
+                text: "Simple, fast, and effective. I didn't realize my formatting was breaking ATS parsers until I ran the scan.",
+                stars: 5
+              }
+            ].map((testimonial, i) => (
+              <motion.div
+                key={i}
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:border-purple-500/30 transition-all duration-300 group"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <Quote className="text-purple-500 mb-4 opacity-50 group-hover:opacity-100 transition-opacity" size={32} />
+                <p className="text-gray-300 mb-6 leading-relaxed">"{testimonial.text}"</p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold font-display text-lg">
+                    {testimonial.name[0]}
+                  </div>
+                  <div>
+                    <h4 className="text-white font-bold text-sm font-display">{testimonial.name}</h4>
+                    <p className="text-xs text-gray-500">{testimonial.role}</p>
+                  </div>
+                </div>
+                <div className="flex gap-1 mt-4 text-yellow-500">
+                  {[...Array(testimonial.stars)].map((_, j) => (
+                    <Star key={j} size={14} fill="currentColor" />
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Trusted By Section - Marquee */}
+      <div className="py-12 bg-black border-y border-white/5 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 text-center mb-8">
+          <p className="text-sm text-gray-500 uppercase tracking-widest font-medium">Trusted by candidates at</p>
+        </div>
+        <div className="flex w-full overflow-hidden relative">
+          <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
+
+          <motion.div
+            className="flex gap-16 whitespace-nowrap"
+            animate={{ x: [0, "-50%"] }}
+            transition={{
+              duration: 30,
+              ease: "linear",
+              repeat: Infinity
+            }}
+          >
+            {["GOOGLE", "MICROSOFT", "AMAZON", "APPLE", "META", "NETFLIX", "TESLA", "NVIDIA", "GOOGLE", "MICROSOFT", "AMAZON", "APPLE", "META", "NETFLIX", "TESLA", "NVIDIA"].map((company, index) => (
+              <span key={index} className="text-xl md:text-2xl font-bold text-white/30 hover:text-white transition-colors cursor-default select-none font-display">
+                {company}
+              </span>
+            ))}
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Final CTA Section */}
+      <div className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-purple-900/20" />
+        <motion.div
+          className="max-w-4xl mx-auto text-center relative z-10"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          custom={0}
+        >
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 font-display">
+            Ready to Land Your Dream Job?
+          </h2>
+          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+            Join 10,000+ job seekers who transformed their careers with AI-powered insights
+          </p>
+          <motion.button
+            onClick={() => navigate(token ? ROUTES.DASHBOARD : ROUTES.GUEST_ANALYZE)}
+            className="px-12 py-5 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl flex items-center gap-2 hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300 mx-auto transform hover:scale-105"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {token ? 'Go to Dashboard' : 'Analyze My Resume Now'}
+            <ArrowRight className="w-6 h-6" />
+          </motion.button>
+        </motion.div>
+      </div>
+
+      {/* Legacy CTA Section (for backward compatibility) - Hidden */}
+      <div className="hidden py-24 px-4 sm:px-6 lg:px-8">
         <motion.div
           className="max-w-4xl mx-auto text-center"
           initial="hidden"
