@@ -30,7 +30,7 @@ const Navigation = ({ token, onLogout, user }) => {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-lg border-b border-slate-700 shadow-lg">
+      <nav className="sticky top-0 z-50 bg-black/40 backdrop-blur-xl border-b border-white/10 shadow-2xl">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
             {/* Mobile Hamburger & Logo */}
@@ -38,10 +38,10 @@ const Navigation = ({ token, onLogout, user }) => {
               {/* Hamburger Menu - Show on mobile for all users */}
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="md:hidden p-2 rounded-lg hover:bg-slate-800 transition"
+                className="md:hidden p-2 rounded-lg hover:bg-white/10 transition"
                 aria-label="Open menu"
               >
-                <Menu className="w-6 h-6 text-slate-300" />
+                <Menu className="w-6 h-6 text-gray-300" />
               </button>
 
               {/* Logo - Clickable */}
@@ -67,8 +67,8 @@ const Navigation = ({ token, onLogout, user }) => {
                       to={ROUTES.DASHBOARD}
                       className={`px-4 py-2 rounded-lg font-medium transition ${
                         isActive(ROUTES.DASHBOARD)
-                          ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/50'
-                          : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-500/30'
+                          : 'text-gray-300 hover:text-white hover:bg-white/10'
                       }`}
                     >
                       Dashboard
@@ -80,8 +80,8 @@ const Navigation = ({ token, onLogout, user }) => {
                         onClick={() => setShowMarketMenu(!showMarketMenu)}
                         className={`px-4 py-2 rounded-lg font-medium transition flex items-center gap-1 ${
                           isMarketRoute
-                            ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/50'
-                            : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-500/30'
+                            : 'text-gray-300 hover:text-white hover:bg-white/10'
                         }`}
                       >
                         Market Intelligence
@@ -91,39 +91,39 @@ const Navigation = ({ token, onLogout, user }) => {
                       </button>
 
                       {showMarketMenu && (
-                        <div className="absolute right-0 mt-2 w-56 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
+                        <div className="absolute right-0 mt-2 w-56 bg-black/80 backdrop-blur-xl border border-white/10 rounded-lg shadow-xl z-50">
                           <Link
                             to={ROUTES.MARKET_DASHBOARD}
                             onClick={() => setShowMarketMenu(false)}
-                            className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition first:rounded-t-lg"
+                            className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white hover:bg-white/10 transition first:rounded-t-lg"
                           >
                             Overview & Dashboard
                           </Link>
                           <Link
                             to={ROUTES.MARKET_INTERVIEW_PREP}
                             onClick={() => setShowMarketMenu(false)}
-                            className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition"
+                            className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white hover:bg-white/10 transition"
                           >
                             Interview Prep
                           </Link>
                           <Link
                             to={ROUTES.MARKET_COMPANY_INTEL}
                             onClick={() => setShowMarketMenu(false)}
-                            className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition"
+                            className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white hover:bg-white/10 transition"
                           >
                             Company Intel
                           </Link>
                           <Link
                             to={ROUTES.MARKET_CAREER_PATH}
                             onClick={() => setShowMarketMenu(false)}
-                            className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition"
+                            className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white hover:bg-white/10 transition"
                           >
                             Career Path
                           </Link>
                           <Link
                             to={ROUTES.MARKET_SKILL_GAP}
                             onClick={() => setShowMarketMenu(false)}
-                            className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700 transition last:rounded-b-lg"
+                            className="block w-full text-left px-4 py-2 text-gray-300 hover:text-white hover:bg-white/10 transition last:rounded-b-lg"
                           >
                             Skill Gap Analysis
                           </Link>
@@ -135,8 +135,8 @@ const Navigation = ({ token, onLogout, user }) => {
                       to={ROUTES.PRICING}
                       className={`px-4 py-2 rounded-lg font-medium transition ${
                         isActive(ROUTES.PRICING)
-                          ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/50'
-                          : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-500/30'
+                          : 'text-gray-300 hover:text-white hover:bg-white/10'
                       }`}
                     >
                       Pricing
@@ -154,26 +154,26 @@ const Navigation = ({ token, onLogout, user }) => {
                   {!isActive(ROUTES.LANDING) && (
                     <Link
                       to={ROUTES.LANDING}
-                      className="text-slate-300 hover:text-white transition font-medium"
+                      className="text-gray-300 hover:text-white transition font-medium"
                     >
                       Home
                     </Link>
                   )}
                   <Link
                     to={ROUTES.PRICING}
-                    className="text-slate-300 hover:text-white transition font-medium"
+                    className="text-gray-300 hover:text-white transition font-medium"
                   >
                     Pricing
                   </Link>
                   <Link
                     to={ROUTES.LOGIN}
-                    className="px-4 py-2 text-slate-300 hover:text-white transition font-medium rounded-lg hover:bg-slate-800"
+                    className="px-4 py-2 text-gray-300 hover:text-white transition font-medium rounded-lg hover:bg-white/10"
                   >
                     Login
                   </Link>
                   <Link
                     to={ROUTES.REGISTER}
-                    className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition"
+                    className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition"
                   >
                     Sign Up
                   </Link>

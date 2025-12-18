@@ -54,6 +54,52 @@ const ShimmerButton = ({ children, className = "", onClick, disabled = false }) 
   );
 };
 
+// EntranceOverlay Component - Animated loading screen
+const EntranceOverlay = () => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!isVisible) return null;
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 0 }}
+      transition={{ duration: 0.8, delay: 1.2 }}
+      onAnimationComplete={() => setIsVisible(false)}
+    >
+      <motion.div
+        className="text-center"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+      >
+        <motion.div
+          className="w-16 h-16 mx-auto mb-4 border-4 border-purple-500 border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        />
+        <motion.h2
+          className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent font-display"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          ResumeAnalyzer AI
+        </motion.h2>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 // CountUp Component
 const CountUp = ({ from = 0, to, duration = 2, suffix = '' }) => {
   const nodeRef = useRef();
@@ -169,16 +215,17 @@ const LandingPageV2 = ({ token }) => {
         keywords="resume analyzer, AI resume, ATS score, job matching, career tools, resume optimization"
         url="https://resumeanalyzerai.com/"
       />
+      <EntranceOverlay />
       <div className="min-h-screen bg-black relative overflow-hidden">
-        {/* Background atmosphere */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+        {/* Background atmosphere - Reduced opacity */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-black to-black" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10" />
 
         {/* Grid Pattern */}
         <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
 
         {/* Hero Section */}
-      <div className="relative pt-20 pb-32 px-4 sm:px-6 lg:px-8">
+      <div className="relative pt-20 pb-16 px-4 sm:px-6 lg:px-8">
         {/* Premium Moon/Arc Effect - Animated Breathing */}
         <motion.div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[180vw] h-[180vw] sm:w-[120vw] sm:h-[120vw] -translate-y-[75%] sm:-translate-y-[80%] rounded-full border border-white/5 bg-white/[0.01] shadow-[0_0_120px_rgba(59,130,246,0.1)] z-0 pointer-events-none"
@@ -349,7 +396,7 @@ const LandingPageV2 = ({ token }) => {
       </div>
 
       {/* Features Section */}
-      <div className="py-24 px-4 sm:px-6 lg:px-8">
+      <div className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <motion.div
             className="text-center mb-16"
@@ -405,7 +452,7 @@ const LandingPageV2 = ({ token }) => {
       </div>
 
       {/* How It Works Section */}
-      <div className="py-24 px-4 sm:px-6 lg:px-8 bg-white/5">
+      <div className="py-12 px-4 sm:px-6 lg:px-8 bg-white/5">
         <div className="max-w-7xl mx-auto">
           <motion.div
             className="text-center mb-16"
@@ -465,7 +512,7 @@ const LandingPageV2 = ({ token }) => {
       </div>
 
       {/* Stats Section */}
-      <div className="py-24 px-4 sm:px-6 lg:px-8 bg-white/5 border-y border-white/10">
+      <div className="py-12 px-4 sm:px-6 lg:px-8 bg-white/5 border-y border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
             <motion.div
@@ -518,7 +565,7 @@ const LandingPageV2 = ({ token }) => {
       </div>
 
       {/* Testimonials Section */}
-      <div className="py-24 px-4 sm:px-6 lg:px-8">
+      <div className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <motion.div
             className="text-center mb-16"
@@ -616,7 +663,7 @@ const LandingPageV2 = ({ token }) => {
       </div>
 
       {/* Final CTA Section */}
-      <div className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <div className="py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-purple-900/20" />
         <motion.div
           className="max-w-4xl mx-auto text-center relative z-10"
