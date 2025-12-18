@@ -24,7 +24,7 @@ const EntranceOverlay = ({ onComplete }) => {
             animate={{ y: 0 }}
             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           >
-            ResumeAnalyzer AI
+            ResumeAnalyzer
           </motion.h1>
         </div>
         <div className="h-1 w-full bg-gray-800 rounded-full overflow-hidden">

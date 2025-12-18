@@ -1,104 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, useInView, useScroll, useTransform, useMotionValue, useMotionTemplate } from 'framer-motion';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, ArrowUpRight, Star, Quote, TrendingUp, Shield, Upload } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
+import ShimmerButton from './ui/ShimmerButton';
+import EntranceOverlay from './ui/EntranceOverlay';
+import Footer from './ui/Footer';
+import SpotlightCard from './ui/SpotlightCard';
 
-// SpotlightCard Component - Mouse-following spotlight effect
-const SpotlightCard = ({ children, className = "" }) => {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
 
-  function handleMouseMove({ currentTarget, clientX, clientY }) {
-    const { left, top } = currentTarget.getBoundingClientRect();
-    mouseX.set(clientX - left);
-    mouseY.set(clientY - top);
-  }
-
-  return (
-    <div
-      className={`relative border border-white/10 bg-white/5 overflow-hidden group ${className}`}
-      onMouseMove={handleMouseMove}
-    >
-      <motion.div
-        className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition duration-300 group-hover:opacity-100"
-        style={{
-          background: useMotionTemplate`
-            radial-gradient(
-              650px circle at ${mouseX}px ${mouseY}px,
-              rgba(120, 119, 198, 0.15),
-              transparent 80%
-            )
-          `,
-        }}
-      />
-      <div className="relative h-full">{children}</div>
-    </div>
-  );
-};
-
-// ShimmerButton Component - Premium animated button
-const ShimmerButton = ({ children, className = "", onClick, disabled = false }) => {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-    >
-      <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-      <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-8 py-1 text-sm font-medium text-white backdrop-blur-3xl transition-colors hover:bg-slate-950/90 gap-2">
-        {children}
-      </span>
-    </button>
-  );
-};
-
-// EntranceOverlay Component - Shutter Animation
-const EntranceOverlay = () => {
-  const [isComplete, setIsComplete] = useState(false);
-
-  if (isComplete) return null;
-
-  return (
-    <motion.div
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black"
-      initial={{ clipPath: "inset(0 0 0 0)" }}
-      animate={{ clipPath: "inset(100% 0 0 0)" }}
-      transition={{ duration: 1, delay: 2.2, ease: [0.87, 0, 0.13, 1] }}
-      onAnimationComplete={() => setIsComplete(true)}
-    >
-      <div className="relative z-10">
-        <div className="overflow-hidden mb-2">
-          <motion.h1
-            className="text-5xl md:text-8xl font-bold text-white tracking-tighter font-display"
-            initial={{ y: 100 }}
-            animate={{ y: 0 }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          >
-            ResumeAnalyzer
-          </motion.h1>
-        </div>
-        <div className="h-1 w-full bg-gray-800 rounded-full overflow-hidden">
-          <motion.div
-            className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
-            initial={{ x: "-100%" }}
-            animate={{ x: "100%" }}
-            transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
-          />
-        </div>
-        <motion.p
-          className="text-center text-gray-500 mt-4 text-sm uppercase tracking-[0.3em] font-medium"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          Initializing AI Core
-        </motion.p>
-      </div>
-    </motion.div>
-  );
-};
 
 // CountUp Component
 const CountUp = ({ from = 0, to, duration = 2, suffix = '' }) => {
@@ -133,6 +44,7 @@ const CountUp = ({ from = 0, to, duration = 2, suffix = '' }) => {
 const LandingPageV2 = ({ token }) => {
   const navigate = useNavigate();
   const [hoveredFeature, setHoveredFeature] = useState(null);
+  const [showEntrance, setShowEntrance] = useState(true);
 
   // Animation variants
   const fadeInUp = {
@@ -215,14 +127,17 @@ const LandingPageV2 = ({ token }) => {
         keywords="resume analyzer, AI resume, ATS score, job matching, career tools, resume optimization"
         url="https://resumeanalyzerai.com/"
       />
-      <EntranceOverlay />
+      <AnimatePresence>
+        {showEntrance && <EntranceOverlay onComplete={() => setShowEntrance(false)} />}
+      </AnimatePresence>
+      {!showEntrance && (
       <div className="min-h-screen bg-black relative overflow-hidden">
         {/* Background atmosphere - Reduced opacity */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-black to-black" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-black to-black z-0 pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 z-0 pointer-events-none" />
 
         {/* Grid Pattern */}
-        <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
+        <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
 
         {/* Hero Section */}
       <div className="relative pt-20 pb-16 px-4 sm:px-6 lg:px-8">
@@ -243,12 +158,12 @@ const LandingPageV2 = ({ token }) => {
 
         {/* Animated background elements */}
         <motion.div
-          className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-[100px] opacity-30"
+          className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-[100px] opacity-30 z-0 pointer-events-none"
           animate={{ y: [0, 30, 0] }}
           transition={{ duration: 8, repeat: Infinity }}
         />
         <motion.div
-          className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] opacity-30"
+          className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] opacity-30 z-0 pointer-events-none"
           animate={{ y: [0, -30, 0] }}
           transition={{ duration: 8, repeat: Infinity, delay: 1 }}
         />
@@ -256,7 +171,7 @@ const LandingPageV2 = ({ token }) => {
         <div className="relative max-w-7xl mx-auto">
           {/* Hero Content */}
           <motion.div
-            className="text-center mb-16"
+            className="text-center mb-16 relative z-10"
             initial="hidden"
             animate="visible"
             variants={fadeInUp}
@@ -267,7 +182,7 @@ const LandingPageV2 = ({ token }) => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-sm"
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-sm relative z-10"
             >
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -277,50 +192,47 @@ const LandingPageV2 = ({ token }) => {
             </motion.div>
 
             <motion.h1
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight font-display"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight font-display relative z-10"
               variants={fadeInUp}
               custom={1}
             >
-              Land Your Dream Job
-              <span className="block bg-gradient-to-r from-blue-400 via-purple-500 to-purple-600 bg-clip-text text-transparent mt-2 pb-4">
-                with AI-Powered Insights
+              Resume perfection <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 animate-gradient-x">
+                powered by intelligence.
               </span>
             </motion.h1>
 
             <motion.p
-              className="text-lg sm:text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed"
+              className="text-lg sm:text-xl text-gray-400 mb-8 max-w-2xl mx-auto leading-relaxed relative z-10 font-light"
               variants={fadeInUp}
               custom={2}
             >
-              Transform your resume with cutting-edge AI analysis. Get instant feedback, keyword optimization, and personalized recommendations to stand out to recruiters.
+              Beat the ATS and land your dream job. Our advanced AI analyzes your resume against millions of data points to ensure you stand out.
             </motion.p>
 
             {/* CTA Buttons */}
             <motion.div
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center relative z-10"
               variants={fadeInUp}
               custom={3}
             >
-              <button
-                onClick={() => navigate(ROUTES.GUEST_ANALYZE)}
-                className="bg-white text-black px-8 py-3 rounded-full text-sm font-bold hover:bg-gray-200 transition-all transform hover:scale-105 active:scale-95 duration-200 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)]"
-              >
-                Try Free
-              </button>
+              <ShimmerButton onClick={() => navigate(ROUTES.GUEST_ANALYZE)}>
+                Analyze My Resume <ArrowRight size={16} />
+              </ShimmerButton>
 
               <motion.button
                 onClick={() => navigate(ROUTES.PRICING)}
-                className="px-8 py-3 rounded-full font-bold text-sm text-gray-300 border border-white/10 hover:bg-white/5 hover:text-white transition-all hover:border-white/30"
+                className="px-8 py-3 rounded-full font-bold text-sm text-gray-300 border border-white/10 hover:bg-white/5 hover:text-white transition-all hover:border-white/30 relative z-10"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                View Pricing
+                View Sample Report
               </motion.button>
             </motion.div>
 
             {/* Speed Indicator */}
             <motion.div
-              className="mt-12 flex justify-center items-center text-gray-400 text-sm"
+              className="mt-12 flex justify-center items-center text-gray-400 text-sm relative z-10"
               variants={fadeInUp}
               custom={4}
             >
@@ -333,7 +245,7 @@ const LandingPageV2 = ({ token }) => {
 
           {/* Dashboard Preview Mockup */}
           <motion.div
-            className="mt-20 mx-auto max-w-5xl rounded-xl border border-white/10 bg-gray-900/50 backdrop-blur-sm shadow-2xl overflow-hidden"
+            className="mt-20 mx-auto max-w-5xl rounded-xl border border-white/10 bg-gray-900/50 backdrop-blur-sm shadow-2xl overflow-hidden relative z-10"
             initial={{ opacity: 0, y: 100, rotateX: 20 }}
             animate={{ opacity: 1, y: 0, rotateX: 0 }}
             transition={{ delay: 0.8, duration: 1.2, type: "spring", bounce: 0.2 }}
@@ -395,20 +307,20 @@ const LandingPageV2 = ({ token }) => {
       </div>
 
       {/* Features Section */}
-      <div className="py-12 px-4 sm:px-6 lg:px-8">
+      <div className="py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
-            className="text-center mb-16"
+            className="text-center mb-16 relative z-10"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeInUp}
             custom={0}
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 font-display">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 font-display relative z-10">
               Powerful Features to Elevate Your Career
             </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto relative z-10">
               Everything you need to optimize your resume and land interviews
             </p>
           </motion.div>
@@ -444,20 +356,20 @@ const LandingPageV2 = ({ token }) => {
       </div>
 
       {/* How It Works Section */}
-      <div className="py-12 px-4 sm:px-6 lg:px-8 bg-white/5">
+      <div className="py-12 px-4 sm:px-6 lg:px-8 bg-white/5 relative z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
-            className="text-center mb-16"
+            className="text-center mb-16 relative z-10"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeInUp}
             custom={0}
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 font-display">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 font-display relative z-10">
               Simple, Fast, Effective
             </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto relative z-10">
               Get professional resume insights in just 4 simple steps
             </p>
           </motion.div>
@@ -504,7 +416,7 @@ const LandingPageV2 = ({ token }) => {
       </div>
 
       {/* Stats Section */}
-      <div className="py-12 px-4 sm:px-6 lg:px-8 bg-white/5 border-y border-white/10">
+      <div className="py-12 px-4 sm:px-6 lg:px-8 bg-white/5 border-y border-white/10 relative z-10">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
             <motion.div
@@ -512,65 +424,69 @@ const LandingPageV2 = ({ token }) => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
+              className="relative z-10"
             >
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display">
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display relative z-10">
                 <CountUp to={10000} />+
               </div>
-              <p className="text-gray-400">Resumes Analyzed</p>
+              <p className="text-gray-400 relative z-10">Resumes Analyzed</p>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
+              className="relative z-10"
             >
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display">
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display relative z-10">
                 <CountUp to={92} suffix="%" />
               </div>
-              <p className="text-gray-400">Success Rate</p>
+              <p className="text-gray-400 relative z-10">Success Rate</p>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
+              className="relative z-10"
             >
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display">
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display relative z-10">
                 <CountUp to={500} />+
               </div>
-              <p className="text-gray-400">Companies Hiring</p>
+              <p className="text-gray-400 relative z-10">Companies Hiring</p>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.4 }}
+              className="relative z-10"
             >
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display">
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display relative z-10">
                 <CountUp to={4} suffix=".8" />
                 <Star className="inline w-6 h-6 text-yellow-400 fill-yellow-400 ml-2" />
               </div>
-              <p className="text-gray-400">Average Rating</p>
+              <p className="text-gray-400 relative z-10">Average Rating</p>
             </motion.div>
           </div>
         </div>
       </div>
 
       {/* Testimonials Section */}
-      <div className="py-12 px-4 sm:px-6 lg:px-8">
+      <div className="py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-7xl mx-auto">
           <motion.div
-            className="text-center mb-16"
+            className="text-center mb-16 relative z-10"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeInUp}
             custom={0}
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 font-display">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 font-display relative z-10">
               Success Stories
             </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto relative z-10">
               Join thousands of professionals who accelerated their careers
             </p>
           </motion.div>
@@ -628,9 +544,9 @@ const LandingPageV2 = ({ token }) => {
       </div>
 
       {/* Trusted By Section - Marquee */}
-      <div className="py-12 bg-black border-y border-white/5 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 text-center mb-8">
-          <p className="text-sm text-gray-500 uppercase tracking-widest font-medium">Trusted by candidates at</p>
+      <div className="py-12 bg-black border-y border-white/5 overflow-hidden relative z-10">
+        <div className="max-w-7xl mx-auto px-6 text-center mb-8 relative z-10">
+          <p className="text-sm text-gray-500 uppercase tracking-widest font-medium relative z-10">Trusted by candidates at</p>
         </div>
         <div className="flex w-full overflow-hidden relative">
           <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
@@ -656,7 +572,7 @@ const LandingPageV2 = ({ token }) => {
 
       {/* Final CTA Section */}
       <div className="py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-purple-900/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-purple-900/20 z-0 pointer-events-none" />
         <motion.div
           className="max-w-4xl mx-auto text-center relative z-10"
           initial="hidden"
@@ -665,50 +581,24 @@ const LandingPageV2 = ({ token }) => {
           variants={fadeInUp}
           custom={0}
         >
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 font-display">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 font-display relative z-10">
             Ready to Land Your Dream Job?
           </h2>
-          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto relative z-10">
             Join 10,000+ job seekers who transformed their careers with AI-powered insights
           </p>
           <ShimmerButton
             onClick={() => navigate(token ? ROUTES.DASHBOARD : ROUTES.GUEST_ANALYZE)}
-            className="px-12 py-5 h-16 text-lg mx-auto"
+            className="px-12 py-5 h-16 text-lg"
           >
-            {token ? 'Go to Dashboard' : 'Analyze My Resume Now'}
-            <ArrowRight className="w-6 h-6" />
+            {token ? 'Go to Dashboard' : 'Analyze My Resume Now'} <ArrowRight size={20} />
           </ShimmerButton>
         </motion.div>
       </div>
 
-      {/* Legacy CTA Section (for backward compatibility) - Hidden */}
-      <div className="hidden py-24 px-4 sm:px-6 lg:px-8">
-        <motion.div
-          className="max-w-4xl mx-auto text-center"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInUp}
-          custom={0}
-        >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 font-display">
-            Ready to Transform Your Resume?
-          </h2>
-          <p className="text-lg text-gray-400 mb-8">
-            Join thousands of job seekers who have already improved their applications
-          </p>
-          <motion.button
-            onClick={() => navigate(token ? ROUTES.DASHBOARD : ROUTES.GUEST_ANALYZE)}
-            className="px-10 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl flex items-center gap-2 hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300 mx-auto"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {token ? 'Go to Dashboard' : 'Try Free Analysis'}
-            <ArrowRight className="w-5 h-5" />
-          </motion.button>
-        </motion.div>
+      <Footer />
       </div>
-      </div>
+      )}
     </>
   );
 };
