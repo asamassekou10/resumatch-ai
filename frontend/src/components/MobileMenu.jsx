@@ -87,17 +87,30 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
   // Check if route is active
   const isActiveRoute = (route) => location.pathname === route;
 
+  // Handle close when clicking overlay
+  const handleOverlayClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onClose();
+  };
+
+  // Prevent clicks inside menu from closing it
+  const handleMenuClick = (e) => {
+    e.stopPropagation();
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Overlay */}
+          {/* Overlay - Click to close */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-40"
+            onClick={handleOverlayClick}
+            className="fixed inset-0 bg-black/50 z-[9998] cursor-pointer"
+            style={{ touchAction: 'none' }}
           />
 
           {/* Menu Panel */}
@@ -106,17 +119,23 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'tween', duration: 0.3 }}
-            className="fixed left-0 top-0 h-full w-80 bg-slate-900 border-r border-slate-700 z-50 overflow-y-auto"
+            onClick={handleMenuClick}
+            className="fixed left-0 top-0 h-full w-80 bg-slate-900 border-r border-slate-700 z-[9999] overflow-y-auto"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-slate-700">
               <h2 className="text-xl font-bold text-white">Menu</h2>
               <button
-                onClick={onClose}
-                className="p-2 rounded-lg hover:bg-slate-800 transition"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                }}
+                className="p-2 rounded-lg hover:bg-slate-800 transition cursor-pointer"
                 aria-label="Close menu"
               >
-                <X className="w-6 h-6 text-slate-300" />
+                <X className="w-6 h-6 text-slate-300 pointer-events-none" />
               </button>
             </div>
 
