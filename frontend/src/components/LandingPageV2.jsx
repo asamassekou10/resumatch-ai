@@ -54,48 +54,48 @@ const ShimmerButton = ({ children, className = "", onClick, disabled = false }) 
   );
 };
 
-// EntranceOverlay Component - Animated loading screen
+// EntranceOverlay Component - Shutter Animation
 const EntranceOverlay = () => {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isComplete, setIsComplete] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (!isVisible) return null;
+  if (isComplete) return null;
 
   return (
     <motion.div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
-      initial={{ opacity: 1 }}
-      animate={{ opacity: 0 }}
-      transition={{ duration: 0.8, delay: 1.2 }}
-      onAnimationComplete={() => setIsVisible(false)}
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black"
+      initial={{ clipPath: "inset(0 0 0 0)" }}
+      animate={{ clipPath: "inset(100% 0 0 0)" }}
+      transition={{ duration: 1, delay: 2.2, ease: [0.87, 0, 0.13, 1] }}
+      onAnimationComplete={() => setIsComplete(true)}
     >
-      <motion.div
-        className="text-center"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        <motion.div
-          className="w-16 h-16 mx-auto mb-4 border-4 border-purple-500 border-t-transparent rounded-full"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        />
-        <motion.h2
-          className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent font-display"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
+      <div className="relative z-10">
+        <div className="overflow-hidden mb-2">
+          <motion.h1
+            className="text-5xl md:text-8xl font-bold text-white tracking-tighter font-display"
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          >
+            ResumeAnalyzer
+          </motion.h1>
+        </div>
+        <div className="h-1 w-full bg-gray-800 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+            initial={{ x: "-100%" }}
+            animate={{ x: "100%" }}
+            transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
+          />
+        </div>
+        <motion.p
+          className="text-center text-gray-500 mt-4 text-sm uppercase tracking-[0.3em] font-medium"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
         >
-          ResumeAnalyzer AI
-        </motion.h2>
-      </motion.div>
+          Initializing AI Core
+        </motion.p>
+      </div>
     </motion.div>
   );
 };
@@ -301,13 +301,12 @@ const LandingPageV2 = ({ token }) => {
               variants={fadeInUp}
               custom={3}
             >
-              <ShimmerButton
+              <button
                 onClick={() => navigate(ROUTES.GUEST_ANALYZE)}
-                className="px-10 py-4 h-14 text-base"
+                className="bg-white text-black px-8 py-3 rounded-full text-sm font-bold hover:bg-gray-200 transition-all transform hover:scale-105 active:scale-95 duration-200 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)]"
               >
-                Try Free (5 Credits)
-                <ArrowRight size={18} />
-              </ShimmerButton>
+                Try Free
+              </button>
 
               <motion.button
                 onClick={() => navigate(ROUTES.PRICING)}
@@ -315,7 +314,7 @@ const LandingPageV2 = ({ token }) => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                View Sample Report
+                View Pricing
               </motion.button>
             </motion.div>
 
@@ -421,19 +420,12 @@ const LandingPageV2 = ({ token }) => {
                 <motion.div
                   key={i}
                   className="relative group"
-                  onMouseEnter={() => setHoveredFeature(i)}
-                  onMouseLeave={() => setHoveredFeature(null)}
                   initial="hidden"
                   whileInView="visible"
                   viewport={{ once: true }}
                   variants={scaleIn}
                   custom={i}
                 >
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-600/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    animate={{ rotate: hoveredFeature === i ? 360 : 0 }}
-                    transition={{ duration: 4, repeat: Infinity }}
-                  />
                   <SpotlightCard className="rounded-2xl p-8 h-full">
                     <motion.div
                       className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4"
