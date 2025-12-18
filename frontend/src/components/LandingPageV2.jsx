@@ -1,9 +1,58 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, useInView } from 'framer-motion';
-import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, ArrowUpRight, Star, Quote, TrendingUp } from 'lucide-react';
+import { motion, useInView, useScroll, useTransform, useMotionValue, useMotionTemplate } from 'framer-motion';
+import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, ArrowUpRight, Star, Quote, TrendingUp, Shield, Upload } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
+
+// SpotlightCard Component - Mouse-following spotlight effect
+const SpotlightCard = ({ children, className = "" }) => {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  function handleMouseMove({ currentTarget, clientX, clientY }) {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  }
+
+  return (
+    <div
+      className={`relative border border-white/10 bg-white/5 overflow-hidden group ${className}`}
+      onMouseMove={handleMouseMove}
+    >
+      <motion.div
+        className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition duration-300 group-hover:opacity-100"
+        style={{
+          background: useMotionTemplate`
+            radial-gradient(
+              650px circle at ${mouseX}px ${mouseY}px,
+              rgba(120, 119, 198, 0.15),
+              transparent 80%
+            )
+          `,
+        }}
+      />
+      <div className="relative h-full">{children}</div>
+    </div>
+  );
+};
+
+// ShimmerButton Component - Premium animated button
+const ShimmerButton = ({ children, className = "", onClick, disabled = false }) => {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+    >
+      <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
+      <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-8 py-1 text-sm font-medium text-white backdrop-blur-3xl transition-colors hover:bg-slate-950/90 gap-2">
+        {children}
+      </span>
+    </button>
+  );
+};
 
 // CountUp Component
 const CountUp = ({ from = 0, to, duration = 2, suffix = '' }) => {
@@ -125,16 +174,34 @@ const LandingPageV2 = ({ token }) => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black" />
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
 
+        {/* Grid Pattern */}
+        <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
+
         {/* Hero Section */}
       <div className="relative pt-20 pb-32 px-4 sm:px-6 lg:px-8">
+        {/* Premium Moon/Arc Effect - Animated Breathing */}
+        <motion.div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[180vw] h-[180vw] sm:w-[120vw] sm:h-[120vw] -translate-y-[75%] sm:-translate-y-[80%] rounded-full border border-white/5 bg-white/[0.01] shadow-[0_0_120px_rgba(59,130,246,0.1)] z-0 pointer-events-none"
+          animate={{
+            scale: [1, 1.02, 1],
+            opacity: [0.8, 1, 0.8]
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150vw] h-[150vw] sm:w-[90vw] sm:h-[90vw] -translate-y-[70%] sm:-translate-y-[75%] rounded-full border border-white/[0.08] z-0 pointer-events-none opacity-50" />
+
         {/* Animated background elements */}
         <motion.div
-          className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
+          className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-[100px] opacity-30"
           animate={{ y: [0, 30, 0] }}
           transition={{ duration: 8, repeat: Infinity }}
         />
         <motion.div
-          className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"
+          className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] opacity-30"
           animate={{ y: [0, -30, 0] }}
           transition={{ duration: 8, repeat: Infinity, delay: 1 }}
         />
@@ -148,6 +215,20 @@ const LandingPageV2 = ({ token }) => {
             variants={fadeInUp}
             custom={0}
           >
+            {/* Status Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.8 }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-sm"
+            >
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-xs font-medium text-gray-300 uppercase tracking-widest">AI Engine v2.0 Live</span>
+            </motion.div>
+
             <motion.h1
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight font-display"
               variants={fadeInUp}
@@ -173,22 +254,21 @@ const LandingPageV2 = ({ token }) => {
               variants={fadeInUp}
               custom={3}
             >
-              <motion.button
+              <ShimmerButton
                 onClick={() => navigate(ROUTES.GUEST_ANALYZE)}
-                className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl flex items-center gap-2 hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="px-10 py-4 h-14 text-base"
               >
                 Try Free (5 Credits)
-                <ArrowRight className="w-5 h-5" />
-              </motion.button>
+                <ArrowRight size={18} />
+              </ShimmerButton>
+
               <motion.button
                 onClick={() => navigate(ROUTES.PRICING)}
-                className="px-8 py-4 border-2 border-white/20 bg-white/5 backdrop-blur-xl text-white font-semibold rounded-xl hover:bg-white/10 hover:border-purple-500/50 transition-all duration-300"
+                className="px-8 py-3 rounded-full font-bold text-sm text-gray-300 border border-white/10 hover:bg-white/5 hover:text-white transition-all hover:border-white/30"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                View Pricing
+                View Sample Report
               </motion.button>
             </motion.div>
 
@@ -203,6 +283,67 @@ const LandingPageV2 = ({ token }) => {
                 <span>Get results in under 2 minutes</span>
               </div>
             </motion.div>
+          </motion.div>
+
+          {/* Dashboard Preview Mockup */}
+          <motion.div
+            className="mt-20 mx-auto max-w-5xl rounded-xl border border-white/10 bg-gray-900/50 backdrop-blur-sm shadow-2xl overflow-hidden"
+            initial={{ opacity: 0, y: 100, rotateX: 20 }}
+            animate={{ opacity: 1, y: 0, rotateX: 0 }}
+            transition={{ delay: 0.8, duration: 1.2, type: "spring", bounce: 0.2 }}
+            style={{ transformPerspective: '1000px' }}
+          >
+            <div className="flex items-center gap-2 px-4 py-3 bg-white/5 border-b border-white/10">
+              <div className="w-3 h-3 rounded-full bg-red-500/50" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
+              <div className="w-3 h-3 rounded-full bg-green-500/50" />
+              <div className="ml-4 h-6 w-64 bg-white/5 rounded-md" />
+            </div>
+            <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-left relative">
+              {/* Glow behind dashboard */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-blue-500/10 blur-[100px] pointer-events-none" />
+
+              <div className="col-span-2 space-y-4 relative z-10">
+                <div className="h-4 w-3/4 bg-white/10 rounded animate-pulse" />
+                <div className="h-4 w-1/2 bg-white/10 rounded animate-pulse" />
+                <div className="h-32 w-full bg-white/5 rounded border border-white/10 p-4 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="text-sm text-gray-400">Analysis Score</div>
+                    <div className="text-green-400 font-bold text-xl flex items-center font-display">
+                      <CountUp to={92} />/100
+                    </div>
+                  </div>
+                  <div className="w-full bg-white/10 rounded-full h-2 mb-4 overflow-hidden">
+                    <motion.div
+                      className="bg-gradient-to-r from-blue-500 to-green-400 h-2 rounded-full"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: "92%" }}
+                      transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+                      viewport={{ once: true }}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-xs text-gray-300">
+                      <CheckCircle size={12} className="text-green-400" /> Strong action verbs used
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-300">
+                      <CheckCircle size={12} className="text-green-400" /> Quantifiable achievements detected
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="col-span-1 space-y-4 relative z-10">
+                <div className="h-24 w-full bg-gradient-to-br from-purple-900/40 to-blue-900/40 rounded border border-white/10 flex items-center justify-center flex-col group hover:border-purple-500/50 transition-colors">
+                  <Zap className="text-yellow-400 mb-2 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs text-gray-400">ATS Compatible</span>
+                </div>
+                <div className="h-24 w-full bg-white/5 rounded border border-white/10 flex items-center justify-center flex-col group hover:border-blue-500/50 transition-colors">
+                  <TrendingUp className="text-blue-400 mb-2 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs text-gray-400">Job Match: High</span>
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>
@@ -246,7 +387,7 @@ const LandingPageV2 = ({ token }) => {
                     animate={{ rotate: hoveredFeature === i ? 360 : 0 }}
                     transition={{ duration: 4, repeat: Infinity }}
                   />
-                  <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:border-purple-500/30 transition-all duration-300">
+                  <SpotlightCard className="rounded-2xl p-8 h-full">
                     <motion.div
                       className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4"
                       whileHover={{ scale: 1.1, rotate: 5 }}
@@ -255,7 +396,7 @@ const LandingPageV2 = ({ token }) => {
                     </motion.div>
                     <h3 className="text-xl font-bold text-white mb-2 font-display">{feature.title}</h3>
                     <p className="text-gray-400">{feature.description}</p>
-                  </div>
+                  </SpotlightCard>
                 </motion.div>
               );
             })}
@@ -296,7 +437,7 @@ const LandingPageV2 = ({ token }) => {
                 {/* Connector Line */}
                 {i < steps.length - 1 && (
                   <motion.div
-                    className="hidden lg:block absolute top-24 left-[50%] w-[calc(100%+24px)] h-1 bg-gradient-to-r from-blue-500 to-purple-600"
+                    className="hidden lg:block absolute top-24 left-[50%] w-[calc(100%+24px)] h-1 bg-gradient-to-r from-blue-500 to-purple-600 z-0"
                     initial={{ scaleX: 0 }}
                     whileInView={{ scaleX: 1 }}
                     viewport={{ once: true }}
@@ -305,7 +446,7 @@ const LandingPageV2 = ({ token }) => {
                   />
                 )}
 
-                <div className="relative">
+                <SpotlightCard className="rounded-2xl p-8 h-full relative z-10">
                   <motion.div
                     className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4 mx-auto"
                     whileHover={{ scale: 1.1 }}
@@ -316,7 +457,7 @@ const LandingPageV2 = ({ token }) => {
                     <h3 className="text-lg font-bold text-white mb-2 font-display">{step.title}</h3>
                     <p className="text-gray-400 text-sm">{step.description}</p>
                   </div>
-                </div>
+                </SpotlightCard>
               </motion.div>
             ))}
           </div>
@@ -418,28 +559,29 @@ const LandingPageV2 = ({ token }) => {
             ].map((testimonial, i) => (
               <motion.div
                 key={i}
-                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:border-purple-500/30 transition-all duration-300 group"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
               >
-                <Quote className="text-purple-500 mb-4 opacity-50 group-hover:opacity-100 transition-opacity" size={32} />
-                <p className="text-gray-300 mb-6 leading-relaxed">"{testimonial.text}"</p>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold font-display text-lg">
-                    {testimonial.name[0]}
+                <SpotlightCard className="p-8 rounded-2xl h-full group">
+                  <Quote className="text-purple-500 mb-4 opacity-50 group-hover:opacity-100 transition-opacity" size={32} />
+                  <p className="text-gray-300 mb-6 leading-relaxed">"{testimonial.text}"</p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold font-display text-lg">
+                      {testimonial.name[0]}
+                    </div>
+                    <div>
+                      <h4 className="text-white font-bold text-sm font-display">{testimonial.name}</h4>
+                      <p className="text-xs text-gray-500">{testimonial.role}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-white font-bold text-sm font-display">{testimonial.name}</h4>
-                    <p className="text-xs text-gray-500">{testimonial.role}</p>
+                  <div className="flex gap-1 mt-4 text-yellow-500">
+                    {[...Array(testimonial.stars)].map((_, j) => (
+                      <Star key={j} size={14} fill="currentColor" />
+                    ))}
                   </div>
-                </div>
-                <div className="flex gap-1 mt-4 text-yellow-500">
-                  {[...Array(testimonial.stars)].map((_, j) => (
-                    <Star key={j} size={14} fill="currentColor" />
-                  ))}
-                </div>
+                </SpotlightCard>
               </motion.div>
             ))}
           </div>
@@ -490,15 +632,13 @@ const LandingPageV2 = ({ token }) => {
           <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
             Join 10,000+ job seekers who transformed their careers with AI-powered insights
           </p>
-          <motion.button
+          <ShimmerButton
             onClick={() => navigate(token ? ROUTES.DASHBOARD : ROUTES.GUEST_ANALYZE)}
-            className="px-12 py-5 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl flex items-center gap-2 hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300 mx-auto transform hover:scale-105"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="px-12 py-5 h-16 text-lg mx-auto"
           >
             {token ? 'Go to Dashboard' : 'Analyze My Resume Now'}
             <ArrowRight className="w-6 h-6" />
-          </motion.button>
+          </ShimmerButton>
         </motion.div>
       </div>
 
