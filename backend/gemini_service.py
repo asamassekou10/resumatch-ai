@@ -12,14 +12,36 @@ from functools import lru_cache
 logger = logging.getLogger(__name__)
 
 class GeminiService:
-    """Enhanced Gemini service with retry logic and error handling"""
-    
+    """Enhanced Gemini service with retry logic, error handling, and multilingual support"""
+
+    # Language instruction templates for multilingual AI responses
+    LANGUAGE_INSTRUCTIONS = {
+        'en': 'Respond entirely in English.',
+        'fr': 'Répondez entièrement en français. Utilisez un ton professionnel.',
+        'de': 'Antworten Sie vollständig auf Deutsch. Verwenden Sie einen professionellen Ton.',
+        'es': 'Responda completamente en español. Use un tono profesional.',
+        'nl': 'Antwoord volledig in het Nederlands. Gebruik een professionele toon.',
+        'pt': 'Responda inteiramente em português. Use um tom profissional.',
+        'it': 'Rispondi interamente in italiano. Usa un tono professionale.',
+        'pl': 'Odpowiedz w całości po polsku. Użyj profesjonalnego tonu.',
+        'ru': 'Отвечайте полностью на русском языке. Используйте профессиональный тон.',
+        'zh': '请完全用中文回复。使用专业的语气。',
+        'ja': '日本語で完全に回答してください。プロフェッショナルなトーンを使用してください。',
+        'ko': '한국어로 완전히 응답하세요. 전문적인 어조를 사용하세요.',
+        'ar': 'أجب بالكامل باللغة العربية. استخدم نبرة مهنية.',
+        'hi': 'कृपया पूरी तरह से हिंदी में उत्तर दें। पेशेवर लहजे का प्रयोग करें।',
+    }
+
+    # Supported language codes
+    SUPPORTED_LANGUAGES = list(LANGUAGE_INSTRUCTIONS.keys())
+
     def __init__(self):
         self.api_key = os.getenv('GEMINI_API_KEY')
         self.model_name = os.getenv('GEMINI_MODEL_NAME', 'models/gemini-2.5-flash')
         self.model = None
         self.max_retries = 3
         self.retry_delay = 1  # seconds
+        self._language_cache = {}  # Cache detected languages
         self._initialize_model()
     
     def _initialize_model(self):
@@ -59,6 +81,60 @@ class GeminiService:
 
         return text.strip()
 
+    def detect_language(self, text: str) -> str:
+        """
+        Detect the primary language of the given text (resume or job description).
+        Uses a quick Gemini call to identify the language.
+        Returns ISO 639-1 two-letter language code (e.g., 'en', 'fr', 'de').
+        """
+        if not text or len(text.strip()) < 50:
+            return 'en'  # Default to English for very short text
+
+        # Check cache first (use first 200 chars as key)
+        cache_key = hash(text[:200])
+        if cache_key in self._language_cache:
+            return self._language_cache[cache_key]
+
+        if not self._is_model_available():
+            return 'en'
+
+        # Use a sample of the text to detect language (faster)
+        text_sample = text[:1000]
+
+        prompt = f"""Analyze this text and determine its primary language.
+Return ONLY the ISO 639-1 two-letter language code (lowercase).
+
+Supported codes: en, fr, de, es, nl, pt, it, pl, ru, zh, ja, ko, ar, hi
+
+If the text is in multiple languages, return the dominant one.
+If unsure, return 'en'.
+
+Text sample:
+{text_sample}
+
+Response (just the two-letter code, nothing else):"""
+
+        try:
+            response = self.model.generate_content(
+                prompt,
+                request_options={'timeout': 10}  # Quick timeout for language detection
+            )
+            if response and response.text:
+                detected = response.text.strip().lower()[:2]
+                # Validate it's a supported language
+                if detected in self.SUPPORTED_LANGUAGES:
+                    logger.info(f"Detected language: {detected}")
+                    self._language_cache[cache_key] = detected
+                    return detected
+            return 'en'
+        except Exception as e:
+            logger.warning(f"Language detection failed, defaulting to English: {e}")
+            return 'en'
+
+    def _get_language_instruction(self, language: str) -> str:
+        """Get the language instruction for prompts"""
+        return self.LANGUAGE_INSTRUCTIONS.get(language, self.LANGUAGE_INSTRUCTIONS['en'])
+
     def _call_gemini_with_retry(self, prompt: str, operation_name: str) -> Optional[str]:
         """Call Gemini API with retry logic"""
         if not self._is_model_available():
@@ -95,18 +171,41 @@ class GeminiService:
         
         return None
     
-    def generate_personalized_feedback(self, resume_text: str, job_description: str, 
-                                    match_score: float, keywords_found: list, 
-                                    keywords_missing: list) -> str:
-        """Generate detailed, personalized feedback using Gemini AI"""
+    def generate_personalized_feedback(self, resume_text: str, job_description: str,
+                                    match_score: float, keywords_found: list,
+                                    keywords_missing: list, language: str = None) -> str:
+        """
+        Generate detailed, personalized feedback using Gemini AI.
+
+        Args:
+            resume_text: The resume content
+            job_description: The job description
+            match_score: The calculated match score
+            keywords_found: List of matching keywords
+            keywords_missing: List of missing keywords
+            language: ISO 639-1 language code (e.g., 'fr', 'de'). If None, auto-detects from resume.
+
+        Returns:
+            Personalized feedback in the detected/specified language
+        """
         if not self._is_model_available():
             return self._generate_fallback_feedback(match_score, keywords_missing)
-        
+
+        # Auto-detect language from resume if not specified
+        if language is None:
+            language = self.detect_language(resume_text)
+
+        lang_instruction = self._get_language_instruction(language)
+
         # Limit text lengths to avoid token limits
         resume_excerpt = resume_text[:2000] if resume_text else ""
         job_excerpt = job_description[:1500] if job_description else ""
-        
-        prompt = f"""You are an expert career coach and resume writer. Analyze this resume against the job description and provide specific, actionable feedback.
+
+        prompt = f"""You are an expert career coach and resume writer.
+
+CRITICAL LANGUAGE REQUIREMENT: {lang_instruction}
+
+Analyze this resume against the job description and provide specific, actionable feedback.
 
 RESUME:
 {resume_excerpt}
@@ -150,6 +249,7 @@ FORMAT REQUIREMENTS - Structure your feedback as follows:
 • [Immediate change that will improve the resume]
 
 IMPORTANT:
+- {lang_instruction}
 - Be specific and actionable, not vague
 - Focus on what the candidate CAN control
 - Provide concrete examples and rewording suggestions
@@ -164,25 +264,47 @@ IMPORTANT:
             logger.error(f"Failed to generate personalized feedback: {e}")
             return self._generate_fallback_feedback(match_score, keywords_missing)
     
-    def generate_optimized_resume(self, 
-                                resume_text: str, 
+    def generate_optimized_resume(self,
+                                resume_text: str,
                                 job_description: str,
-                                keywords_missing: list) -> Optional[str]:
-        """Generate an optimized version of the resume tailored to the job"""
-        
+                                keywords_missing: list,
+                                language: str = None) -> Optional[str]:
+        """
+        Generate an optimized version of the resume tailored to the job.
+
+        Args:
+            resume_text: The original resume content
+            job_description: The target job description
+            keywords_missing: List of keywords to integrate
+            language: ISO 639-1 language code. If None, auto-detects from resume.
+
+        Returns:
+            Optimized resume in the same language as the original
+        """
         # 1. Check model availability
         if not self._is_model_available():
             return None
 
+        # Auto-detect language from resume if not specified
+        if language is None:
+            language = self.detect_language(resume_text)
+
+        lang_instruction = self._get_language_instruction(language)
+
         # 2. Limit text lengths to avoid token limits (Safety check)
         resume_excerpt = resume_text[:3000] if resume_text else ""
         job_excerpt = job_description[:1500] if job_description else ""
-        
+
         # Handle the keywords list safely
         formatted_keywords = ', '.join(keywords_missing[:15]) if keywords_missing else 'None'
 
         # 3. Construct the Prompt
-        prompt = f"""You are an expert resume writer. Rewrite this resume to better match the job description while maintaining the candidate's authentic experience and achievements.
+        prompt = f"""You are an expert resume writer.
+
+CRITICAL LANGUAGE REQUIREMENT: {lang_instruction}
+Write the optimized resume in the SAME LANGUAGE as the original resume.
+
+Rewrite this resume to better match the job description while maintaining the candidate's authentic experience and achievements.
 
     ORIGINAL RESUME:
     {resume_excerpt}
@@ -194,13 +316,14 @@ IMPORTANT:
     {formatted_keywords}
 
     INSTRUCTIONS:
-    1. Keep all real experiences and achievements - DO NOT fabricate
-    2. Rephrase bullets to include relevant keywords naturally
-    3. Emphasize experiences that match the job requirements
-    4. Add a professional summary tailored to this role
-    5. Reorganize sections to highlight most relevant experience first
-    6. Use action verbs and quantify achievements where possible
-    7. Integrate missing keywords ONLY where they genuinely apply
+    1. {lang_instruction}
+    2. Keep all real experiences and achievements - DO NOT fabricate
+    3. Rephrase bullets to include relevant keywords naturally
+    4. Emphasize experiences that match the job requirements
+    5. Add a professional summary tailored to this role
+    6. Reorganize sections to highlight most relevant experience first
+    7. Use action verbs and quantify achievements where possible
+    8. Integrate missing keywords ONLY where they genuinely apply
 
     FORMAT REQUIREMENTS - Follow this exact professional resume structure:
 
@@ -234,6 +357,7 @@ IMPORTANT:
     [List relevant technical skills]
 
     IMPORTANT:
+    - {lang_instruction}
     - Use proper formatting with clear section headers
     - Start each bullet with strong action verbs
     - Include quantifiable achievements wherever possible
@@ -245,22 +369,42 @@ IMPORTANT:
         try:
             return self._call_gemini_with_retry(prompt, "optimized_resume")
         except Exception as e:
-            # Note: Changed to generic Exception to catch naming errors, 
-            # replace with AIProcessingError if that class is imported.
             logger.error(f"Failed to generate optimized resume: {e}")
             return None
 
-    def generate_cover_letter(self, resume_text: str, job_description: str, 
-                            company_name: str, job_title: str) -> Optional[str]:
-        """Generate a tailored cover letter"""
+    def generate_cover_letter(self, resume_text: str, job_description: str,
+                            company_name: str, job_title: str,
+                            language: str = None) -> Optional[str]:
+        """
+        Generate a tailored cover letter.
+
+        Args:
+            resume_text: The candidate's resume
+            job_description: The target job description
+            company_name: Name of the company
+            job_title: Title of the position
+            language: ISO 639-1 language code. If None, auto-detects from resume.
+
+        Returns:
+            Cover letter in the detected/specified language
+        """
         if not self._is_model_available():
             return None
-        
+
+        # Auto-detect language from resume if not specified
+        if language is None:
+            language = self.detect_language(resume_text)
+
+        lang_instruction = self._get_language_instruction(language)
+
         # Limit text lengths to avoid token limits
         resume_excerpt = resume_text[:2000] if resume_text else ""
         job_excerpt = job_description[:1500] if job_description else ""
-        
+
         prompt = f"""Write a compelling cover letter for this candidate applying to {company_name} for the {job_title} position.
+
+CRITICAL LANGUAGE REQUIREMENT: {lang_instruction}
+Write the cover letter in the SAME LANGUAGE as the resume.
 
 CANDIDATE'S RESUME:
 {resume_excerpt}
@@ -269,12 +413,13 @@ JOB DESCRIPTION:
 {job_excerpt}
 
 REQUIREMENTS:
-1. Professional yet personable tone
-2. 3-4 paragraphs (250-350 words)
-3. Highlight 2-3 most relevant experiences
-4. Show genuine interest in the company/role
-5. Include a strong closing call-to-action
-6. Use specific examples from their resume
+1. {lang_instruction}
+2. Professional yet personable tone
+3. 3-4 paragraphs (250-350 words)
+4. Highlight 2-3 most relevant experiences
+5. Show genuine interest in the company/role
+6. Include a strong closing call-to-action
+7. Use specific examples from their resume
 
 FORMAT REQUIREMENTS - Follow this exact professional cover letter structure:
 
@@ -305,6 +450,7 @@ Sincerely,
 [Your Name]
 
 IMPORTANT:
+- {lang_instruction}
 - Make it unique and authentic, not generic
 - Use the candidate's actual experiences and achievements
 - Maintain a confident yet humble tone
@@ -318,15 +464,34 @@ IMPORTANT:
             logger.error(f"Failed to generate cover letter: {e}")
             return None
     
-    def suggest_missing_experience(self, keywords_missing: list, resume_text: str) -> Optional[str]:
-        """Suggest how to gain or highlight missing skills"""
+    def suggest_missing_experience(self, keywords_missing: list, resume_text: str,
+                                   language: str = None) -> Optional[str]:
+        """
+        Suggest how to gain or highlight missing skills.
+
+        Args:
+            keywords_missing: List of missing skills/keywords
+            resume_text: The candidate's resume
+            language: ISO 639-1 language code. If None, auto-detects from resume.
+
+        Returns:
+            Skill suggestions in the detected/specified language
+        """
         if not self._is_model_available():
             return None
-        
+
+        # Auto-detect language from resume if not specified
+        if language is None:
+            language = self.detect_language(resume_text)
+
+        lang_instruction = self._get_language_instruction(language)
+
         resume_excerpt = resume_text[:1500] if resume_text else ""
         missing_skills = ', '.join(keywords_missing[:10]) if keywords_missing else 'None'
-        
+
         prompt = f"""The candidate is missing these skills for their target role: {missing_skills}
+
+CRITICAL LANGUAGE REQUIREMENT: {lang_instruction}
 
 Based on their resume background:
 {resume_excerpt}
@@ -336,7 +501,10 @@ Provide 5 specific, actionable suggestions for how they could:
 2. Highlight existing transferable experience
 3. Reframe their experience to show these skills
 
-Be specific with course names, project ideas, and phrasing examples. Keep response under 500 words."""
+IMPORTANT:
+- {lang_instruction}
+- Be specific with course names, project ideas, and phrasing examples
+- Keep response under 500 words"""
 
         try:
             return self._call_gemini_with_retry(prompt, "skill_suggestions")
@@ -371,25 +539,29 @@ Be specific with course names, project ideas, and phrasing examples. Keep respon
 # Create global instance
 gemini_service = GeminiService()
 
-# Backward compatibility functions
-def generate_personalized_feedback(resume_text: str, job_description: str, 
-                                 match_score: float, keywords_found: list, 
-                                 keywords_missing: list) -> str:
-    """Backward compatibility function"""
+# Backward compatibility functions (now with optional language parameter)
+def generate_personalized_feedback(resume_text: str, job_description: str,
+                                 match_score: float, keywords_found: list,
+                                 keywords_missing: list, language: str = None) -> str:
+    """Backward compatibility function - language auto-detected if not provided"""
     return gemini_service.generate_personalized_feedback(
-        resume_text, job_description, match_score, keywords_found, keywords_missing
+        resume_text, job_description, match_score, keywords_found, keywords_missing, language
     )
 
-def generate_optimized_resume(resume_text: str, job_description: str, 
-                            keywords_missing: list) -> Optional[str]:
-    """Backward compatibility function"""
-    return gemini_service.generate_optimized_resume(resume_text, job_description, keywords_missing)
+def generate_optimized_resume(resume_text: str, job_description: str,
+                            keywords_missing: list, language: str = None) -> Optional[str]:
+    """Backward compatibility function - language auto-detected if not provided"""
+    return gemini_service.generate_optimized_resume(resume_text, job_description, keywords_missing, language)
 
-def generate_cover_letter(resume_text: str, job_description: str, 
-                        company_name: str, job_title: str) -> Optional[str]:
-    """Backward compatibility function"""
-    return gemini_service.generate_cover_letter(resume_text, job_description, company_name, job_title)
+def generate_cover_letter(resume_text: str, job_description: str,
+                        company_name: str, job_title: str, language: str = None) -> Optional[str]:
+    """Backward compatibility function - language auto-detected if not provided"""
+    return gemini_service.generate_cover_letter(resume_text, job_description, company_name, job_title, language)
 
-def suggest_missing_experience(keywords_missing: list, resume_text: str) -> Optional[str]:
-    """Backward compatibility function"""
-    return gemini_service.suggest_missing_experience(keywords_missing, resume_text)
+def suggest_missing_experience(keywords_missing: list, resume_text: str, language: str = None) -> Optional[str]:
+    """Backward compatibility function - language auto-detected if not provided"""
+    return gemini_service.suggest_missing_experience(keywords_missing, resume_text, language)
+
+def detect_language(text: str) -> str:
+    """Detect language of text - returns ISO 639-1 code"""
+    return gemini_service.detect_language(text)

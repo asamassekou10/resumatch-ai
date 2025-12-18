@@ -69,8 +69,28 @@ class IntelligentResumeAnalyzer:
     """
     Industry-agnostic resume analyzer using Google Gemini AI
     Provides semantic matching, ATS optimization, and intelligent recommendations
-    With timeout handling and retry logic
+    With timeout handling, retry logic, and multilingual support
     """
+
+    # Language instruction templates for multilingual AI responses
+    LANGUAGE_INSTRUCTIONS = {
+        'en': 'Respond entirely in English.',
+        'fr': 'Répondez entièrement en français. Utilisez un ton professionnel.',
+        'de': 'Antworten Sie vollständig auf Deutsch. Verwenden Sie einen professionellen Ton.',
+        'es': 'Responda completamente en español. Use un tono profesional.',
+        'nl': 'Antwoord volledig in het Nederlands. Gebruik een professionele toon.',
+        'pt': 'Responda inteiramente em português. Use um tom profissional.',
+        'it': 'Rispondi interamente in italiano. Usa un tono professionale.',
+        'pl': 'Odpowiedz w całości po polsku. Użyj profesjonalnego tonu.',
+        'ru': 'Отвечайте полностью на русском языке. Используйте профессиональный тон.',
+        'zh': '请完全用中文回复。使用专业的语气。',
+        'ja': '日本語で完全に回答してください。プロフェッショナルなトーンを使用してください。',
+        'ko': '한국어로 완전히 응답하세요. 전문적인 어조를 사용하세요.',
+        'ar': 'أجب بالكامل باللغة العربية. استخدم نبرة مهنية.',
+        'hi': 'कृपया पूरी तरह से हिंदी में उत्तर दें। पेशेवर लहजे का प्रयोग करें।',
+    }
+
+    SUPPORTED_LANGUAGES = list(LANGUAGE_INSTRUCTIONS.keys())
 
     def __init__(self):
         self.model = genai.GenerativeModel(MODEL_NAME)
@@ -83,6 +103,50 @@ class IntelligentResumeAnalyzer:
         self.request_options = {
             'timeout': DEFAULT_TIMEOUT
         }
+        self._language_cache = {}  # Cache for detected languages
+
+    def detect_language(self, text: str) -> str:
+        """
+        Detect the primary language of the given text.
+        Returns ISO 639-1 two-letter language code.
+        """
+        if not text or len(text.strip()) < 50:
+            return 'en'
+
+        # Check cache first
+        cache_key = hash(text[:200])
+        if cache_key in self._language_cache:
+            return self._language_cache[cache_key]
+
+        text_sample = text[:1000]
+        prompt = f"""Analyze this text and determine its primary language.
+Return ONLY the ISO 639-1 two-letter language code (lowercase).
+Supported codes: en, fr, de, es, nl, pt, it, pl, ru, zh, ja, ko, ar, hi
+If unsure, return 'en'.
+
+Text: {text_sample}
+
+Response (just the code):"""
+
+        try:
+            response = self.model.generate_content(
+                prompt,
+                request_options={'timeout': 10}
+            )
+            if response and response.text:
+                detected = response.text.strip().lower()[:2]
+                if detected in self.SUPPORTED_LANGUAGES:
+                    logger.info(f"Detected language: {detected}")
+                    self._language_cache[cache_key] = detected
+                    return detected
+            return 'en'
+        except Exception as e:
+            logger.warning(f"Language detection failed: {e}")
+            return 'en'
+
+    def _get_language_instruction(self, language: str) -> str:
+        """Get the language instruction for prompts"""
+        return self.LANGUAGE_INSTRUCTIONS.get(language, self.LANGUAGE_INSTRUCTIONS['en'])
 
     @retry_on_error(max_retries=MAX_RETRIES)
     def _call_gemini_for_job_requirements(self, prompt: str) -> str:
@@ -330,15 +394,21 @@ Be honest and realistic in your assessment. This is for professional development
             return self._get_default_match_analysis()
 
     def generate_ats_optimization_recommendations(
-        self, job_description: str, resume_content: Dict[str, Any], match_analysis: Dict[str, Any]
+        self, job_description: str, resume_content: Dict[str, Any], match_analysis: Dict[str, Any],
+        language: str = 'en'
     ) -> Dict[str, Any]:
         """
-        Generate specific, natural ways to add keywords for ATS optimization
+        Generate specific, natural ways to add keywords for ATS optimization.
+        Supports multilingual responses based on the detected resume language.
         """
-        logger.info("Generating ATS optimization recommendations...")
+        logger.info(f"Generating ATS optimization recommendations in {language}...")
 
+        lang_instruction = self._get_language_instruction(language)
         missing_keywords = match_analysis.get("keywords_missing", [])[:10]
+
         prompt = f"""You are an ATS optimization expert specializing in resume formatting.
+
+CRITICAL LANGUAGE REQUIREMENT: {lang_instruction}
 
 Missing Keywords for ATS:
 {json.dumps(missing_keywords, indent=2)}
@@ -346,7 +416,9 @@ Missing Keywords for ATS:
 Resume Current Content:
 {json.dumps(resume_content, indent=2)}
 
-Generate optimization recommendations in JSON format:
+Generate optimization recommendations in JSON format.
+IMPORTANT: All text values in the JSON must be in the same language as specified above.
+
 {{
     "keyword_optimization": [
         {{
@@ -370,7 +442,8 @@ Generate optimization recommendations in JSON format:
     ]
 }}
 
-Focus on natural, professional language - not keyword stuffing."""
+Focus on natural, professional language - not keyword stuffing.
+Remember: {lang_instruction}"""
 
         try:
             response_text = self._call_gemini_for_ats_optimization(prompt)
@@ -389,20 +462,28 @@ Focus on natural, professional language - not keyword stuffing."""
             return {"keyword_optimization": [], "natural_integration_tips": []}
 
     def generate_intelligent_recommendations(
-        self, job_description: str, resume_content: Dict[str, Any], match_analysis: Dict[str, Any], industry: str
+        self, job_description: str, resume_content: Dict[str, Any], match_analysis: Dict[str, Any],
+        industry: str, language: str = 'en'
     ) -> Dict[str, Any]:
         """
-        Generate industry-specific, actionable recommendations
+        Generate industry-specific, actionable recommendations.
+        Supports multilingual responses based on the detected resume language.
         """
-        logger.info(f"Generating {industry}-specific recommendations...")
+        logger.info(f"Generating {industry}-specific recommendations in {language}...")
 
+        lang_instruction = self._get_language_instruction(language)
         gaps = match_analysis.get("gaps", [])[:5]
+
         prompt = f"""You are a career coach for {industry} professionals.
+
+CRITICAL LANGUAGE REQUIREMENT: {lang_instruction}
 
 Resume gaps identified:
 {json.dumps(gaps, indent=2)}
 
-Generate industry-specific recommendations in JSON format:
+Generate industry-specific recommendations in JSON format.
+IMPORTANT: All text values in the JSON must be in the same language as specified above.
+
 {{
     "priority_improvements": [
         {{
@@ -430,7 +511,8 @@ Generate industry-specific recommendations in JSON format:
     ]
 }}
 
-Provide concrete, actionable advice specific to {industry}."""
+Provide concrete, actionable advice specific to {industry}.
+Remember: {lang_instruction}"""
 
         try:
             response_text = self._call_gemini_for_recommendations(prompt)
@@ -449,14 +531,27 @@ Provide concrete, actionable advice specific to {industry}."""
             return {"priority_improvements": [], "quick_wins": []}
 
     def comprehensive_resume_analysis(
-        self, resume_text: str, job_description: str
+        self, resume_text: str, job_description: str, language: str = None
     ) -> Dict[str, Any]:
         """
-        Complete intelligent resume analysis pipeline
+        Complete intelligent resume analysis pipeline with multilingual support.
+
+        Args:
+            resume_text: The resume content
+            job_description: The target job description
+            language: ISO 639-1 language code. If None, auto-detects from resume.
+
+        Returns:
+            Complete analysis results including detected language
         """
         logger.info("Starting comprehensive resume analysis...")
 
         try:
+            # Step 0: Detect language from resume if not specified
+            if language is None:
+                language = self.detect_language(resume_text)
+            logger.info(f"Analysis language: {language}")
+
             # Step 1: Extract job requirements (AI-driven)
             job_analysis = self.extract_job_requirements(job_description)
 
@@ -471,14 +566,15 @@ Provide concrete, actionable advice specific to {industry}."""
             # Step 4: Calibrate score
             score_data = self._calibrate_match_score(match_analysis)
 
-            # Step 5: ATS optimization
+            # Step 5: ATS optimization (with language support)
             ats_optimization = self.generate_ats_optimization_recommendations(
-                job_description, resume_parsed, match_analysis
+                job_description, resume_parsed, match_analysis, language
             )
 
-            # Step 6: Generate recommendations
+            # Step 6: Generate recommendations (with language support)
             recommendations = self.generate_intelligent_recommendations(
-                job_description, resume_parsed, match_analysis, job_analysis.get("industry", "unknown")
+                job_description, resume_parsed, match_analysis,
+                job_analysis.get("industry", "unknown"), language
             )
 
             result = {
@@ -491,9 +587,10 @@ Provide concrete, actionable advice specific to {industry}."""
                 "job_level": job_analysis.get("experience_level", "Unknown"),
                 "resume_level": resume_parsed.get("experience_level", "Unknown"),
                 "expected_ats_pass_rate": f"{match_analysis.get('ats_pass_likelihood', 50)}%",
+                "detected_language": language,  # Include detected language in result
             }
 
-            logger.info(f"Analysis complete - Score: {result['overall_score']}%")
+            logger.info(f"Analysis complete - Score: {result['overall_score']}%, Language: {language}")
             return result
 
         except Exception as e:
