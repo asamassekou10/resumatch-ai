@@ -260,19 +260,20 @@ export default function MarketIntelligenceDashboard({ userProfile, onRepersonali
                     <PieChartIcon className="w-5 h-5" />
                     Industry Distribution
                   </h3>
-                  <div className="chart-wrapper">
+                  <div className="chart-wrapper pie-chart-wrapper">
                     <ResponsiveContainer width="100%" height={320}>
                       <PieChart>
                         <Pie
                           data={industryData}
                           cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={100}
+                          cy="40%"
+                          innerRadius={40}
+                          outerRadius={70}
                           paddingAngle={5}
                           dataKey="value"
                           animationBegin={0}
                           animationDuration={800}
+                          label={false}
                         >
                           {industryData.map((entry, index) => (
                             <Cell
@@ -284,10 +285,11 @@ export default function MarketIntelligenceDashboard({ userProfile, onRepersonali
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
                         <Legend
-                          layout="vertical"
-                          align="right"
-                          verticalAlign="middle"
-                          formatter={(value) => <span style={{ color: '#94a3b8' }}>{value}</span>}
+                          layout="horizontal"
+                          align="center"
+                          verticalAlign="bottom"
+                          wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }}
+                          formatter={(value) => <span style={{ color: '#94a3b8', fontSize: '11px' }}>{value}</span>}
                         />
                       </PieChart>
                     </ResponsiveContainer>

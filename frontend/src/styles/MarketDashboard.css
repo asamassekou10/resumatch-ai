@@ -123,6 +123,23 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   margin-bottom: 1.5rem;
   backdrop-filter: blur(10px);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(6, 182, 212, 0.5) transparent;
+}
+
+.tab-navigation::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tab-navigation::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tab-navigation::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.5);
+  border-radius: 2px;
 }
 
 .tab-btn {
@@ -138,6 +155,8 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .tab-btn:hover {
@@ -332,6 +351,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.pie-chart-wrapper {
+  height: 350px;
+  overflow: visible;
+}
+
+@media (max-width: 640px) {
+  .pie-chart-wrapper {
+    height: 300px;
+  }
+
+  .chart-wrapper {
+    height: 280px;
+  }
 }
 
 /* Salary Summary */

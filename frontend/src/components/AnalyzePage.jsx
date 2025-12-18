@@ -369,40 +369,40 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <h1 className="text-4xl font-bold text-white mb-2">AI-Powered Analysis Complete</h1>
-            <p className="text-slate-400">Comprehensive resume evaluation & ATS optimization</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">AI-Powered Analysis Complete</h1>
+            <p className="text-slate-400 text-sm sm:text-base">Comprehensive resume evaluation & ATS optimization</p>
           </motion.div>
 
           {/* Overall Score Card */}
           <motion.div
-            className="bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-600 rounded-lg p-8"
+            className="bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-600 rounded-lg p-4 sm:p-6 md:p-8"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
           >
-            <div className="grid grid-cols-2 gap-6">
+            <div className="flex flex-col sm:grid sm:grid-cols-2 gap-6">
               <div className="text-center">
-                <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
+                <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
                   {analysisData.match_score || 0}%
                 </div>
-                <p className="text-slate-300 font-semibold">Overall Match Score</p>
-                <p className="text-slate-400 text-sm mt-2">
+                <p className="text-slate-300 font-semibold text-sm sm:text-base">Overall Match Score</p>
+                <p className="text-slate-400 text-xs sm:text-sm mt-2">
                   {analysisData.match_score >= 80 ? 'Excellent Match' :
                    analysisData.match_score >= 60 ? 'Good Match' :
                    analysisData.match_score >= 40 ? 'Fair Match' : 'Needs Improvement'}
                 </p>
               </div>
-              <div className="flex flex-col justify-center gap-3">
+              <div className="flex flex-col justify-center gap-3 text-center sm:text-left">
                 <div>
-                  <p className="text-slate-400 text-sm mb-1">Job Title</p>
-                  <p className="text-white font-semibold">{analysisData.job_title || 'Not specified'}</p>
+                  <p className="text-slate-400 text-xs sm:text-sm mb-1">Job Title</p>
+                  <p className="text-white font-semibold text-sm sm:text-base truncate">{analysisData.job_title || 'Not specified'}</p>
                 </div>
                 <div>
-                  <p className="text-slate-400 text-sm mb-1">Company</p>
-                  <p className="text-white font-semibold">{analysisData.company_name || 'Not specified'}</p>
+                  <p className="text-slate-400 text-xs sm:text-sm mb-1">Company</p>
+                  <p className="text-white font-semibold text-sm sm:text-base truncate">{analysisData.company_name || 'Not specified'}</p>
                 </div>
                 <div>
-                  <p className="text-slate-400 text-sm mb-1">Resume</p>
-                  <p className="text-cyan-400 font-semibold">{analysisData.resume_filename || 'Unknown'}</p>
+                  <p className="text-slate-400 text-xs sm:text-sm mb-1">Resume</p>
+                  <p className="text-cyan-400 font-semibold text-sm sm:text-base truncate">{analysisData.resume_filename || 'Unknown'}</p>
                 </div>
               </div>
             </div>

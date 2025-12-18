@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { X, ChevronRight, ChevronDown, Home, FileText, TrendingUp, CreditCard, Settings, HelpCircle, LogIn, UserPlus, Shield, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,6 +22,39 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Memoized close handler to ensure consistent reference
+  const handleClose = useCallback(() => {
+    if (onClose && typeof onClose === 'function') {
+      onClose();
+    }
+  }, [onClose]);
+
+  // Lock body scroll when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [isOpen]);
+
+  // Close on escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        handleClose();
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isOpen, handleClose]);
+
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
       ...prev,
@@ -31,7 +64,7 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
 
   const handleNavClick = (route) => {
     navigate(route);
-    onClose();
+    handleClose();
   };
 
   // Menu configuration for logged-in users
@@ -87,30 +120,40 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
   // Check if route is active
   const isActiveRoute = (route) => location.pathname === route;
 
-  // Handle close when clicking overlay
-  const handleOverlayClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onClose();
-  };
+  // Handle overlay interaction (both click and touch)
+  const handleOverlayInteraction = useCallback((e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    handleClose();
+  }, [handleClose]);
 
-  // Prevent clicks inside menu from closing it
-  const handleMenuClick = (e) => {
-    e.stopPropagation();
-  };
+  // Handle close button click
+  const handleCloseButtonClick = useCallback((e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    handleClose();
+  }, [handleClose]);
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Overlay - Click to close */}
+          {/* Overlay - Click/Touch to close */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={handleOverlayClick}
-            className="fixed inset-0 bg-black/50 z-[9998] cursor-pointer"
-            style={{ touchAction: 'none' }}
+            onClick={handleOverlayInteraction}
+            onTouchEnd={handleOverlayInteraction}
+            className="fixed inset-0 bg-black/60 z-[9998] cursor-pointer"
+            style={{ touchAction: 'manipulation' }}
+            role="button"
+            tabIndex={0}
+            aria-label="Close menu"
           />
 
           {/* Menu Panel */}
@@ -119,23 +162,22 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'tween', duration: 0.3 }}
-            onClick={handleMenuClick}
-            className="fixed left-0 top-0 h-full w-80 bg-slate-900 border-r border-slate-700 z-[9999] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+            className="fixed left-0 top-0 h-full w-80 max-w-[85vw] bg-slate-900 border-r border-slate-700 z-[9999] overflow-y-auto"
+            style={{ touchAction: 'pan-y' }}
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-slate-700">
               <h2 className="text-xl font-bold text-white">Menu</h2>
               <button
                 type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onClose();
-                }}
-                className="p-2 rounded-lg hover:bg-slate-800 transition cursor-pointer"
+                onClick={handleCloseButtonClick}
+                onTouchEnd={handleCloseButtonClick}
+                className="p-2 rounded-lg hover:bg-slate-800 active:bg-slate-700 transition cursor-pointer touch-manipulation"
                 aria-label="Close menu"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                <X className="w-6 h-6 text-slate-300 pointer-events-none" />
+                <X className="w-6 h-6 text-slate-300" />
               </button>
             </div>
 
@@ -227,9 +269,9 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
                 <button
                   onClick={() => {
                     handleLogout();
-                    onClose();
+                    handleClose();
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition touch-manipulation"
                 >
                   <LogOut className="w-5 h-5" />
                   <span className="font-medium">Logout</span>
