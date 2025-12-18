@@ -4,10 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, Zap, Crown, Sparkles, ArrowRight } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
+import axios from 'axios';
 
-const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userProfile }) => {
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+const PricingPageV2 = ({ token, userProfile }) => {
   const navigate = useNavigate();
   const [isYearly, setIsYearly] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
@@ -20,6 +24,118 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
         ease: 'easeOut'
       }
     })
+  };
+
+  // Handle upgrade to Pro
+  const handleUpgradeToPro = async () => {
+    if (!token) {
+      navigate(ROUTES.LOGIN);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `${API_URL}/payments/create-checkout-session?tier=pro`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      // Redirect to Stripe checkout
+      if (response.data.checkout_url) {
+        window.location.href = response.data.checkout_url;
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      alert('Failed to start checkout. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  // Handle upgrade to Elite
+  const handleUpgradeToElite = async () => {
+    if (!token) {
+      navigate(ROUTES.LOGIN);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `${API_URL}/payments/create-checkout-session?tier=elite`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      // Redirect to Stripe checkout
+      if (response.data.checkout_url) {
+        window.location.href = response.data.checkout_url;
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      alert('Failed to start checkout. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  // Normalize subscription tier
+  const normalizedTier = userProfile?.subscription_tier === 'premium'
+    ? 'pro'
+    : (userProfile?.subscription_tier || 'free');
+
+  // Determine button configuration based on user's current plan
+  const getButtonConfig = (planName) => {
+    const lowerPlan = planName.toLowerCase();
+
+    if (!token) {
+      return {
+        text: 'Sign Up',
+        action: () => navigate(ROUTES.REGISTER),
+        variant: lowerPlan === 'pro' ? 'primary' : 'secondary',
+        disabled: false
+      };
+    }
+
+    if (normalizedTier === lowerPlan) {
+      return {
+        text: 'Current Plan',
+        action: () => navigate(ROUTES.DASHBOARD),
+        variant: 'secondary',
+        disabled: true
+      };
+    }
+
+    if (lowerPlan === 'free') {
+      return {
+        text: normalizedTier === 'free' ? 'Current Plan' : 'Get Started',
+        action: () => navigate(ROUTES.DASHBOARD),
+        variant: 'secondary',
+        disabled: normalizedTier === 'free'
+      };
+    }
+
+    // Upgrade buttons
+    if (lowerPlan === 'pro') {
+      return {
+        text: normalizedTier === 'elite' ? 'Downgrade to Pro' : 'Choose Pro',
+        action: handleUpgradeToPro,
+        variant: 'primary',
+        disabled: loading
+      };
+    }
+
+    if (lowerPlan === 'elite') {
+      return {
+        text: 'Choose Elite',
+        action: handleUpgradeToElite,
+        variant: 'primary',
+        disabled: loading
+      };
+    }
   };
 
   const plans = [
@@ -38,10 +154,7 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
       ],
       notIncluded: ['AI-powered optimization', 'Cover letter generation', 'Priority support', 'Advanced analytics'],
       highlighted: false,
-      icon: Sparkles,
-      buttonText: 'Current Plan',
-      buttonAction: () => navigate(ROUTES.DASHBOARD),
-      buttonVariant: 'secondary'
+      icon: Sparkles
     },
     {
       name: 'Pro',
@@ -59,10 +172,7 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
       ],
       notIncluded: ['Unlimited API access', 'Custom integrations'],
       highlighted: true,
-      icon: Zap,
-      buttonText: 'Choose Pro',
-      buttonAction: handleUpgradeToPro,
-      buttonVariant: 'primary'
+      icon: Zap
     },
     {
       name: 'Elite',
@@ -80,10 +190,7 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
       ],
       notIncluded: [],
       highlighted: false,
-      icon: Crown,
-      buttonText: 'Choose Elite',
-      buttonAction: handleUpgradeToElite,
-      buttonVariant: 'primary'
+      icon: Crown
     }
   ];
 
@@ -106,12 +213,16 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
     <>
       <SEO
         title="Pricing Plans"
-        description="Choose the perfect ResuMatch AI plan for your job search. Free, Pro, and Elite plans with AI-powered resume analysis, job matching, and career tools."
+        description="Choose the perfect ResumeAnalyzer AI plan for your job search. Free, Pro, and Elite plans with AI-powered resume analysis, job matching, and career tools."
         keywords="pricing, subscription, resume analyzer pricing, AI career tools pricing"
         url="https://resumeanalyzerai.com/pricing"
       />
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
+        {/* Background atmosphere */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+
+        <div className="relative max-w-7xl mx-auto">
           {/* Header */}
         <motion.div
           className="text-center mb-12"
@@ -120,10 +231,10 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
           variants={fadeInUp}
           custom={0}
         >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 font-display">
             Simple, Transparent Pricing
           </h1>
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
             Choose the perfect plan for your job search journey
           </p>
         </motion.div>
@@ -136,26 +247,26 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
           variants={fadeInUp}
           custom={1}
         >
-          <span className={`text-sm font-semibold transition-colors ${!isYearly ? 'text-white' : 'text-slate-400'}`}>
+          <span className={`text-sm font-semibold transition-colors ${!isYearly ? 'text-white' : 'text-gray-400'}`}>
             Monthly
           </span>
           <motion.button
             onClick={() => setIsYearly(!isYearly)}
-            className="relative inline-flex items-center h-10 w-20 bg-slate-700 rounded-full p-1 transition-colors hover:bg-slate-600"
+            className="relative inline-flex items-center h-10 w-20 bg-white/10 rounded-full p-1 transition-colors hover:bg-white/20"
             whileHover={{ scale: 1.05 }}
           >
             <motion.div
-              className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full shadow-lg"
+              className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full shadow-lg"
               layout
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             />
           </motion.button>
-          <span className={`text-sm font-semibold transition-colors ${isYearly ? 'text-white' : 'text-slate-400'}`}>
+          <span className={`text-sm font-semibold transition-colors ${isYearly ? 'text-white' : 'text-gray-400'}`}>
             Yearly
           </span>
           {isYearly && (
             <motion.span
-              className="ml-4 px-3 py-1 bg-gradient-to-r from-cyan-500/20 to-purple-600/20 text-cyan-400 text-xs font-semibold rounded-full border border-cyan-500/30"
+              className="ml-4 px-3 py-1 bg-gradient-to-r from-blue-500/20 to-purple-600/20 text-blue-400 text-xs font-semibold rounded-full border border-blue-500/30"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
             >
@@ -183,7 +294,7 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
               >
                 {plan.highlighted && (
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-purple-600/10 rounded-2xl blur-xl"
+                    className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-600/10 rounded-2xl blur-xl"
                     animate={{ scale: [1, 1.02, 1] }}
                     transition={{ duration: 3, repeat: Infinity }}
                   />
@@ -192,8 +303,8 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
                 <div
                   className={`relative h-full rounded-2xl p-8 transition-all duration-300 ${
                     plan.highlighted
-                      ? 'bg-gradient-to-br from-slate-800 border-2 border-cyan-500/50 shadow-2xl shadow-cyan-500/20'
-                      : 'bg-slate-800/50 border border-slate-700 hover:border-slate-600'
+                      ? 'bg-white/5 backdrop-blur-xl border-2 border-purple-500/50 shadow-2xl shadow-purple-500/20'
+                      : 'bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20'
                   }`}
                 >
                   {/* Badge */}
@@ -204,7 +315,7 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.3 }}
                     >
-                      <span className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                      <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
                         Most Popular
                       </span>
                     </motion.div>
@@ -213,14 +324,14 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
                   {/* Plan Header */}
                   <div className="flex items-center gap-3 mb-6">
                     <motion.div
-                      className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-lg flex items-center justify-center"
+                      className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center"
                       whileHover={{ scale: 1.1, rotate: 5 }}
                     >
                       <IconComponent className="w-6 h-6 text-white" />
                     </motion.div>
                     <div>
-                      <h3 className="text-2xl font-bold text-white">{plan.name}</h3>
-                      <p className="text-sm text-slate-400">{plan.description}</p>
+                      <h3 className="text-2xl font-bold text-white font-display">{plan.name}</h3>
+                      <p className="text-sm text-gray-400">{plan.description}</p>
                     </div>
                   </div>
 
@@ -233,7 +344,7 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
                       transition={{ duration: 0.3 }}
                     >
                       <span className="text-4xl font-bold text-white">${price.toFixed(2)}</span>
-                      <span className="text-slate-400 text-sm ml-2">
+                      <span className="text-gray-400 text-sm ml-2">
                         {price === 0 ? 'forever' : isYearly ? '/year' : '/month'}
                       </span>
                     </motion.div>
@@ -247,30 +358,36 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
                         Save ${savings.savings.toFixed(2)} ({savings.percentage}%)
                       </motion.p>
                     )}
-                    <div className="mt-4 p-3 bg-slate-900/50 rounded-lg">
-                      <span className="text-sm text-slate-300">
+                    <div className="mt-4 p-3 bg-white/5 rounded-lg">
+                      <span className="text-sm text-gray-300">
                         <strong>{plan.credits}</strong> credits/month
                       </span>
                     </div>
                   </div>
 
                   {/* CTA Button */}
-                  <motion.button
-                    onClick={plan.buttonAction}
-                    className={`w-full py-3 rounded-lg font-semibold mb-8 flex items-center justify-center gap-2 transition-all duration-300 ${
-                      plan.buttonVariant === 'primary'
-                        ? 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white hover:shadow-lg hover:shadow-cyan-500/50'
-                        : 'bg-slate-700 text-white hover:bg-slate-600'
-                    }`}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    {plan.buttonText}
-                    {plan.buttonVariant === 'primary' && <ArrowRight className="w-4 h-4" />}
-                  </motion.button>
+                  {(() => {
+                    const buttonConfig = getButtonConfig(plan.name);
+                    return (
+                      <motion.button
+                        onClick={buttonConfig.action}
+                        disabled={buttonConfig.disabled}
+                        className={`w-full py-3 rounded-xl font-semibold mb-8 flex items-center justify-center gap-2 transition-all duration-300 ${
+                          buttonConfig.variant === 'primary'
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50'
+                            : 'bg-white/10 text-white hover:bg-white/20'
+                        } ${buttonConfig.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        whileHover={buttonConfig.disabled ? {} : { scale: 1.02 }}
+                        whileTap={buttonConfig.disabled ? {} : { scale: 0.98 }}
+                      >
+                        {buttonConfig.text}
+                        {buttonConfig.variant === 'primary' && !buttonConfig.disabled && <ArrowRight className="w-4 h-4" />}
+                      </motion.button>
+                    );
+                  })()}
 
                   {/* Features */}
-                  <div className="space-y-4 border-t border-slate-700 pt-8">
+                  <div className="space-y-4 border-t border-white/10 pt-8">
                     {/* Included Features */}
                     {plan.features.map((feature, j) => (
                       <motion.div
@@ -281,14 +398,14 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
                         transition={{ delay: j * 0.05 }}
                       >
                         <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                        <span className="text-slate-300 text-sm">{feature}</span>
+                        <span className="text-gray-300 text-sm">{feature}</span>
                       </motion.div>
                     ))}
 
                     {/* Not Included Features */}
                     {plan.notIncluded.length > 0 && (
                       <>
-                        <div className="border-t border-slate-700 pt-4 mt-4" />
+                        <div className="border-t border-white/10 pt-4 mt-4" />
                         {plan.notIncluded.map((feature, j) => (
                           <motion.div
                             key={`not-${j}`}
@@ -297,8 +414,8 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
                             animate={{ opacity: 0.6, x: 0 }}
                             transition={{ delay: (plan.features.length + j) * 0.05 }}
                           >
-                            <div className="w-5 h-5 rounded-full border border-slate-600 flex-shrink-0 mt-0.5" />
-                            <span className="text-slate-500 text-sm">{feature}</span>
+                            <div className="w-5 h-5 rounded-full border border-white/20 flex-shrink-0 mt-0.5" />
+                            <span className="text-gray-500 text-sm">{feature}</span>
                           </motion.div>
                         ))}
                       </>
@@ -319,7 +436,7 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
           variants={fadeInUp}
           custom={0}
         >
-          <h2 className="text-3xl font-bold text-white text-center mb-8">Frequently Asked Questions</h2>
+          <h2 className="text-3xl font-bold text-white text-center mb-8 font-display">Frequently Asked Questions</h2>
           <div className="space-y-4">
             {[
               {
@@ -341,14 +458,14 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
             ].map((faq, i) => (
               <motion.div
                 key={i}
-                className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition-all"
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all"
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
               >
                 <h3 className="font-semibold text-white mb-2">{faq.q}</h3>
-                <p className="text-slate-400 text-sm">{faq.a}</p>
+                <p className="text-gray-400 text-sm">{faq.a}</p>
               </motion.div>
             ))}
           </div>
@@ -363,7 +480,7 @@ const PricingPageV2 = ({ handleUpgradeToPro, handleUpgradeToElite, token, userPr
           variants={fadeInUp}
           custom={0}
         >
-          <p className="text-slate-400 text-sm">
+          <p className="text-gray-400 text-sm">
             All plans include secure payment processing via Stripe. Cancel anytime, no questions asked.
           </p>
         </motion.div>

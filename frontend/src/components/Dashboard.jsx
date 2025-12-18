@@ -113,7 +113,7 @@ const Dashboard = ({ userProfile }) => {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-300">Loading dashboard...</p>
+          <p className="text-gray-300">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -157,7 +157,7 @@ const Dashboard = ({ userProfile }) => {
 
       {/* Header */}
       <div className="flex justify-between items-center flex-wrap gap-4">
-        <h2 className="text-3xl font-bold text-white">Your Career Dashboard</h2>
+        <h2 className="text-3xl font-bold text-white font-display">Your Career Dashboard</h2>
         {userProfile && (
           <div className="flex items-center gap-4 flex-wrap">
             {userProfile.is_admin && (
@@ -171,20 +171,20 @@ const Dashboard = ({ userProfile }) => {
                 Admin
               </button>
             )}
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg px-4 py-2">
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl px-4 py-2">
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${userProfile.subscription_tier === 'elite' ? 'bg-amber-400' : userProfile.subscription_tier === 'pro' ? 'bg-cyan-400' : 'bg-slate-400'}`}></div>
-                <span className="text-slate-300 text-sm">
+                <div className={`w-2 h-2 rounded-full ${userProfile.subscription_tier === 'elite' ? 'bg-amber-400' : userProfile.subscription_tier === 'pro' ? 'bg-cyan-400' : 'bg-gray-400'}`}></div>
+                <span className="text-gray-300 text-sm">
                   {userProfile.subscription_tier === 'elite' ? 'Elite Plan' : userProfile.subscription_tier === 'pro' ? 'Pro Plan' : 'Free Plan'}
                 </span>
               </div>
             </div>
-            <div className={`backdrop-blur-sm border rounded-lg px-4 py-2 ${userProfile.subscription_tier === 'elite' ? 'bg-gradient-to-r from-amber-500/20 to-orange-600/20 border-amber-500/30' : userProfile.subscription_tier === 'pro' ? 'bg-gradient-to-r from-cyan-500/20 to-purple-600/20 border-cyan-500/30' : 'bg-slate-700/30 border-slate-600/50'}`}>
+            <div className={`backdrop-blur-sm border rounded-xl px-4 py-2 ${userProfile.subscription_tier === 'elite' ? 'bg-gradient-to-r from-amber-500/20 to-orange-600/20 border-amber-500/30' : userProfile.subscription_tier === 'pro' ? 'bg-gradient-to-r from-cyan-500/20 to-purple-600/20 border-cyan-500/30' : 'bg-white/10 border-white/20'}`}>
               <div className="flex items-center gap-2">
-                <svg className={`w-4 h-4 ${userProfile.subscription_tier === 'elite' ? 'text-amber-400' : userProfile.subscription_tier === 'pro' ? 'text-cyan-400' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`w-4 h-4 ${userProfile.subscription_tier === 'elite' ? 'text-amber-400' : userProfile.subscription_tier === 'pro' ? 'text-cyan-400' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                <span className={`font-semibold ${userProfile.subscription_tier === 'elite' ? 'text-amber-400' : userProfile.subscription_tier === 'pro' ? 'text-cyan-400' : 'text-slate-400'}`}>{userProfile.credits} Credits</span>
+                <span className={`font-semibold ${userProfile.subscription_tier === 'elite' ? 'text-amber-400' : userProfile.subscription_tier === 'pro' ? 'text-cyan-400' : 'text-gray-400'}`}>{userProfile.credits} Credits</span>
               </div>
             </div>
             {userProfile.subscription_tier === 'free' && (
@@ -229,16 +229,16 @@ const Dashboard = ({ userProfile }) => {
       {/* Stats Cards */}
       {dashboardStats && dashboardStats.total_analyses > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6 hover:border-cyan-400/50 transition">
-            <h3 className="text-slate-400 text-sm font-medium">Total Analyses</h3>
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-cyan-400/50 transition">
+            <h3 className="text-gray-400 text-sm font-medium">Total Analyses</h3>
             <p className="text-4xl font-bold text-cyan-400">{dashboardStats.total_analyses}</p>
           </div>
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6 hover:border-cyan-400/50 transition">
-            <h3 className="text-slate-400 text-sm font-medium">Average Score</h3>
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-cyan-400/50 transition">
+            <h3 className="text-gray-400 text-sm font-medium">Average Score</h3>
             <p className="text-4xl font-bold text-green-400">{dashboardStats.average_score}%</p>
           </div>
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6 hover:border-cyan-400/50 transition">
-            <h3 className="text-slate-400 text-sm font-medium">Top Skill Gap</h3>
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-cyan-400/50 transition">
+            <h3 className="text-gray-400 text-sm font-medium">Top Skill Gap</h3>
             <p className="text-2xl font-bold text-orange-400">
               {dashboardStats.top_missing_skills && dashboardStats.top_missing_skills[0] ? dashboardStats.top_missing_skills[0].skill : 'N/A'}
             </p>
@@ -248,8 +248,8 @@ const Dashboard = ({ userProfile }) => {
 
       {/* Score Trend Chart */}
       {dashboardStats && dashboardStats.score_trend && dashboardStats.score_trend.length > 0 && (
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
-          <h3 className="text-xl font-semibold mb-4 text-white">Match Score Trend</h3>
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+          <h3 className="text-xl font-semibold mb-4 text-white font-display">Match Score Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={dashboardStats.score_trend}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -265,8 +265,8 @@ const Dashboard = ({ userProfile }) => {
 
       {/* Top Skills to Develop Chart */}
       {dashboardStats && dashboardStats.top_missing_skills && dashboardStats.top_missing_skills.length > 0 && (
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
-          <h3 className="text-xl font-semibold mb-4 text-white">Top Skills to Develop</h3>
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+          <h3 className="text-xl font-semibold mb-4 text-white font-display">Top Skills to Develop</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={dashboardStats.top_missing_skills.slice(0, 8)}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -280,25 +280,25 @@ const Dashboard = ({ userProfile }) => {
       )}
 
       {/* Analysis History Table */}
-      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-600">
-          <h3 className="text-xl font-semibold text-white">Analysis History</h3>
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-white/20">
+          <h3 className="text-xl font-semibold text-white font-display">Analysis History</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-600">
-            <thead className="bg-slate-700/50">
+          <table className="min-w-full divide-y divide-white/10">
+            <thead className="bg-white/5">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Resume</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Job Title</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Company</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Match Score</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Action</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Resume</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Job Title</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Company</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Match Score</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
-            <tbody className="bg-slate-800/30 divide-y divide-slate-600">
+            <tbody className="bg-white/5 backdrop-blur-xl divide-y divide-white/10">
               {analyses.map((analysis) => (
-                <tr key={analysis.id} className="hover:bg-slate-700/30 transition">
+                <tr key={analysis.id} className="hover:bg-white/10 transition">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-cyan-400">
                     <div className="flex items-center gap-2">
                       <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -312,7 +312,7 @@ const Dashboard = ({ userProfile }) => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
                     {analysis.job_title || 'Untitled'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                     {analysis.company_name || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -324,7 +324,7 @@ const Dashboard = ({ userProfile }) => {
                       {analysis.match_score}%
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                     {new Date(analysis.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -340,7 +340,7 @@ const Dashboard = ({ userProfile }) => {
             </tbody>
           </table>
           {analyses.length === 0 && (
-            <div className="text-center py-12 text-slate-400">
+            <div className="text-center py-12 text-gray-400">
               <div className="text-cyan-400 mb-4">
                 <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />

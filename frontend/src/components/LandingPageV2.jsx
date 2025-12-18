@@ -90,17 +90,21 @@ const LandingPageV2 = ({ token }) => {
         keywords="resume analyzer, AI resume, ATS score, job matching, career tools, resume optimization"
         url="https://resumeanalyzerai.com/"
       />
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+      <div className="min-h-screen bg-black relative overflow-hidden">
+        {/* Background atmosphere */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+
         {/* Hero Section */}
       <div className="relative pt-20 pb-32 px-4 sm:px-6 lg:px-8">
         {/* Animated background elements */}
         <motion.div
-          className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
+          className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
           animate={{ y: [0, 30, 0] }}
           transition={{ duration: 8, repeat: Infinity }}
         />
         <motion.div
-          className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"
+          className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"
           animate={{ y: [0, -30, 0] }}
           transition={{ duration: 8, repeat: Infinity, delay: 1 }}
         />
@@ -115,18 +119,18 @@ const LandingPageV2 = ({ token }) => {
             custom={0}
           >
             <motion.h1
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight font-display"
               variants={fadeInUp}
               custom={1}
             >
               Land Your Dream Job
-              <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mt-2 pb-4">
+              <span className="block bg-gradient-to-r from-blue-400 via-purple-500 to-purple-600 bg-clip-text text-transparent mt-2 pb-4">
                 with AI-Powered Insights
               </span>
             </motion.h1>
 
             <motion.p
-              className="text-lg sm:text-xl text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed"
+              className="text-lg sm:text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed"
               variants={fadeInUp}
               custom={2}
             >
@@ -141,7 +145,7 @@ const LandingPageV2 = ({ token }) => {
             >
               <motion.button
                 onClick={() => navigate(ROUTES.GUEST_ANALYZE)}
-                className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg flex items-center gap-2 hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300"
+                className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl flex items-center gap-2 hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -150,7 +154,7 @@ const LandingPageV2 = ({ token }) => {
               </motion.button>
               <motion.button
                 onClick={() => navigate(ROUTES.PRICING)}
-                className="px-8 py-4 border-2 border-cyan-500/50 text-white font-semibold rounded-lg hover:bg-slate-800/50 transition-all duration-300"
+                className="px-8 py-4 border-2 border-white/20 bg-white/5 backdrop-blur-xl text-white font-semibold rounded-xl hover:bg-white/10 hover:border-purple-500/50 transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -160,7 +164,7 @@ const LandingPageV2 = ({ token }) => {
 
             {/* Speed Indicator */}
             <motion.div
-              className="mt-12 flex justify-center items-center text-slate-400 text-sm"
+              className="mt-12 flex justify-center items-center text-gray-400 text-sm"
               variants={fadeInUp}
               custom={4}
             >
@@ -184,10 +188,10 @@ const LandingPageV2 = ({ token }) => {
             variants={fadeInUp}
             custom={0}
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 font-display">
               Powerful Features to Elevate Your Career
             </h2>
-            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
               Everything you need to optimize your resume and land interviews
             </p>
           </motion.div>
@@ -208,19 +212,19 @@ const LandingPageV2 = ({ token }) => {
                   custom={i}
                 >
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-600/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-600/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     animate={{ rotate: hoveredFeature === i ? 360 : 0 }}
                     transition={{ duration: 4, repeat: Infinity }}
                   />
-                  <div className="relative bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 hover:border-cyan-500/30 transition-all duration-300">
+                  <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:border-purple-500/30 transition-all duration-300">
                     <motion.div
-                      className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-xl flex items-center justify-center mb-4"
+                      className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4"
                       whileHover={{ scale: 1.1, rotate: 5 }}
                     >
                       <IconComponent className="w-6 h-6 text-white" />
                     </motion.div>
-                    <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
-                    <p className="text-slate-400">{feature.description}</p>
+                    <h3 className="text-xl font-bold text-white mb-2 font-display">{feature.title}</h3>
+                    <p className="text-gray-400">{feature.description}</p>
                   </div>
                 </motion.div>
               );
@@ -230,7 +234,7 @@ const LandingPageV2 = ({ token }) => {
       </div>
 
       {/* How It Works Section */}
-      <div className="py-24 px-4 sm:px-6 lg:px-8 bg-slate-800/30">
+      <div className="py-24 px-4 sm:px-6 lg:px-8 bg-white/5">
         <div className="max-w-7xl mx-auto">
           <motion.div
             className="text-center mb-16"
@@ -240,10 +244,10 @@ const LandingPageV2 = ({ token }) => {
             variants={fadeInUp}
             custom={0}
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 font-display">
               Simple, Fast, Effective
             </h2>
-            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
               Get professional resume insights in just 4 simple steps
             </p>
           </motion.div>
@@ -262,7 +266,7 @@ const LandingPageV2 = ({ token }) => {
                 {/* Connector Line */}
                 {i < steps.length - 1 && (
                   <motion.div
-                    className="hidden lg:block absolute top-24 left-[50%] w-[calc(100%+24px)] h-1 bg-gradient-to-r from-cyan-500 to-purple-600"
+                    className="hidden lg:block absolute top-24 left-[50%] w-[calc(100%+24px)] h-1 bg-gradient-to-r from-blue-500 to-purple-600"
                     initial={{ scaleX: 0 }}
                     whileInView={{ scaleX: 1 }}
                     viewport={{ once: true }}
@@ -273,14 +277,14 @@ const LandingPageV2 = ({ token }) => {
 
                 <div className="relative">
                   <motion.div
-                    className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-full flex items-center justify-center mb-4 mx-auto"
+                    className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4 mx-auto"
                     whileHover={{ scale: 1.1 }}
                   >
                     <span className="text-2xl font-bold text-white">{step.number}</span>
                   </motion.div>
                   <div className="text-center">
-                    <h3 className="text-lg font-bold text-white mb-2">{step.title}</h3>
-                    <p className="text-slate-400 text-sm">{step.description}</p>
+                    <h3 className="text-lg font-bold text-white mb-2 font-display">{step.title}</h3>
+                    <p className="text-gray-400 text-sm">{step.description}</p>
                   </div>
                 </div>
               </motion.div>
@@ -299,15 +303,15 @@ const LandingPageV2 = ({ token }) => {
           variants={fadeInUp}
           custom={0}
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 font-display">
             Ready to Transform Your Resume?
           </h2>
-          <p className="text-lg text-slate-400 mb-8">
+          <p className="text-lg text-gray-400 mb-8">
             Join thousands of job seekers who have already improved their applications
           </p>
           <motion.button
             onClick={() => navigate(token ? ROUTES.DASHBOARD : ROUTES.GUEST_ANALYZE)}
-            className="px-10 py-4 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-lg flex items-center gap-2 hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 mx-auto"
+            className="px-10 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl flex items-center gap-2 hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300 mx-auto"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
