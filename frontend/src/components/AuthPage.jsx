@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { ROUTES } from '../config/routes';
+import SpotlightCard from './ui/SpotlightCard';
+import ShimmerButton from './ui/ShimmerButton';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -138,42 +141,53 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
   };
 
   return (
-    <div className="py-8">
-      <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl shadow-2xl p-8 max-w-md w-full">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">
-              {isLogin ? 'Welcome Back' : 'Create Account'}
-            </h1>
-            <p className="text-slate-400">
-              {isLogin ? 'Sign in to continue' : 'Join us to get started'}
-            </p>
-          </div>
+    <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
+      {/* Background atmosphere */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
+      <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
 
-          {error && (
-            <div className="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg mb-6">
-              {error}
+      <div className="flex items-center justify-center min-h-[calc(100vh-200px)] relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="max-w-md w-full"
+        >
+          <SpotlightCard className="rounded-2xl p-8">
+            <div className="text-center mb-8 relative z-10">
+              <h1 className="text-3xl font-bold text-white mb-2 font-display relative z-10">
+                {isLogin ? 'Welcome Back' : 'Create Account'}
+              </h1>
+              <p className="text-gray-400 relative z-10">
+                {isLogin ? 'Sign in to continue' : 'Join us to get started'}
+              </p>
             </div>
-          )}
 
-          {error && error.includes('verify your email') && (
-            <div className="bg-blue-900/50 border border-blue-500 text-blue-300 px-4 py-3 rounded-lg mb-6 text-center">
-              <p className="mb-2">Didn't receive the verification email?</p>
+            {error && (
+              <div className="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg mb-6 relative z-10">
+                {error}
+              </div>
+            )}
+
+            {error && error.includes('verify your email') && (
+              <div className="bg-blue-900/50 border border-blue-500 text-blue-300 px-4 py-3 rounded-lg mb-6 text-center relative z-10">
+                <p className="mb-2">Didn't receive the verification email?</p>
+                <button
+                  onClick={handleResendVerification}
+                  className="text-blue-400 hover:text-blue-300 font-medium underline"
+                >
+                  Resend Verification Email
+                </button>
+              </div>
+            )}
+
+            <div className="space-y-6 relative z-10">
+              {/* Google Sign-in Button */}
               <button
-                onClick={handleResendVerification}
-                className="text-cyan-400 hover:text-cyan-300 font-medium underline"
+                onClick={handleGoogleLogin}
+                className="w-full bg-white hover:bg-gray-50 text-gray-900 py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-lg border border-gray-300 flex items-center justify-center gap-3 relative z-10"
               >
-                Resend Verification Email
-              </button>
-            </div>
-          )}
-
-          <div className="space-y-6">
-            {/* Google Sign-in Button */}
-            <button
-              onClick={handleGoogleLogin}
-              className="w-full bg-white hover:bg-gray-50 text-gray-900 py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-lg border border-gray-300 flex items-center justify-center gap-3"
-            >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -183,109 +197,110 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
               Continue with Google
             </button>
 
-            {/* LinkedIn Sign-in Button */}
-            <button
-              onClick={handleLinkedInLogin}
-              className="w-full bg-[#0077B5] hover:bg-[#006097] text-white py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-lg flex items-center justify-center gap-3"
-            >
+              {/* LinkedIn Sign-in Button */}
+              <button
+                onClick={handleLinkedInLogin}
+                className="w-full bg-[#0077B5] hover:bg-[#006097] text-white py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-lg flex items-center justify-center gap-3 relative z-10"
+              >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
               </svg>
               Continue with LinkedIn
             </button>
 
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-600"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-slate-800 text-slate-400">Or continue with email</span>
-              </div>
-            </div>
-
-            <div>
-              <input
-                type="email"
-                placeholder="Email address"
-                className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-              />
-            </div>
-
-            <div>
-              <input
-                type="password"
-                placeholder="Password"
-                className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
-                value={formData.password}
-                onChange={(e) => {
-                  setFormData({...formData, password: e.target.value});
-                  if (!isLogin) {
-                    const validationError = validatePassword(e.target.value);
-                    setPasswordError(validationError);
-                    setShowPasswordRequirements(true);
-                  }
-                }}
-                onFocus={() => !isLogin && setShowPasswordRequirements(true)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAuth()}
-              />
-
-              {/* Password Requirements - Only show on register */}
-              {!isLogin && showPasswordRequirements && (
-                <div className="mt-3 p-4 bg-slate-700/30 rounded-lg border border-slate-600">
-                  <p className="text-sm font-medium text-slate-300 mb-2">Password must contain:</p>
-                  <ul className="space-y-1 text-sm">
-                    <li className={`flex items-center gap-2 ${formData.password.length >= 8 ? 'text-green-400' : 'text-slate-400'}`}>
-                      <span className={formData.password.length >= 8 ? 'text-green-400' : 'text-slate-500'}>{formData.password.length >= 8 ? '●' : '○'}</span>
-                      At least 8 characters
-                    </li>
-                    <li className={`flex items-center gap-2 ${/[A-Z]/.test(formData.password) ? 'text-green-400' : 'text-slate-400'}`}>
-                      <span className={/[A-Z]/.test(formData.password) ? 'text-green-400' : 'text-slate-500'}>{/[A-Z]/.test(formData.password) ? '●' : '○'}</span>
-                      One uppercase letter
-                    </li>
-                    <li className={`flex items-center gap-2 ${/[a-z]/.test(formData.password) ? 'text-green-400' : 'text-slate-400'}`}>
-                      <span className={/[a-z]/.test(formData.password) ? 'text-green-400' : 'text-slate-500'}>{/[a-z]/.test(formData.password) ? '●' : '○'}</span>
-                      One lowercase letter
-                    </li>
-                    <li className={`flex items-center gap-2 ${/[0-9]/.test(formData.password) ? 'text-green-400' : 'text-slate-400'}`}>
-                      <span className={/[0-9]/.test(formData.password) ? 'text-green-400' : 'text-slate-500'}>{/[0-9]/.test(formData.password) ? '●' : '○'}</span>
-                      One number
-                    </li>
-                    <li className={`flex items-center gap-2 ${/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? 'text-green-400' : 'text-slate-400'}`}>
-                      <span className={/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? 'text-green-400' : 'text-slate-500'}>{/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? '●' : '○'}</span>
-                      One special character (!@#$%^&*)
-                    </li>
-                  </ul>
-                  {passwordError && (
-                    <p className="text-red-400 text-sm mt-3 font-medium">{passwordError}</p>
-                  )}
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10"></div>
                 </div>
-              )}
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-black text-gray-400 relative z-10">Or continue with email</span>
+                </div>
+              </div>
+
+              <div>
+                <input
+                  type="email"
+                  placeholder="Email address"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 transition relative z-10"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                />
+              </div>
+
+              <div>
+                <input
+                  type="password"
+                  placeholder="Password"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 transition relative z-10"
+                  value={formData.password}
+                  onChange={(e) => {
+                    setFormData({...formData, password: e.target.value});
+                    if (!isLogin) {
+                      const validationError = validatePassword(e.target.value);
+                      setPasswordError(validationError);
+                      setShowPasswordRequirements(true);
+                    }
+                  }}
+                  onFocus={() => !isLogin && setShowPasswordRequirements(true)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAuth()}
+                />
+
+                {/* Password Requirements - Only show on register */}
+                {!isLogin && showPasswordRequirements && (
+                  <div className="mt-3 p-4 bg-white/5 rounded-lg border border-white/10 relative z-10">
+                    <p className="text-sm font-medium text-gray-300 mb-2 relative z-10">Password must contain:</p>
+                    <ul className="space-y-1 text-sm">
+                      <li className={`flex items-center gap-2 relative z-10 ${formData.password.length >= 8 ? 'text-green-400' : 'text-gray-400'}`}>
+                        <span className={formData.password.length >= 8 ? 'text-green-400' : 'text-gray-500'}>{formData.password.length >= 8 ? '●' : '○'}</span>
+                        At least 8 characters
+                      </li>
+                      <li className={`flex items-center gap-2 relative z-10 ${/[A-Z]/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}`}>
+                        <span className={/[A-Z]/.test(formData.password) ? 'text-green-400' : 'text-gray-500'}>{/[A-Z]/.test(formData.password) ? '●' : '○'}</span>
+                        One uppercase letter
+                      </li>
+                      <li className={`flex items-center gap-2 relative z-10 ${/[a-z]/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}`}>
+                        <span className={/[a-z]/.test(formData.password) ? 'text-green-400' : 'text-gray-500'}>{/[a-z]/.test(formData.password) ? '●' : '○'}</span>
+                        One lowercase letter
+                      </li>
+                      <li className={`flex items-center gap-2 relative z-10 ${/[0-9]/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}`}>
+                        <span className={/[0-9]/.test(formData.password) ? 'text-green-400' : 'text-gray-500'}>{/[0-9]/.test(formData.password) ? '●' : '○'}</span>
+                        One number
+                      </li>
+                      <li className={`flex items-center gap-2 relative z-10 ${/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}`}>
+                        <span className={/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? 'text-green-400' : 'text-gray-500'}>{/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? '●' : '○'}</span>
+                        One special character (!@#$%^&*)
+                      </li>
+                    </ul>
+                    {passwordError && (
+                      <p className="text-red-400 text-sm mt-3 font-medium relative z-10">{passwordError}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <ShimmerButton
+                onClick={handleAuth}
+                disabled={loading || (!isLogin && passwordError)}
+                className="w-full"
+              >
+                {loading ? 'Processing...' : (isLogin ? 'Sign In with Email' : 'Create Account')}
+              </ShimmerButton>
             </div>
 
-            <button
-              onClick={handleAuth}
-              disabled={loading || (!isLogin && passwordError)}
-              className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-cyan-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Processing...' : (isLogin ? 'Sign In with Email' : 'Create Account')}
-            </button>
-          </div>
-
-          <div className="text-center mt-6">
-            <p className="text-slate-400">
-              {isLogin ? "Don't have an account? " : "Already have an account? "}
-              <button
-                onClick={switchMode}
-                className="text-cyan-400 hover:text-cyan-300 transition font-medium"
-              >
-                {isLogin ? 'Sign Up' : 'Sign In'}
-              </button>
-            </p>
-          </div>
-        </div>
+            <div className="text-center mt-6 relative z-10">
+              <p className="text-gray-400 relative z-10">
+                {isLogin ? "Don't have an account? " : "Already have an account? "}
+                <button
+                  onClick={switchMode}
+                  className="text-purple-400 hover:text-purple-300 transition font-medium"
+                >
+                  {isLogin ? 'Sign Up' : 'Sign In'}
+                </button>
+              </p>
+            </div>
+          </SpotlightCard>
+        </motion.div>
       </div>
     </div>
   );
