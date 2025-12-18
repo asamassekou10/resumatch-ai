@@ -323,7 +323,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <Loader className="w-12 h-12 text-cyan-500 animate-spin mx-auto mb-4" />
-            <p className="text-slate-300">Loading analysis results...</p>
+            <p className="text-gray-300">Loading analysis results...</p>
           </div>
         </div>
       );
@@ -348,18 +348,22 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
 
     // Display analysis results - matching guest-analyze design
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4">
+      <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4">
+        {/* Background atmosphere */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-5xl mx-auto space-y-6"
+          className="max-w-5xl mx-auto space-y-6 relative z-10"
         >
           {/* Back Button */}
           <button
             onClick={() => navigate(ROUTES.DASHBOARD)}
-            className="flex items-center gap-2 text-slate-400 hover:text-white mb-4 transition"
+            className="flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition group"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Back to Dashboard
           </button>
 
@@ -369,13 +373,13 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">AI-Powered Analysis Complete</h1>
-            <p className="text-slate-400 text-sm sm:text-base">Comprehensive resume evaluation & ATS optimization</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 font-display">AI-Powered Analysis Complete</h1>
+            <p className="text-gray-400 text-sm sm:text-base">Comprehensive resume evaluation & ATS optimization</p>
           </motion.div>
 
           {/* Overall Score Card */}
           <motion.div
-            className="bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-600 rounded-lg p-4 sm:p-6 md:p-8"
+            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
           >
@@ -384,8 +388,8 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
                   {analysisData.match_score || 0}%
                 </div>
-                <p className="text-slate-300 font-semibold text-sm sm:text-base">Overall Match Score</p>
-                <p className="text-slate-400 text-xs sm:text-sm mt-2">
+                <p className="text-gray-300 font-semibold text-sm sm:text-base font-display">Overall Match Score</p>
+                <p className="text-gray-400 text-xs sm:text-sm mt-2">
                   {analysisData.match_score >= 80 ? 'Excellent Match' :
                    analysisData.match_score >= 60 ? 'Good Match' :
                    analysisData.match_score >= 40 ? 'Fair Match' : 'Needs Improvement'}
@@ -393,16 +397,16 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
               </div>
               <div className="flex flex-col justify-center gap-3 text-center sm:text-left">
                 <div>
-                  <p className="text-slate-400 text-xs sm:text-sm mb-1">Job Title</p>
-                  <p className="text-white font-semibold text-sm sm:text-base truncate">{analysisData.job_title || 'Not specified'}</p>
+                  <p className="text-gray-400 text-xs sm:text-sm mb-1">Job Title</p>
+                  <p className="text-white font-semibold text-sm sm:text-base truncate font-display">{analysisData.job_title || 'Not specified'}</p>
                 </div>
                 <div>
-                  <p className="text-slate-400 text-xs sm:text-sm mb-1">Company</p>
-                  <p className="text-white font-semibold text-sm sm:text-base truncate">{analysisData.company_name || 'Not specified'}</p>
+                  <p className="text-gray-400 text-xs sm:text-sm mb-1">Company</p>
+                  <p className="text-white font-semibold text-sm sm:text-base truncate font-display">{analysisData.company_name || 'Not specified'}</p>
                 </div>
                 <div>
-                  <p className="text-slate-400 text-xs sm:text-sm mb-1">Resume</p>
-                  <p className="text-cyan-400 font-semibold text-sm sm:text-base truncate">{analysisData.resume_filename || 'Unknown'}</p>
+                  <p className="text-gray-400 text-xs sm:text-sm mb-1">Resume</p>
+                  <p className="text-purple-400 font-semibold text-sm sm:text-base truncate font-display">{analysisData.resume_filename || 'Unknown'}</p>
                 </div>
               </div>
             </div>
@@ -411,12 +415,12 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
           {/* Error Message */}
           {error && (
             <motion.div
-              className="bg-red-900/20 border border-red-700 rounded-lg p-4 flex items-start gap-3"
+              className="bg-red-500/10 backdrop-blur-xl border border-red-500/30 rounded-xl p-4 flex items-start gap-3"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
               <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-              <p className="text-red-400 text-sm">{error}</p>
+              <p className="text-red-300 text-sm">{error}</p>
             </motion.div>
           )}
 
@@ -424,7 +428,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
           <AnimatePresence>
             {aiFeatureLoading && (
               <motion.div
-                className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
@@ -440,9 +444,9 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                       </motion.div>
                       {aiFeatureMessage}
                     </span>
-                    <span className="text-slate-400 text-sm">{Math.round(aiFeatureProgress)}%</span>
+                    <span className="text-gray-400 text-sm">{Math.round(aiFeatureProgress)}%</span>
                   </div>
-                  <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
                     <motion.div
                       className="h-full bg-gradient-to-r from-cyan-500 to-purple-600"
                       initial={{ width: '0%' }}
@@ -467,7 +471,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 <h3 className="text-white font-semibold">AI-Generated Feedback</h3>
               </div>
               <div className="prose prose-invert max-w-none">
-                <div className="text-slate-300 text-sm whitespace-pre-wrap leading-relaxed">{aiFeedback}</div>
+                <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{aiFeedback}</div>
               </div>
             </motion.div>
           )}
@@ -484,7 +488,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 <h3 className="text-white font-semibold">AI-Optimized Resume</h3>
               </div>
               <div className="prose prose-invert max-w-none">
-                <div className="text-slate-300 text-sm whitespace-pre-wrap leading-relaxed">{optimizedResume}</div>
+                <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{optimizedResume}</div>
               </div>
             </motion.div>
           )}
@@ -501,31 +505,31 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 <h3 className="text-white font-semibold">AI-Generated Cover Letter</h3>
               </div>
               <div className="prose prose-invert max-w-none">
-                <div className="text-slate-300 text-sm whitespace-pre-wrap leading-relaxed">{coverLetter}</div>
+                <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{coverLetter}</div>
               </div>
             </motion.div>
           )}
 
           {/* Match Breakdown - Progress Bars */}
           <motion.div
-            className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
+            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
           >
-            <h3 className="text-white font-semibold mb-4">Match Breakdown</h3>
+            <h3 className="text-white font-semibold mb-4 font-display">Match Breakdown</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Skills Match */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-slate-400 text-sm">Skills Match</span>
-                  <span className="text-cyan-400 font-semibold">
+                  <span className="text-gray-400 text-sm">Skills Match</span>
+                  <span className="text-cyan-400 font-semibold font-display">
                     {analysisData.keywords_found ?
                       Math.round((analysisData.keywords_found.length / (analysisData.keywords_found.length + (analysisData.keywords_missing?.length || 0))) * 100) :
                       analysisData.match_score}%
                   </span>
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-2">
+                <div className="w-full bg-white/10 rounded-full h-2">
                   <motion.div
                     className="h-full bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full"
                     initial={{ width: '0%' }}
@@ -542,10 +546,10 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
               {/* Experience Match */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-slate-400 text-sm">Experience Match</span>
+                  <span className="text-gray-400 text-sm">Experience Match</span>
                   <span className="text-cyan-400 font-semibold">{Math.max(0, analysisData.match_score - 5)}%</span>
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-2">
+                <div className="w-full bg-white/10 rounded-full h-2">
                   <motion.div
                     className="h-full bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full"
                     initial={{ width: '0%' }}
@@ -558,10 +562,10 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
               {/* Keywords Match */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-slate-400 text-sm">Keywords Match</span>
+                  <span className="text-gray-400 text-sm">Keywords Match</span>
                   <span className="text-cyan-400 font-semibold">{analysisData.match_score}%</span>
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-2">
+                <div className="w-full bg-white/10 rounded-full h-2">
                   <motion.div
                     className="h-full bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full"
                     initial={{ width: '0%' }}
@@ -574,10 +578,10 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
               {/* ATS Compatibility */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-slate-400 text-sm">ATS Compatibility</span>
+                  <span className="text-gray-400 text-sm">ATS Compatibility</span>
                   <span className="text-cyan-400 font-semibold">{Math.min(100, analysisData.match_score + 10)}%</span>
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-2">
+                <div className="w-full bg-white/10 rounded-full h-2">
                   <motion.div
                     className="h-full bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full"
                     initial={{ width: '0%' }}
@@ -592,7 +596,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
           {/* Keywords Found */}
           {analysisData.keywords_found && analysisData.keywords_found.length > 0 && (
             <motion.div
-              className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
+              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.17 }}
@@ -617,7 +621,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
           {/* Keywords Missing */}
           {analysisData.keywords_missing && analysisData.keywords_missing.length > 0 && (
             <motion.div
-              className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
+              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.19 }}
@@ -626,7 +630,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 <AlertCircle className="w-5 h-5 text-amber-400" />
                 Keywords to Add ({analysisData.keywords_missing.length})
               </h3>
-              <p className="text-slate-400 text-sm mb-3">
+              <p className="text-gray-400 text-sm mb-3">
                 Adding these keywords could improve your match score
               </p>
               <div className="flex flex-wrap gap-2">
@@ -644,7 +648,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
 
           {/* Priority Improvements */}
           <motion.div
-            className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
+            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.17 }}
@@ -653,12 +657,12 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
             <div className="space-y-3">
               {/* Generate improvements based on missing keywords */}
               {analysisData.keywords_missing && analysisData.keywords_missing.length > 0 && (
-                <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
+                <div className="bg-white/10/50 rounded-lg p-4 border border-white/20">
                   <div className="flex justify-between items-start mb-2">
                     <p className="text-white font-semibold">Add Missing Keywords</p>
                     <span className="text-amber-400 text-sm">+{Math.min(15, analysisData.keywords_missing.length * 2)}%</span>
                   </div>
-                  <p className="text-slate-400 text-sm mb-2">
+                  <p className="text-gray-400 text-sm mb-2">
                     Include {analysisData.keywords_missing.slice(0, 3).join(', ')}
                     {analysisData.keywords_missing.length > 3 && ` and ${analysisData.keywords_missing.length - 3} more`} in your resume.
                   </p>
@@ -670,12 +674,12 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
 
               {/* Improvement based on match score */}
               {analysisData.match_score < 80 && (
-                <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
+                <div className="bg-white/10/50 rounded-lg p-4 border border-white/20">
                   <div className="flex justify-between items-start mb-2">
                     <p className="text-white font-semibold">Optimize Resume Format</p>
                     <span className="text-amber-400 text-sm">+8%</span>
                   </div>
-                  <p className="text-slate-400 text-sm mb-2">
+                  <p className="text-gray-400 text-sm mb-2">
                     Use clear section headings and bullet points to improve ATS readability.
                   </p>
                   <p className="text-slate-500 text-sm italic">
@@ -685,12 +689,12 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
               )}
 
               {/* Third improvement */}
-              <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
+              <div className="bg-white/10/50 rounded-lg p-4 border border-white/20">
                 <div className="flex justify-between items-start mb-2">
                   <p className="text-white font-semibold">Quantify Achievements</p>
                   <span className="text-amber-400 text-sm">+10%</span>
                 </div>
-                <p className="text-slate-400 text-sm mb-2">
+                <p className="text-gray-400 text-sm mb-2">
                   Add specific numbers and metrics to demonstrate your impact.
                 </p>
                 <p className="text-slate-500 text-sm italic">
@@ -702,7 +706,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
 
           {/* ATS Optimization Tips */}
           <motion.div
-            className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
+            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.19 }}
@@ -710,26 +714,26 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
             <h3 className="text-white font-semibold mb-3">ATS Optimization Tips</h3>
             <div className="mb-3">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-slate-400 text-sm">Expected ATS Pass Rate</span>
+                <span className="text-gray-400 text-sm">Expected ATS Pass Rate</span>
                 <span className="text-cyan-400 font-semibold">
                   {analysisData.match_score >= 70 ? 'High' : analysisData.match_score >= 50 ? 'Medium' : 'Low'}
                 </span>
               </div>
             </div>
             <ul className="space-y-2">
-              <li className="text-slate-300 text-sm flex gap-2">
+              <li className="text-gray-300 text-sm flex gap-2">
                 <span className="text-cyan-400">✓</span>
                 Use standard section headings (Experience, Education, Skills)
               </li>
-              <li className="text-slate-300 text-sm flex gap-2">
+              <li className="text-gray-300 text-sm flex gap-2">
                 <span className="text-cyan-400">✓</span>
                 Include exact keywords from the job description
               </li>
-              <li className="text-slate-300 text-sm flex gap-2">
+              <li className="text-gray-300 text-sm flex gap-2">
                 <span className="text-cyan-400">✓</span>
                 Avoid tables, graphics, and complex formatting
               </li>
-              <li className="text-slate-300 text-sm flex gap-2">
+              <li className="text-gray-300 text-sm flex gap-2">
                 <span className="text-cyan-400">✓</span>
                 Use common file formats (PDF or DOCX)
               </li>
@@ -739,21 +743,21 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
           {/* AI Suggestions */}
           {analysisData.suggestions && (
             <motion.div
-              className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
+              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.21 }}
             >
               <h3 className="text-white font-semibold mb-4">AI Feedback & Suggestions</h3>
               <div className="prose prose-invert max-w-none">
-                <div className="text-slate-300 text-sm whitespace-pre-wrap leading-relaxed">{analysisData.suggestions}</div>
+                <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{analysisData.suggestions}</div>
               </div>
             </motion.div>
           )}
 
           {/* AI Features Buttons */}
           <motion.div
-            className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
+            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.23 }}
@@ -763,7 +767,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
               <button
                 onClick={handleSendEmail}
                 disabled={sendingEmail}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white text-sm rounded-lg transition"
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-slate-600 disabled:opacity-50 text-white text-sm rounded-lg transition"
               >
                 {sendingEmail ? (
                   <>
@@ -801,7 +805,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                     <p className="text-white font-semibold text-sm">
                       {aiFeedback ? 'Generated ✓' : 'Generate AI Feedback'}
                     </p>
-                    <p className="text-slate-400 text-xs mt-1">
+                    <p className="text-gray-400 text-xs mt-1">
                       {aiFeedback ? 'See below' : 'Get detailed improvement suggestions'}
                     </p>
                   </div>
@@ -824,7 +828,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                     <p className="text-white font-semibold text-sm">
                       {optimizedResume ? 'Optimized ✓' : 'Optimize Resume'}
                     </p>
-                    <p className="text-slate-400 text-xs mt-1">
+                    <p className="text-gray-400 text-xs mt-1">
                       {optimizedResume ? 'See below' : 'AI-enhanced resume version'}
                     </p>
                   </div>
@@ -847,7 +851,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                     <p className="text-white font-semibold text-sm">
                       {coverLetter ? 'Generated ✓' : 'Generate Cover Letter'}
                     </p>
-                    <p className="text-slate-400 text-xs mt-1">
+                    <p className="text-gray-400 text-xs mt-1">
                       {coverLetter ? 'See below' : 'Tailored to this job posting'}
                     </p>
                   </div>
@@ -874,7 +878,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
             </motion.button>
             <motion.button
               onClick={() => navigate(ROUTES.DASHBOARD)}
-              className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors"
+              className="px-6 py-3 bg-white/10 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -892,10 +896,10 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Analyze Your Resume</h1>
-        <p className="text-slate-400">Upload your resume and job description to get AI-powered insights</p>
+        <p className="text-gray-400">Upload your resume and job description to get AI-powered insights</p>
         {userProfile && (
           <div className="mt-4 flex items-center gap-2">
-            <span className="text-slate-400">Credits remaining:</span>
+            <span className="text-gray-400">Credits remaining:</span>
             <span className={`font-semibold ${userProfile.credits > 0 ? 'text-cyan-400' : 'text-red-400'}`}>
               {userProfile.credits}
             </span>
@@ -933,19 +937,19 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
             />
             <label
               htmlFor="resume-upload"
-              className="flex items-center justify-center w-full px-4 py-8 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer hover:border-cyan-500 transition-colors bg-slate-800/30"
+              className="flex items-center justify-center w-full px-4 py-8 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-purple-500 transition-colors bg-white/5 backdrop-blur-sm"
             >
               {resumeFile ? (
                 <div className="text-center">
                   <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
                   <p className="text-white font-semibold text-sm">{resumeFile.name}</p>
-                  <p className="text-slate-400 text-xs mt-1">Click to change</p>
+                  <p className="text-gray-400 text-xs mt-1">Click to change</p>
                 </div>
               ) : (
                 <div className="text-center">
-                  <FileUp className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <FileUp className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                   <p className="text-white font-semibold text-sm">Upload Your Resume</p>
-                  <p className="text-slate-400 text-xs mt-1">PDF, DOCX, or TXT</p>
+                  <p className="text-gray-400 text-xs mt-1">PDF, DOCX, or TXT</p>
                 </div>
               )}
             </label>
@@ -964,20 +968,20 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
               placeholder="Company (optional)"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+              className="w-full px-4 py-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
             />
             <input
               type="text"
               placeholder="Job Title (optional)"
               value={jobTitle}
               onChange={(e) => setJobTitle(e.target.value)}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+              className="w-full px-4 py-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
             />
             <textarea
               placeholder="Paste job description here (required)"
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none h-32 resize-none"
+              className="w-full px-4 py-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none h-32 resize-none"
             />
           </div>
         </motion.div>
@@ -1001,9 +1005,9 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 </motion.div>
                 {loadingMessage}
               </span>
-              <span className="text-slate-400 text-sm">{Math.round(loadingProgress)}%</span>
+              <span className="text-gray-400 text-sm">{Math.round(loadingProgress)}%</span>
             </div>
-            <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
               <motion.div
                 className="h-full bg-gradient-to-r from-cyan-500 to-purple-600"
                 initial={{ width: '0%' }}

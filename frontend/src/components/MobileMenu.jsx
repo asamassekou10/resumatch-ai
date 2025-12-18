@@ -149,7 +149,7 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
             exit={{ opacity: 0 }}
             onClick={handleOverlayInteraction}
             onTouchEnd={handleOverlayInteraction}
-            className="fixed inset-0 bg-black/60 z-[9998] cursor-pointer"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] cursor-pointer"
             style={{ touchAction: 'manipulation' }}
             role="button"
             tabIndex={0}
@@ -163,27 +163,27 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
             exit={{ x: '-100%' }}
             transition={{ type: 'tween', duration: 0.3 }}
             onClick={(e) => e.stopPropagation()}
-            className="fixed left-0 top-0 h-full w-80 max-w-[85vw] bg-slate-900 border-r border-slate-700 z-[9999] overflow-y-auto"
+            className="fixed left-0 top-0 h-full w-80 max-w-[85vw] bg-black/95 backdrop-blur-xl border-r border-white/10 z-[9999] overflow-y-auto"
             style={{ touchAction: 'pan-y' }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-slate-700">
-              <h2 className="text-xl font-bold text-white">Menu</h2>
+            <div className="flex items-center justify-between p-4 border-b border-white/10">
+              <h2 className="text-xl font-bold text-white font-display">Menu</h2>
               <button
                 type="button"
                 onClick={handleCloseButtonClick}
                 onTouchEnd={handleCloseButtonClick}
-                className="p-2 rounded-lg hover:bg-slate-800 active:bg-slate-700 transition cursor-pointer touch-manipulation"
+                className="p-2 rounded-lg hover:bg-white/10 active:bg-white/5 transition cursor-pointer touch-manipulation"
                 aria-label="Close menu"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                <X className="w-6 h-6 text-slate-300" />
+                <X className="w-6 h-6 text-gray-300" />
               </button>
             </div>
 
             {/* User Info (if logged in) */}
             {user && (
-              <div className="p-4 border-b border-slate-700 bg-slate-800/50">
+              <div className="p-4 border-b border-white/10 bg-white/5">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
                     {user.name?.charAt(0).toUpperCase() || 'U'}
@@ -205,7 +205,7 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
                     <div>
                       <button
                         onClick={() => toggleSection(item.label)}
-                        className="w-full flex items-center justify-between px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition"
+                        className="w-full flex items-center justify-between px-4 py-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition"
                       >
                         <span className="flex items-center gap-3">
                           {item.icon && <item.icon className="w-5 h-5" />}
@@ -234,8 +234,8 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
                                 onClick={() => handleNavClick(child.route)}
                                 className={`w-full text-left px-4 py-2 rounded-lg transition ${
                                   isActiveRoute(child.route)
-                                    ? 'bg-cyan-500/20 text-cyan-400'
-                                    : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                                    ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                                    : 'text-gray-300 hover:text-white hover:bg-white/5'
                                 }`}
                               >
                                 {child.label}
@@ -251,8 +251,8 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
                       onClick={() => handleNavClick(item.route)}
                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${
                         isActiveRoute(item.route)
-                          ? 'bg-cyan-500 text-white'
-                          : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                          ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white border border-purple-500/30'
+                          : 'text-gray-300 hover:text-white hover:bg-white/10'
                       }`}
                     >
                       {item.icon && <item.icon className="w-5 h-5" />}
@@ -265,13 +265,13 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
 
             {/* Logout Button (if logged in) */}
             {user && (
-              <div className="p-2 border-t border-slate-700 mt-auto">
+              <div className="p-2 border-t border-white/10 mt-auto">
                 <button
                   onClick={() => {
                     handleLogout();
                     handleClose();
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition touch-manipulation"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 rounded-lg transition touch-manipulation"
                 >
                   <LogOut className="w-5 h-5" />
                   <span className="font-medium">Logout</span>
