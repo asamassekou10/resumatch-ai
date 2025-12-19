@@ -353,7 +353,8 @@ const CareerPath = ({ industry, userProfile }) => {
                   )}
                 </button>
               </div>
-            </motion.div>
+              </motion.div>
+            </SpotlightCard>
           </motion.div>
         )}
       </AnimatePresence>

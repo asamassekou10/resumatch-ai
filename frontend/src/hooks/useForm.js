@@ -155,7 +155,7 @@ export const useForm = (initialValues = {}, validationRules = {}, options = {}) 
   }, []);
 
   // Set multiple values
-  const setValues = useCallback((newValues) => {
+  const setMultipleValues = useCallback((newValues) => {
     setValues(prev => ({
       ...prev,
       ...newValues
@@ -227,7 +227,7 @@ export const useForm = (initialValues = {}, validationRules = {}, options = {}) 
     
     // Actions
     setValue,
-    setValues,
+    setValues: setMultipleValues,
     setError,
     clearError,
     clearErrors,

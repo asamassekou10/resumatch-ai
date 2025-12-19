@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, ArrowLeft, Download, Mail, Sparkles, FileText } from 'lucide-react';
+import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, ArrowLeft, Mail, Sparkles, FileText } from 'lucide-react';
 import { ROUTES } from '../config/routes';
+import SpotlightCard from './ui/SpotlightCard';
+import ShimmerButton from './ui/ShimmerButton';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 

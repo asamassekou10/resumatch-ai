@@ -143,6 +143,7 @@ jwt_blacklist = set()
 # Try to use Redis for blacklist if available
 try:
     import redis
+    REDIS_URL = os.getenv('REDIS_URL')
     if REDIS_URL:
         redis_client = redis.from_url(REDIS_URL)
         redis_client.ping()  # Test connection

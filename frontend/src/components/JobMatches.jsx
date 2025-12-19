@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Briefcase, MapPin, DollarSign, Clock, Bookmark, ExternalLink,
-  Sparkles, Building, Calendar, TrendingUp, X
+  Sparkles, Building, TrendingUp, X
 } from 'lucide-react';
 import axios from 'axios';
+import SpotlightCard from './ui/SpotlightCard';
+import ShimmerButton from './ui/ShimmerButton';
 import '../styles/JobMatches.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';

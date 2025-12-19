@@ -393,7 +393,7 @@ const InterviewPrep = ({ industry, userProfile }) => {
 
           {/* Main Content - Prep Details */}
           {selectedPrep && (
-            <div className="prep-main">
+            <SpotlightCard className="prep-main relative z-10">
               {/* Prep Header */}
               <div className="prep-details-header">
                 <div className="prep-title-section">

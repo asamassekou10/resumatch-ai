@@ -365,6 +365,7 @@ const Dashboard = ({ userProfile }) => {
           )}
         </div>
       </div>
+      </div>
     </div>
   );
 };
