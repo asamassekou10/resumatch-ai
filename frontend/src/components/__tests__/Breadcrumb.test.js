@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import Breadcrumb from '../Breadcrumb';
 
 describe('Breadcrumb Component', () => {
@@ -11,11 +12,13 @@ describe('Breadcrumb Component', () => {
 
   it('renders breadcrumb for dashboard view', () => {
     render(
-      <Breadcrumb
-        view="dashboard"
-        setView={mockSetView}
-        token="fake-token"
-      />
+      <MemoryRouter>
+        <Breadcrumb
+          view="dashboard"
+          setView={mockSetView}
+          token="fake-token"
+        />
+      </MemoryRouter>
     );
 
     expect(screen.getByText('Home')).toBeInTheDocument();
@@ -24,11 +27,13 @@ describe('Breadcrumb Component', () => {
 
   it('renders breadcrumb for analyze view', () => {
     render(
-      <Breadcrumb
-        view="analyze"
-        setView={mockSetView}
-        token="fake-token"
-      />
+      <MemoryRouter>
+        <Breadcrumb
+          view="analyze"
+          setView={mockSetView}
+          token="fake-token"
+        />
+      </MemoryRouter>
     );
 
     expect(screen.getByText('Home')).toBeInTheDocument();
@@ -43,12 +48,14 @@ describe('Breadcrumb Component', () => {
     };
 
     render(
-      <Breadcrumb
-        view="result"
-        setView={mockSetView}
-        token="fake-token"
-        currentAnalysis={currentAnalysis}
-      />
+      <MemoryRouter>
+        <Breadcrumb
+          view="result"
+          setView={mockSetView}
+          token="fake-token"
+          currentAnalysis={currentAnalysis}
+        />
+      </MemoryRouter>
     );
 
     expect(screen.getByText('Home')).toBeInTheDocument();
@@ -58,11 +65,13 @@ describe('Breadcrumb Component', () => {
 
   it('renders breadcrumb for non-authenticated user', () => {
     render(
-      <Breadcrumb
-        view="login"
-        setView={mockSetView}
-        token={null}
-      />
+      <MemoryRouter>
+        <Breadcrumb
+          view="login"
+          setView={mockSetView}
+          token={null}
+        />
+      </MemoryRouter>
     );
 
     expect(screen.getByText('Home')).toBeInTheDocument();
@@ -71,11 +80,13 @@ describe('Breadcrumb Component', () => {
 
   it('calls setView when breadcrumb item is clicked', () => {
     render(
-      <Breadcrumb
-        view="analyze"
-        setView={mockSetView}
-        token="fake-token"
-      />
+      <MemoryRouter>
+        <Breadcrumb
+          view="analyze"
+          setView={mockSetView}
+          token="fake-token"
+        />
+      </MemoryRouter>
     );
 
     const dashboardLink = screen.getByText('Dashboard');
@@ -85,11 +96,13 @@ describe('Breadcrumb Component', () => {
 
   it('does not render for landing view', () => {
     const { container } = render(
-      <Breadcrumb
-        view="landing"
-        setView={mockSetView}
-        token={null}
-      />
+      <MemoryRouter>
+        <Breadcrumb
+          view="landing"
+          setView={mockSetView}
+          token={null}
+        />
+      </MemoryRouter>
     );
 
     // When token is null, breadcrumb should not render

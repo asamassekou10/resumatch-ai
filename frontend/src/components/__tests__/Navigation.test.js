@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import Navigation from '../Navigation';
 
 describe('Navigation Component', () => {
@@ -12,12 +13,14 @@ describe('Navigation Component', () => {
 
   it('renders navigation for authenticated user', () => {
     render(
-      <Navigation
-        view="dashboard"
-        setView={mockSetView}
-        token="fake-token"
-        handleLogout={mockHandleLogout}
-      />
+      <MemoryRouter>
+        <Navigation
+          view="dashboard"
+          setView={mockSetView}
+          token="fake-token"
+          handleLogout={mockHandleLogout}
+        />
+      </MemoryRouter>
     );
 
     expect(screen.getByText('ResumeAnalyzer AI')).toBeInTheDocument();
@@ -27,12 +30,14 @@ describe('Navigation Component', () => {
 
   it('renders navigation for non-authenticated user', () => {
     render(
-      <Navigation
-        view="landing"
-        setView={mockSetView}
-        token={null}
-        handleLogout={mockHandleLogout}
-      />
+      <MemoryRouter>
+        <Navigation
+          view="landing"
+          setView={mockSetView}
+          token={null}
+          handleLogout={mockHandleLogout}
+        />
+      </MemoryRouter>
     );
 
     expect(screen.getByText('ResumeAnalyzer AI')).toBeInTheDocument();
@@ -42,14 +47,16 @@ describe('Navigation Component', () => {
 
   it('shows back button when showBackButton is true', () => {
     render(
-      <Navigation
-        view="login"
-        setView={mockSetView}
-        token={null}
-        handleLogout={mockHandleLogout}
-        showBackButton={true}
-        backButtonText="Back to Home"
-      />
+      <MemoryRouter>
+        <Navigation
+          view="login"
+          setView={mockSetView}
+          token={null}
+          handleLogout={mockHandleLogout}
+          showBackButton={true}
+          backButtonText="Back to Home"
+        />
+      </MemoryRouter>
     );
 
     expect(screen.getByText('Back to Home')).toBeInTheDocument();
@@ -57,12 +64,14 @@ describe('Navigation Component', () => {
 
   it('calls setView when logo is clicked', () => {
     render(
-      <Navigation
-        view="dashboard"
-        setView={mockSetView}
-        token="fake-token"
-        handleLogout={mockHandleLogout}
-      />
+      <MemoryRouter>
+        <Navigation
+          view="dashboard"
+          setView={mockSetView}
+          token="fake-token"
+          handleLogout={mockHandleLogout}
+        />
+      </MemoryRouter>
     );
 
     const logo = screen.getByText('ResumeAnalyzer AI');
@@ -72,12 +81,14 @@ describe('Navigation Component', () => {
 
   it('calls handleLogout when logout button is clicked', () => {
     render(
-      <Navigation
-        view="dashboard"
-        setView={mockSetView}
-        token="fake-token"
-        handleLogout={mockHandleLogout}
-      />
+      <MemoryRouter>
+        <Navigation
+          view="dashboard"
+          setView={mockSetView}
+          token="fake-token"
+          handleLogout={mockHandleLogout}
+        />
+      </MemoryRouter>
     );
 
     const logoutButton = screen.getByText('Logout');
@@ -89,15 +100,17 @@ describe('Navigation Component', () => {
     const mockOnBackClick = jest.fn();
     
     render(
-      <Navigation
-        view="result"
-        setView={mockSetView}
-        token="fake-token"
-        handleLogout={mockHandleLogout}
-        showBackButton={true}
-        backButtonText="Back to Dashboard"
-        onBackClick={mockOnBackClick}
-      />
+      <MemoryRouter>
+        <Navigation
+          view="result"
+          setView={mockSetView}
+          token="fake-token"
+          handleLogout={mockHandleLogout}
+          showBackButton={true}
+          backButtonText="Back to Dashboard"
+          onBackClick={mockOnBackClick}
+        />
+      </MemoryRouter>
     );
 
     const backButton = screen.getByText('Back to Dashboard');
