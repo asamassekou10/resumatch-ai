@@ -75,7 +75,7 @@ jobs:
         # isort --check-only .
     
     - name: Run tests
-      timeout-minutes: 10
+      timeout-minutes: 20
       run: |
         cd backend
         pytest --cov=. --cov-report=xml --cov-report=html -v

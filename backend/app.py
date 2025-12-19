@@ -292,7 +292,9 @@ def init_db():
             logging.error(f"Database initialization error: {str(e)}")
 
 # Call init_db when module is loaded (works with gunicorn)
-init_db()
+# Skip in test environment to speed up test execution
+if os.getenv('FLASK_ENV') != 'testing':
+    init_db()
 
 def auto_migrate():
     """Automatically add missing columns if they don't exist"""

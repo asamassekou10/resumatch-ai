@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell
+  Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import {
   UsersIcon, CheckCircleIcon, RefreshIcon, TrendingUpIcon,
@@ -38,7 +38,6 @@ const iconMap = {
 const AdminDashboard = ({ token, onLogout, onNavigate }) => {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
@@ -53,10 +52,10 @@ const AdminDashboard = ({ token, onLogout, onNavigate }) => {
     fetchUsers();
     fetchJobSources();
     fetchJobStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   const fetchDashboardStats = async () => {
-    setLoading(true);
     try {
       // API_URL already includes /v1, so just append admin/dashboard/stats
       const response = await fetch(`${API_URL}/admin/dashboard/stats`, {
@@ -71,8 +70,6 @@ const AdminDashboard = ({ token, onLogout, onNavigate }) => {
     } catch (err) {
       console.error('Dashboard stats error:', err);
       setError('Failed to fetch dashboard stats');
-    } finally {
-      setLoading(false);
     }
   };
 

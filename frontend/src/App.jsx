@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import AppRoutes from './components/routing/AppRoutes';
 import ErrorBoundary from './components/common/ErrorBoundary';
@@ -29,7 +29,6 @@ function App() {
 
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [userProfile, setUserProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   // ============================================
   // EFFECTS
@@ -54,7 +53,6 @@ function App() {
     // 1. Check for email verification
     if (verify === 'true' && userId && tokenParam) {
       console.log('[App] Verifying email...');
-      setLoading(true);
 
       fetch(`${API_URL}/auth/verify-email`, {
         method: 'POST',
@@ -80,8 +78,7 @@ function App() {
         console.error('[App] Verification error:', err);
         alert('Verification failed. Please try again.');
         window.history.replaceState({}, document.title, '/login');
-      })
-      .finally(() => setLoading(false));
+      });
     }
     // 2. Check for OAuth callback (Google or LinkedIn)
     else if (tokenParam && !verify) {
@@ -122,16 +119,20 @@ function App() {
     }
   }, []); // Empty dependency array - runs once on mount
 
+  // ============================================
+  // AUTH HANDLERS
+  // ============================================
+
   /**
-   * Fetch user profile on mount if token exists
+   * Handle logout
    */
-  useEffect(() => {
-    if (token) {
-      fetchUserProfile();
-    } else {
-      setLoading(false);
-    }
-  }, [token]);
+  const handleLogout = useCallback(() => {
+    console.log('[App] Logging out');
+    setToken(null);
+    setUserProfile(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('userProfile');
+  }, []);
 
   // ============================================
   // API FUNCTIONS
@@ -140,7 +141,7 @@ function App() {
   /**
    * Fetch user profile from API
    */
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     try {
       console.log('[App] Fetching user profile...');
       const response = await axios.get(`${API_URL}/user/profile`, {
@@ -158,14 +159,17 @@ function App() {
         console.log('[App] Unauthorized, clearing auth state');
         handleLogout();
       }
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [token, handleLogout]);
 
-  // ============================================
-  // AUTH HANDLERS
-  // ============================================
+  /**
+   * Fetch user profile on mount if token exists
+   */
+  useEffect(() => {
+    if (token) {
+      fetchUserProfile();
+    }
+  }, [token, fetchUserProfile]);
 
   /**
    * Handle successful login
@@ -178,17 +182,6 @@ function App() {
     setUserProfile(profile);
     localStorage.setItem('token', newToken);
     localStorage.setItem('userProfile', JSON.stringify(profile));
-  };
-
-  /**
-   * Handle logout
-   */
-  const handleLogout = () => {
-    console.log('[App] Logging out');
-    setToken(null);
-    setUserProfile(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('userProfile');
   };
 
   // ============================================

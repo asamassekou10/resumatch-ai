@@ -64,13 +64,9 @@ describe('Breadcrumb Component', () => {
     );
 
     // Breadcrumb only renders if items.length > 1
-    // For login without token, it might not render
-    // Let's check if it renders or not
+    // For login without token, breadcrumb should not render
     const breadcrumb = screen.queryByRole('navigation');
-    // If breadcrumb doesn't render (items.length <= 1), that's expected
-    if (breadcrumb) {
-      expect(screen.getByText('Login')).toBeInTheDocument();
-    }
+    expect(breadcrumb).not.toBeInTheDocument();
   });
 
   it('calls navigate when breadcrumb item is clicked', () => {
