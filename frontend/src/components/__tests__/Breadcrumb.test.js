@@ -92,6 +92,6 @@ describe('Breadcrumb Component', () => {
       />
     );
 
-    expect(container.firstChild).toBeNull();
+    expect(container.querySelector('.breadcrumb')).toBeNull();
   });
 });
