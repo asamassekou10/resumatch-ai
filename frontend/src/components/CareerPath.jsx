@@ -42,6 +42,32 @@ const CareerPath = ({ industry, userProfile }) => {
 
   const token = localStorage.getItem('token');
 
+  // Collapsible Section Component
+  const Section = ({ title, icon, expanded, onToggle, children }) => (
+    <div className="collapsible-section">
+      <button className="section-header" onClick={onToggle}>
+        <div className="section-title">
+          {icon}
+          <h3>{title}</h3>
+        </div>
+        {expanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+      </button>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            className="section-content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+
   useEffect(() => {
     if (token) {
       fetchCareerPaths();
@@ -929,34 +955,6 @@ const CareerPath = ({ industry, userProfile }) => {
             <p>Generate a career path or select one from the sidebar</p>
           </div>
         )}
-      </div>
-    </div>
-  );
-};
-
-// Collapsible Section Component
-const Section = ({ title, icon, expanded, onToggle, children }) => (
-  <div className="collapsible-section">
-    <button className="section-header" onClick={onToggle}>
-      <div className="section-title">
-        {icon}
-        <h3>{title}</h3>
-      </div>
-      {expanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
-    </button>
-    <AnimatePresence>
-      {expanded && (
-        <motion.div
-          className="section-content"
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          {children}
-        </motion.div>
-      )}
-    </AnimatePresence>
       </div>
     </div>
   );
