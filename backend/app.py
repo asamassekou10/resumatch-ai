@@ -39,6 +39,9 @@ from routes_interview_prep import interview_prep_bp
 from routes_company_intel import company_intel_bp
 from routes_career_path import career_path_bp
 from routes.health import health_bp
+from routes.auth import auth_bp
+from routes.analysis import analysis_bp
+from routes.dashboard import dashboard_bp
 from routes_admin_diagnostics import admin_diag_bp
 from scheduled_ingestion_tasks import init_scheduler
 import logging
@@ -2104,6 +2107,9 @@ def admin_get_users():
 # ============== REGISTER BLUEPRINTS ==============
 
 app.register_blueprint(health_bp)
+app.register_blueprint(auth_bp)
+app.register_blueprint(analysis_bp)
+app.register_blueprint(dashboard_bp)
 app.register_blueprint(config_bp)
 app.register_blueprint(keyword_bp)
 app.register_blueprint(skill_bp)

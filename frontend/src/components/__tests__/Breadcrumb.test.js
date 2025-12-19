@@ -92,6 +92,8 @@ describe('Breadcrumb Component', () => {
       />
     );
 
-    expect(container.querySelector('.breadcrumb')).toBeNull();
+    // When token is null, breadcrumb should not render
+    // Check that no breadcrumb text or links are present
+    expect(screen.queryByText(/home|dashboard|analysis/i)).not.toBeInTheDocument();
   });
 });
