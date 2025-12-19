@@ -956,6 +956,7 @@ const CareerPath = ({ industry, userProfile }) => {
           </div>
         )}
       </div>
+      </div>
     </div>
   );
 };
