@@ -58,6 +58,7 @@ jobs:
     - name: Set environment variables
       run: |
         echo "FLASK_ENV=testing" >> $GITHUB_ENV
+        echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/resume_optimizer_test" >> $GITHUB_ENV
         echo "TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/resume_optimizer_test" >> $GITHUB_ENV
         echo "SECRET_KEY=test-secret-key" >> $GITHUB_ENV
         echo "JWT_SECRET_KEY=test-jwt-secret-key" >> $GITHUB_ENV

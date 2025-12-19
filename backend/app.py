@@ -46,7 +46,13 @@ import logging
 # Load environment variables
 load_dotenv()
 
+# Create app instance
 app = Flask(__name__)
+
+def create_app(config_name=None):
+    """Application factory pattern for testing - returns the configured app"""
+    # Return the already configured app instance
+    return app
 
 # Fix for HTTPS behind proxy (Render, Heroku, etc.)
 # This tells Flask to trust the X-Forwarded-* headers from the proxy

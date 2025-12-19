@@ -488,6 +488,7 @@ export default function MarketIntelligenceDashboard({ userProfile, onRepersonali
                 </div>
               )}
             </div>
+            </div>
           )}
 
           {/* Industries Tab */}
