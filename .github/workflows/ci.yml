@@ -37,7 +37,7 @@ jobs:
         python-version: ${{ env.PYTHON_VERSION }}
     
     - name: Cache pip dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -50,10 +50,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
-    - name: Download spaCy model
+    - name: Install spaCy model
       run: |
         cd backend
-        python -m spacy download en_core_web_sm
+        pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
     
     - name: Set environment variables
       run: |
@@ -116,7 +116,7 @@ jobs:
         npm run build
     
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: frontend-build
         path: frontend/build/
@@ -147,7 +147,7 @@ jobs:
         safety check --json --output safety-report.json || true
     
     - name: Upload security reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-reports
         path: |
@@ -191,7 +191,7 @@ jobs:
       run: |
         cd backend
         pip install -r requirements.txt
-        python -m spacy download en_core_web_sm
+        pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
     
     - name: Install frontend dependencies
       run: |
