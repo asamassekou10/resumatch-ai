@@ -1,11 +1,19 @@
 import pytest
 import tempfile
 import os
+import sys
 from unittest.mock import Mock, patch, MagicMock
 from flask import Flask
 from app import create_app
 from models import db
 from config import TestingConfig
+
+# Mock the google.generativeai module before it is imported by the app
+# This prevents tests from hanging on network calls
+mock_genai = MagicMock()
+mock_genai.GenerativeModel = MagicMock(return_value=MagicMock())
+mock_genai.configure = MagicMock()
+sys.modules["google.generativeai"] = mock_genai
 
 @pytest.fixture
 def app():

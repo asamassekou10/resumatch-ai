@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Breadcrumb from '../Breadcrumb';
+import { AuthContext } from '../../contexts/AuthContext';
 
 describe('Breadcrumb Component', () => {
   beforeEach(() => {
@@ -10,11 +11,13 @@ describe('Breadcrumb Component', () => {
 
   it('renders breadcrumb for dashboard view', () => {
     render(
-      <MemoryRouter initialEntries={['/dashboard']}>
-        <Breadcrumb
-          token="fake-token"
-        />
-      </MemoryRouter>
+      <AuthContext.Provider value={{ isAuthenticated: true, user: { name: 'Test' }, token: 'fake-token' }}>
+        <MemoryRouter initialEntries={['/dashboard']}>
+          <Breadcrumb
+            token="fake-token"
+          />
+        </MemoryRouter>
+      </AuthContext.Provider>
     );
 
     // Breadcrumb only shows if there are more than 1 items
@@ -25,11 +28,13 @@ describe('Breadcrumb Component', () => {
 
   it('renders breadcrumb for analyze view', () => {
     render(
-      <MemoryRouter initialEntries={['/analyze']}>
-        <Breadcrumb
-          token="fake-token"
-        />
-      </MemoryRouter>
+      <AuthContext.Provider value={{ isAuthenticated: true, user: { name: 'Test' }, token: 'fake-token' }}>
+        <MemoryRouter initialEntries={['/analyze']}>
+          <Breadcrumb
+            token="fake-token"
+          />
+        </MemoryRouter>
+      </AuthContext.Provider>
     );
 
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
@@ -43,12 +48,14 @@ describe('Breadcrumb Component', () => {
     };
 
     render(
-      <MemoryRouter initialEntries={['/result']}>
-        <Breadcrumb
-          token="fake-token"
-          currentAnalysis={currentAnalysis}
-        />
-      </MemoryRouter>
+      <AuthContext.Provider value={{ isAuthenticated: true, user: { name: 'Test' }, token: 'fake-token' }}>
+        <MemoryRouter initialEntries={['/result']}>
+          <Breadcrumb
+            token="fake-token"
+            currentAnalysis={currentAnalysis}
+          />
+        </MemoryRouter>
+      </AuthContext.Provider>
     );
 
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
@@ -72,11 +79,13 @@ describe('Breadcrumb Component', () => {
 
   it('calls navigate when breadcrumb item is clicked', () => {
     render(
-      <MemoryRouter initialEntries={['/analyze']}>
-        <Breadcrumb
-          token="fake-token"
-        />
-      </MemoryRouter>
+      <AuthContext.Provider value={{ isAuthenticated: true, user: { name: 'Test' }, token: 'fake-token' }}>
+        <MemoryRouter initialEntries={['/analyze']}>
+          <Breadcrumb
+            token="fake-token"
+          />
+        </MemoryRouter>
+      </AuthContext.Provider>
     );
 
     // For analyze view with token, there are 2 items: Dashboard and Analyze Resume
