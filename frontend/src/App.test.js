@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 
 // Mock axios to avoid ESM import issues in Jest
@@ -21,11 +20,7 @@ jest.mock('axios', () => ({
 }));
 
 test('renders app without crashing', () => {
-  render(
-    <MemoryRouter>
-      <App />
-    </MemoryRouter>
-  );
+  render(<App />);
   // Just check that the app renders without crashing
   expect(document.body).toBeTruthy();
 });

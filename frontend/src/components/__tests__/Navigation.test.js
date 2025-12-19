@@ -24,8 +24,8 @@ describe('Navigation Component', () => {
     );
 
     expect(screen.getByText('ResumeAnalyzer AI')).toBeInTheDocument();
-    expect(screen.getByText('New Analysis')).toBeInTheDocument();
-    expect(screen.getByText('Logout')).toBeInTheDocument();
+    expect(screen.getByText('Market Intelligence')).toBeInTheDocument();
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
   });
 
   it('renders navigation for non-authenticated user', () => {
@@ -41,7 +41,7 @@ describe('Navigation Component', () => {
     );
 
     expect(screen.getByText('ResumeAnalyzer AI')).toBeInTheDocument();
-    expect(screen.getByText('Log In')).toBeInTheDocument();
+    expect(screen.getByText('Login')).toBeInTheDocument();
     expect(screen.getByText('Sign Up')).toBeInTheDocument();
   });
 
