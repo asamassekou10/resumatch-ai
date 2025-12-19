@@ -252,7 +252,8 @@ const BillingPage = ({ user }) => {
                 >
                   Update Payment Method
                 </button>
-              </motion.div>
+                </motion.div>
+              </SpotlightCard>
             )}
 
             {/* Credits Card */}
@@ -283,12 +284,13 @@ const BillingPage = ({ user }) => {
 
         {/* Billing History */}
         {currentPlan !== 'free' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-6 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6"
-          >
+          <SpotlightCard className="mt-6 rounded-2xl p-6 relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="relative z-10"
+            >
             <h3 className="text-lg font-semibold text-white mb-4">Billing History</h3>
 
             {loading ? (
@@ -343,13 +345,13 @@ const BillingPage = ({ user }) => {
                 </table>
               </div>
             ) : (
-              <div className="text-center py-8">
-                <p className="text-slate-400">No billing history available</p>
-                  </div>
-                )}
-                </motion.div>
-              </SpotlightCard>
+              <div className="text-center py-8 relative z-10">
+                <p className="text-gray-400 relative z-10">No billing history available</p>
+              </div>
             )}
+            </motion.div>
+          </SpotlightCard>
+        )}
 
         {/* Cancel Subscription Modal */}
         {showCancelModal && (
