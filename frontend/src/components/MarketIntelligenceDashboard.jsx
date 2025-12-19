@@ -156,9 +156,15 @@ export default function MarketIntelligenceDashboard({ userProfile, onRepersonali
   ];
 
   return (
-    <div className="market-dashboard">
+    <div className="market-dashboard min-h-screen bg-black relative overflow-hidden">
+      {/* Background atmosphere */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
+      <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
+
+      <div className="relative z-10">
       {/* Header */}
-      <div className="dashboard-header">
+      <div className="dashboard-header relative z-10">
         <div className="header-content">
           <div className="header-icon">
             <ChartBarIcon className="w-8 h-8" />
@@ -223,9 +229,9 @@ export default function MarketIntelligenceDashboard({ userProfile, onRepersonali
         <>
           {/* Overview Tab */}
           {activeTab === 'overview' && marketData && jobStats && (
-            <div className="tab-content animate-fade-in">
+            <div className="tab-content animate-fade-in relative z-10">
               {/* KPI Cards */}
-              <div className="kpi-grid">
+              <div className="kpi-grid relative z-10">
                 <KPICard
                   icon={ClipboardIcon}
                   label="Total Postings"
@@ -344,6 +350,7 @@ export default function MarketIntelligenceDashboard({ userProfile, onRepersonali
 
           {/* Top Skills Tab */}
           {activeTab === 'skills' && topSkills.length > 0 && (
+            <div className="relative z-10">
             <div className="tab-content animate-fade-in">
               <div className="skills-container">
                 <div className="chart-container skills-chart">
@@ -864,6 +871,7 @@ export default function MarketIntelligenceDashboard({ userProfile, onRepersonali
           )}
         </>
       )}
+      </div>
     </div>
   );
 }

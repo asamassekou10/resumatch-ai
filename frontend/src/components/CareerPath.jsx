@@ -8,6 +8,8 @@ import {
   RefreshCw, ChevronRight, ChevronDown, ExternalLink,
   BarChart3, Briefcase, GraduationCap, Network
 } from 'lucide-react';
+import SpotlightCard from './ui/SpotlightCard';
+import ShimmerButton from './ui/ShimmerButton';
 import '../styles/CareerPath.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -205,25 +207,31 @@ const CareerPath = ({ industry, userProfile }) => {
   };
 
   return (
-    <div className="career-path-container">
+    <div className="career-path-container min-h-screen bg-black relative overflow-hidden">
+      {/* Background atmosphere */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
+      <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
+
+      <div className="relative z-10">
       {/* Header */}
-      <div className="career-path-header">
-        <div>
-          <h1 className="career-path-title">
+      <div className="career-path-header relative z-10">
+        <div className="relative z-10">
+          <h1 className="career-path-title font-display">
             <Target className="icon" />
             Career Path Roadmaps
           </h1>
-          <p className="career-path-subtitle">
+          <p className="career-path-subtitle text-gray-400">
             AI-powered career progression strategies from current to dream role
           </p>
         </div>
-        <button
-          className="btn-generate-path"
+        <ShimmerButton
           onClick={() => setShowGenerateModal(true)}
+          className="flex items-center gap-2"
         >
           <Plus size={20} />
           Generate Career Path
-        </button>
+        </ShimmerButton>
       </div>
 
       {/* Generate Modal */}
@@ -236,15 +244,16 @@ const CareerPath = ({ industry, userProfile }) => {
             exit={{ opacity: 0 }}
             onClick={() => setShowGenerateModal(false)}
           >
-            <motion.div
-              className="modal-content"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
-              onTouchEnd={(e) => e.stopPropagation()}
-            >
+            <SpotlightCard className="modal-content relative z-50">
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                onTouchEnd={(e) => e.stopPropagation()}
+                className="relative z-10"
+              >
               <div className="modal-header">
                 <h2>Generate Career Roadmap</h2>
                 <button
@@ -947,7 +956,9 @@ const Section = ({ title, icon, expanded, onToggle, children }) => (
         </motion.div>
       )}
     </AnimatePresence>
-  </div>
-);
+      </div>
+    </div>
+  );
+};
 
 export default CareerPath;

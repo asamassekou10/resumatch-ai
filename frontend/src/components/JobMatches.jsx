@@ -154,24 +154,30 @@ const JobMatches = ({ industry, userProfile }) => {
   }
 
   return (
-    <div className="job-matches-container">
+    <div className="job-matches-container min-h-screen bg-black relative overflow-hidden">
+      {/* Background atmosphere */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
+      <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
+
+      <div className="relative z-10">
       {/* Header with filters */}
-      <div className="job-matches-header">
-        <div className="header-left">
-          <h2>AI-Powered Job Matches</h2>
-          <p className="subtitle">
+      <div className="job-matches-header relative z-10">
+        <div className="header-left relative z-10">
+          <h2 className="font-display">AI-Powered Job Matches</h2>
+          <p className="subtitle text-gray-400">
             {matches.length} opportunities in {industry}
           </p>
         </div>
-        <div className="header-right">
-          <button
-            className={`btn-refresh ${refreshing ? 'refreshing' : ''}`}
+        <div className="header-right relative z-10">
+          <ShimmerButton
             onClick={handleRefresh}
             disabled={refreshing}
+            className="flex items-center gap-2"
           >
-            <TrendingUp className={`w-4 h-4 ${refreshing ? 'spinning' : ''}`} />
+            <TrendingUp className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
             {refreshing ? 'Refreshing...' : 'Refresh Matches'}
-          </button>
+          </ShimmerButton>
         </div>
       </div>
 
@@ -393,16 +399,17 @@ const JobMatches = ({ industry, userProfile }) => {
 
       {/* Empty state */}
       {matches.length === 0 && !loading && (
-        <div className="no-matches">
-          <Briefcase className="w-16 h-16 text-slate-400" />
-          <h3>No job matches yet</h3>
-          <p>We're working on finding the perfect opportunities for you in {industry}</p>
-          <button className="btn-primary" onClick={handleRefresh}>
+        <SpotlightCard className="no-matches relative z-10">
+          <Briefcase className="w-16 h-16 text-gray-400 relative z-10" />
+          <h3 className="font-display relative z-10">No job matches yet</h3>
+          <p className="text-gray-400 relative z-10">We're working on finding the perfect opportunities for you in {industry}</p>
+          <ShimmerButton onClick={handleRefresh} className="flex items-center gap-2 relative z-10">
             <TrendingUp className="w-4 h-4" />
             Find Matches
-          </button>
-        </div>
+          </ShimmerButton>
+        </SpotlightCard>
       )}
+      </div>
     </div>
   );
 };

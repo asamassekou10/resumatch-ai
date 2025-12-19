@@ -5,6 +5,8 @@ import { FileUp, LogIn, Zap, ArrowRight, AlertCircle, CheckCircle, Loader, Clock
 import guestService from '../services/guestService';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
+import SpotlightCard from './ui/SpotlightCard';
+import ShimmerButton from './ui/ShimmerButton';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -155,11 +157,15 @@ const GuestAnalyze = () => {
     <>
       <SEO
         title="Free Resume Analysis"
-        description="Try ResuMatch AI for free! Get instant AI-powered resume analysis, ATS scoring, and personalized improvement suggestions without signing up."
+        description="Try ResumeAnalyzer AI for free! Get instant AI-powered resume analysis, ATS scoring, and personalized improvement suggestions without signing up."
         keywords="free resume analysis, AI resume checker, ATS score free, resume feedback"
         url="https://resumeanalyzerai.com/guest-analyze"
       />
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4">
+      <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4">
+        {/* Background atmosphere */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
+        <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
         <AnimatePresence mode="wait">
         {/* Welcome Step */}
         {step === 'welcome' && (
@@ -170,26 +176,23 @@ const GuestAnalyze = () => {
             exit={{ opacity: 0 }}
             className="max-w-2xl mx-auto"
           >
-            <div className="text-center">
-              <h1 className="text-4xl font-bold text-white mb-4">Guest Access</h1>
-              <p className="text-slate-300 text-lg mb-8">
+            <div className="text-center relative z-10">
+              <h1 className="text-4xl font-bold text-white mb-4 font-display relative z-10">Guest Access</h1>
+              <p className="text-gray-300 text-lg mb-8 relative z-10">
                 Get started with 2 free analyses instantly. No sign-up required.
               </p>
-              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-8">
+              <SpotlightCard className="rounded-lg p-8">
                 {error ? (
                   <>
                     <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
                     <p className="text-red-400 mb-4">{error}</p>
-                    <div className="flex gap-3 justify-center">
-                      <button
-                        onClick={handleSignIn}
-                        className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white font-semibold rounded-lg"
-                      >
+                    <div className="flex gap-3 justify-center relative z-10">
+                      <ShimmerButton onClick={handleSignIn}>
                         Sign In
-                      </button>
+                      </ShimmerButton>
                       <button
                         onClick={() => navigate(ROUTES.PRICING)}
-                        className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg"
+                        className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold rounded-lg transition-colors relative z-10"
                       >
                         View Pricing
                       </button>
@@ -198,16 +201,16 @@ const GuestAnalyze = () => {
                 ) : (
                   <>
                     <motion.div
-                      className="inline-block mb-4"
+                      className="inline-block mb-4 relative z-10"
                       animate={{ rotate: 360 }}
                       transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                     >
-                      <Clock className="w-16 h-16 text-cyan-400" />
+                      <Clock className="w-16 h-16 text-purple-400" />
                     </motion.div>
-                    <p className="text-slate-300">Initializing your guest session...</p>
+                    <p className="text-gray-300 relative z-10">Initializing your guest session...</p>
                   </>
                 )}
-              </div>
+              </SpotlightCard>
             </div>
           </motion.div>
         )}
@@ -219,11 +222,11 @@ const GuestAnalyze = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="max-w-4xl mx-auto"
+            className="max-w-4xl mx-auto relative z-10"
           >
             {/* Guest Mode Banner */}
             <motion.div
-              className="bg-gradient-to-r from-purple-600/90 to-cyan-600/90 backdrop-blur-sm border border-purple-400/50 rounded-lg p-4 mb-6"
+              className="bg-gradient-to-r from-purple-600/90 to-blue-600/90 backdrop-blur-sm border border-purple-400/50 rounded-lg p-4 mb-6 relative z-10"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
             >
@@ -259,17 +262,17 @@ const GuestAnalyze = () => {
             {/* Error Message */}
             {error && (
               <motion.div
-                className="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-6 flex items-start gap-3"
+                className="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-6 flex items-start gap-3 relative z-10"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
                 <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <p className="text-red-400 text-sm">{error}</p>
+                <p className="text-red-400 text-sm relative z-10">{error}</p>
               </motion.div>
             )}
 
             {/* Form */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
               {/* Resume Upload */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
@@ -286,7 +289,7 @@ const GuestAnalyze = () => {
                   />
                   <label
                     htmlFor="resume-upload"
-                    className="flex items-center justify-center w-full px-4 py-8 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer hover:border-cyan-500 transition-colors bg-slate-800/30"
+                    className="flex items-center justify-center w-full px-4 py-8 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-purple-500 transition-colors bg-white/5 backdrop-blur-sm relative z-10"
                   >
                     {resumeFile ? (
                       <div className="text-center">
@@ -317,20 +320,20 @@ const GuestAnalyze = () => {
                     placeholder="Company (optional)"
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none relative z-10"
                   />
                   <input
                     type="text"
                     placeholder="Job Title (optional)"
                     value={jobTitle}
                     onChange={(e) => setJobTitle(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none relative z-10"
                   />
                   <textarea
                     placeholder="Paste job description here (required)"
                     value={jobDescription}
                     onChange={(e) => setJobDescription(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none h-32 resize-none"
+                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none h-32 resize-none relative z-10"
                   />
                 </div>
               </motion.div>
@@ -339,27 +342,27 @@ const GuestAnalyze = () => {
             {/* Progress Section */}
             {loading && (
               <motion.div
-                className="mt-6 space-y-4"
+                className="mt-6 space-y-4 relative z-10"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
                 {/* Progress Bar */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white font-semibold flex items-center gap-2">
+                  <div className="flex items-center justify-between relative z-10">
+                    <span className="text-white font-semibold flex items-center gap-2 relative z-10">
                       <motion.div
                         animate={{ rotate: 360 }}
                         transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                       >
-                        <Loader className="w-4 h-4 text-cyan-400" />
+                        <Loader className="w-4 h-4 text-purple-400" />
                       </motion.div>
                       {loadingMessage}
                     </span>
-                    <span className="text-slate-400 text-sm">{Math.round(loadingProgress)}%</span>
+                    <span className="text-gray-400 text-sm relative z-10">{Math.round(loadingProgress)}%</span>
                   </div>
-                  <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden relative z-10">
                     <motion.div
-                      className="h-full bg-gradient-to-r from-cyan-500 to-purple-600"
+                      className="h-full bg-gradient-to-r from-purple-500 to-blue-600"
                       initial={{ width: '0%' }}
                       animate={{ width: `${loadingProgress}%` }}
                       transition={{ ease: 'easeOut', duration: 0.3 }}
@@ -371,16 +374,16 @@ const GuestAnalyze = () => {
 
             {/* Analyze Button */}
             {!loading && (
-              <motion.button
-                onClick={handleAnalyze}
-                disabled={loading || !resumeFile || !jobDescription}
-                className="w-full mt-6 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all"
-                whileHover={!loading && resumeFile && jobDescription ? { scale: 1.02 } : {}}
-                whileTap={!loading && resumeFile && jobDescription ? { scale: 0.98 } : {}}
-              >
-                Start Analysis
-                <ArrowRight className="w-5 h-5" />
-              </motion.button>
+              <div className="w-full mt-6 relative z-10">
+                <ShimmerButton
+                  onClick={handleAnalyze}
+                  disabled={loading || !resumeFile || !jobDescription}
+                  className="w-full"
+                >
+                  Start Analysis
+                  <ArrowRight className="w-5 h-5" />
+                </ShimmerButton>
+              </div>
             )}
           </motion.div>
         )}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Bell, Shield, Lock, Globe, Palette, Mail, Smartphone, Download, Trash2, Eye } from 'lucide-react';
+import { Settings, Bell, Shield, Lock, Globe, Mail, Eye } from 'lucide-react';
+import SpotlightCard from './ui/SpotlightCard';
 
 const SettingsPage = ({ user }) => {
   const [activeTab, setActiveTab] = useState('general');
@@ -9,7 +10,6 @@ const SettingsPage = ({ user }) => {
     language: 'en',
     timezone: 'America/New_York',
     dateFormat: 'MM/DD/YYYY',
-    theme: 'dark',
 
     // Notifications
     emailNotifications: true,
@@ -23,9 +23,6 @@ const SettingsPage = ({ user }) => {
     profileVisibility: 'private',
     resumeHistory: 'private',
     dataSharing: false,
-
-    // Security
-    twoFactorEnabled: false,
   });
 
   const tabs = [
@@ -62,21 +59,26 @@ const SettingsPage = ({ user }) => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
-        <p className="text-slate-400 mb-8">Manage your account preferences and security</p>
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Background atmosphere */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
+      <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
+
+      <div className="max-w-4xl mx-auto px-4 py-8 relative z-10">
+        <h1 className="text-3xl font-bold text-white mb-2 font-display relative z-10">Settings</h1>
+        <p className="text-gray-400 mb-8 relative z-10">Manage your account preferences and security</p>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-slate-700 overflow-x-auto">
+        <div className="flex gap-2 mb-6 border-b border-white/10 overflow-x-auto relative z-10">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 font-medium transition flex items-center gap-2 whitespace-nowrap ${
+              className={`px-6 py-3 font-medium transition flex items-center gap-2 whitespace-nowrap relative z-10 ${
                 activeTab === tab.id
-                  ? 'text-cyan-400 border-b-2 border-cyan-400'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'text-purple-400 border-b-2 border-purple-400'
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -86,12 +88,13 @@ const SettingsPage = ({ user }) => {
         </div>
 
         {/* Tab Content */}
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6"
-        >
+        <SpotlightCard className="rounded-2xl p-6 relative z-10">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative z-10"
+          >
           {/* GENERAL SETTINGS */}
           {activeTab === 'general' && (
             <div className="space-y-6">
@@ -146,59 +149,6 @@ const SettingsPage = ({ user }) => {
                 </div>
               </div>
 
-              <div className="border-t border-slate-700 pt-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <Palette className="w-5 h-5 text-cyan-400" />
-                  Appearance
-                </h3>
-
-                <div className="space-y-3">
-                  <label className="flex items-center gap-3 p-4 bg-slate-900/50 rounded-lg cursor-pointer hover:bg-slate-900/70 transition">
-                    <input
-                      type="radio"
-                      name="theme"
-                      value="dark"
-                      checked={settings.theme === 'dark'}
-                      onChange={(e) => updateSetting('theme', e.target.value)}
-                      className="w-4 h-4 text-cyan-500"
-                    />
-                    <div className="flex-1">
-                      <p className="text-white font-medium">Dark Mode</p>
-                      <p className="text-slate-400 text-sm">Recommended for low-light environments</p>
-                    </div>
-                  </label>
-
-                  <label className="flex items-center gap-3 p-4 bg-slate-900/50 rounded-lg cursor-pointer hover:bg-slate-900/70 transition">
-                    <input
-                      type="radio"
-                      name="theme"
-                      value="light"
-                      checked={settings.theme === 'light'}
-                      onChange={(e) => updateSetting('theme', e.target.value)}
-                      className="w-4 h-4 text-cyan-500"
-                    />
-                    <div className="flex-1">
-                      <p className="text-white font-medium">Light Mode</p>
-                      <p className="text-slate-400 text-sm">Classic bright interface</p>
-                    </div>
-                  </label>
-
-                  <label className="flex items-center gap-3 p-4 bg-slate-900/50 rounded-lg cursor-pointer hover:bg-slate-900/70 transition">
-                    <input
-                      type="radio"
-                      name="theme"
-                      value="auto"
-                      checked={settings.theme === 'auto'}
-                      onChange={(e) => updateSetting('theme', e.target.value)}
-                      className="w-4 h-4 text-cyan-500"
-                    />
-                    <div className="flex-1">
-                      <p className="text-white font-medium">Auto (System)</p>
-                      <p className="text-slate-400 text-sm">Match your system preferences</p>
-                    </div>
-                  </label>
-                </div>
-              </div>
             </div>
           )}
 
@@ -230,12 +180,6 @@ const SettingsPage = ({ user }) => {
                     onChange={(val) => updateSetting('lowCredits', val)}
                     label="Low Credit Warnings"
                     description="Alert when credits are running low"
-                  />
-                  <ToggleSwitch
-                    enabled={settings.weeklySummary}
-                    onChange={(val) => updateSetting('weeklySummary', val)}
-                    label="Weekly Summary"
-                    description="Receive weekly activity summary emails"
                   />
                   <div className="border-t border-slate-700 my-2"></div>
                   <ToggleSwitch
@@ -310,7 +254,8 @@ const SettingsPage = ({ user }) => {
               </div>
             </div>
           )}
-        </motion.div>
+          </motion.div>
+        </SpotlightCard>
       </div>
     </div>
   );

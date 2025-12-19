@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, ChevronDown, Mail, MessageSquare, BookOpen, FileText, Shield } from 'lucide-react';
+import SpotlightCard from './ui/SpotlightCard';
+import Footer from './ui/Footer';
 
 const HelpPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -85,26 +87,31 @@ const HelpPage = () => {
     : faqs;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Background atmosphere */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
+      <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
+
+      <div className="max-w-5xl mx-auto px-4 py-8 relative z-10">
         {/* View Tabs */}
-        <div className="flex justify-center gap-2 mb-8 border-b border-slate-700 pb-4">
+        <div className="flex justify-center gap-2 mb-8 border-b border-white/10 pb-4 relative z-10">
           <button
             onClick={() => setActiveView('help')}
-            className={`px-6 py-3 rounded-t-lg transition font-medium ${
+            className={`px-6 py-3 rounded-t-lg transition font-medium relative z-10 ${
               activeView === 'help'
-                ? 'bg-cyan-600 text-white'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-white/10'
             }`}
           >
             Help & FAQs
           </button>
           <button
             onClick={() => setActiveView('terms')}
-            className={`px-6 py-3 rounded-t-lg transition font-medium flex items-center gap-2 ${
+            className={`px-6 py-3 rounded-t-lg transition font-medium flex items-center gap-2 relative z-10 ${
               activeView === 'terms'
-                ? 'bg-cyan-600 text-white'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-white/10'
             }`}
           >
             <FileText className="w-4 h-4" />
@@ -112,10 +119,10 @@ const HelpPage = () => {
           </button>
           <button
             onClick={() => setActiveView('privacy')}
-            className={`px-6 py-3 rounded-t-lg transition font-medium flex items-center gap-2 ${
+            className={`px-6 py-3 rounded-t-lg transition font-medium flex items-center gap-2 relative z-10 ${
               activeView === 'privacy'
-                ? 'bg-cyan-600 text-white'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-white/10'
             }`}
           >
             <Shield className="w-4 h-4" />
@@ -127,86 +134,88 @@ const HelpPage = () => {
         {activeView === 'help' && (
           <>
             {/* Header */}
-            <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold text-white mb-4">How can we help you?</h1>
-              <p className="text-slate-400 mb-8">Search our knowledge base or browse categories below</p>
+            <div className="text-center mb-12 relative z-10">
+              <h1 className="text-4xl font-bold text-white mb-4 font-display relative z-10">How can we help you?</h1>
+              <p className="text-gray-400 mb-8 relative z-10">Search our knowledge base or browse categories below</p>
 
           {/* Search Bar */}
-          <div className="relative max-w-2xl mx-auto">
+          <div className="relative max-w-2xl mx-auto relative z-10">
             <input
               type="text"
               placeholder="Search for help..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-6 py-4 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 transition pr-12"
+              className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition pr-12 relative z-10"
             />
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
           </div>
         </div>
 
         {/* Categories */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6">Browse by Category</h2>
+        <div className="mb-12 relative z-10">
+          <h2 className="text-2xl font-bold text-white mb-6 font-display relative z-10">Browse by Category</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {categories.map((category, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 hover:border-cyan-500/50 transition cursor-pointer group"
-              >
+              <SpotlightCard key={index} className="rounded-xl p-6 cursor-pointer group">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="relative z-10"
+                >
                 <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${category.color} flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition`}>
                   {category.icon}
                 </div>
-                <h3 className="text-white font-semibold mb-2">{category.title}</h3>
-                <p className="text-slate-400 text-sm">{category.articles} articles</p>
-              </motion.div>
+                <h3 className="text-white font-semibold mb-2 relative z-10 font-display">{category.title}</h3>
+                <p className="text-gray-400 text-sm relative z-10">{category.articles} articles</p>
+                </motion.div>
+              </SpotlightCard>
             ))}
           </div>
         </div>
 
         {/* FAQs */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6">
+        <div className="mb-12 relative z-10">
+          <h2 className="text-2xl font-bold text-white mb-6 font-display relative z-10">
             {searchQuery ? `Search Results (${filteredFaqs.length})` : 'Frequently Asked Questions'}
           </h2>
 
           {filteredFaqs.length > 0 ? (
             <div className="space-y-3">
               {filteredFaqs.map((faq, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl overflow-hidden"
-                >
+                <SpotlightCard key={index} className="rounded-xl overflow-hidden">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="relative z-10"
+                  >
                   <button
                     onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
                     className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-slate-700/30 transition"
                   >
-                    <span className="text-white font-medium pr-4">{faq.question}</span>
+                    <span className="text-white font-medium pr-4 relative z-10">{faq.question}</span>
                     <ChevronDown
-                      className={`w-5 h-5 text-cyan-400 transition-transform flex-shrink-0 ${
+                      className={`w-5 h-5 text-purple-400 transition-transform flex-shrink-0 relative z-10 ${
                         expandedFaq === index ? 'rotate-180' : ''
                       }`}
                     />
                   </button>
                   {expandedFaq === index && (
-                    <div className="px-6 pb-4">
-                      <p className="text-slate-300 leading-relaxed">{faq.answer}</p>
+                    <div className="px-6 pb-4 relative z-10">
+                      <p className="text-gray-300 leading-relaxed relative z-10">{faq.answer}</p>
                     </div>
                   )}
-                </motion.div>
+                  </motion.div>
+                </SpotlightCard>
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-slate-400">No results found for "{searchQuery}"</p>
+            <div className="text-center py-12 relative z-10">
+              <p className="text-gray-400 relative z-10">No results found for "{searchQuery}"</p>
               <button
                 onClick={() => setSearchQuery('')}
-                className="mt-4 px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition"
+                className="mt-4 px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-lg transition relative z-10"
               >
                 Clear Search
               </button>
@@ -215,55 +224,56 @@ const HelpPage = () => {
         </div>
 
         {/* Contact Support */}
-        <div className="bg-gradient-to-r from-cyan-500/10 to-purple-600/10 border border-cyan-500/20 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">Still need help?</h2>
+        <SpotlightCard className="bg-gradient-to-r from-purple-500/10 to-blue-600/10 border border-purple-500/20 rounded-2xl p-8 relative z-10">
+          <h2 className="text-2xl font-bold text-white mb-6 text-center font-display relative z-10">Still need help?</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-8 h-8 text-cyan-400" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+            <div className="text-center relative z-10">
+              <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
+                <Mail className="w-8 h-8 text-purple-400" />
               </div>
-              <h3 className="text-white font-semibold mb-2">Email Support</h3>
-              <p className="text-slate-400 text-sm mb-3">We'll respond within 24 hours</p>
+              <h3 className="text-white font-semibold mb-2 relative z-10 font-display">Email Support</h3>
+              <p className="text-gray-400 text-sm mb-3 relative z-10">We'll respond within 24 hours</p>
               <a
                 href="mailto:support@resumeanalyzerai.com"
-                className="text-cyan-400 hover:text-cyan-300 text-sm"
+                className="text-purple-400 hover:text-purple-300 text-sm relative z-10"
               >
                 support@resumeanalyzerai.com
               </a>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MessageSquare className="w-8 h-8 text-purple-400" />
+            <div className="text-center relative z-10">
+              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
+                <MessageSquare className="w-8 h-8 text-blue-400" />
               </div>
-              <h3 className="text-white font-semibold mb-2">Live Chat</h3>
-              <p className="text-slate-400 text-sm">Coming soon for Pro & Elite users</p>
+              <h3 className="text-white font-semibold mb-2 relative z-10 font-display">Live Chat</h3>
+              <p className="text-gray-400 text-sm relative z-10">Coming soon for Pro & Elite users</p>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="text-center relative z-10">
+              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
                 <BookOpen className="w-8 h-8 text-green-400" />
               </div>
-              <h3 className="text-white font-semibold mb-2">Documentation</h3>
-              <p className="text-slate-400 text-sm">Comprehensive guides coming soon</p>
+              <h3 className="text-white font-semibold mb-2 relative z-10 font-display">Documentation</h3>
+              <p className="text-gray-400 text-sm relative z-10">Comprehensive guides coming soon</p>
             </div>
           </div>
-        </div>
+        </SpotlightCard>
           </>
         )}
 
         {/* Terms of Service View */}
         {activeView === 'terms' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 max-w-4xl mx-auto"
-          >
-            <h1 className="text-3xl font-bold text-white mb-6">Terms of Service</h1>
-            <p className="text-slate-400 mb-8">Last updated: December 9, 2024</p>
+          <SpotlightCard className="rounded-2xl p-8 max-w-4xl mx-auto relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="relative z-10"
+            >
+            <h1 className="text-3xl font-bold text-white mb-6 font-display relative z-10">Terms of Service</h1>
+            <p className="text-gray-400 mb-8 relative z-10">Last updated: December 9, 2024</p>
 
-            <div className="space-y-6 text-slate-300">
+            <div className="space-y-6 text-gray-300 relative z-10">
               <section>
                 <h2 className="text-xl font-semibold text-white mb-3">1. Acceptance of Terms</h2>
                 <p className="leading-relaxed">
@@ -407,20 +417,22 @@ const HelpPage = () => {
                 </p>
               </section>
             </div>
-          </motion.div>
+            </motion.div>
+          </SpotlightCard>
         )}
 
         {/* Privacy Policy View */}
         {activeView === 'privacy' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 max-w-4xl mx-auto"
-          >
-            <h1 className="text-3xl font-bold text-white mb-6">Privacy Policy</h1>
-            <p className="text-slate-400 mb-8">Last updated: December 9, 2024</p>
+          <SpotlightCard className="rounded-2xl p-8 max-w-4xl mx-auto relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="relative z-10"
+            >
+            <h1 className="text-3xl font-bold text-white mb-6 font-display relative z-10">Privacy Policy</h1>
+            <p className="text-gray-400 mb-8 relative z-10">Last updated: December 9, 2024</p>
 
-            <div className="space-y-6 text-slate-300">
+            <div className="space-y-6 text-gray-300 relative z-10">
               <section>
                 <h2 className="text-xl font-semibold text-white mb-3">1. Introduction</h2>
                 <p className="leading-relaxed">
@@ -600,9 +612,11 @@ const HelpPage = () => {
                 </div>
               </section>
             </div>
-          </motion.div>
+            </motion.div>
+          </SpotlightCard>
         )}
       </div>
+      <Footer />
     </div>
   );
 };

@@ -6,6 +6,8 @@ import {
   Sparkles, TrendingUp, Award
 } from 'lucide-react';
 import axios from 'axios';
+import SpotlightCard from './ui/SpotlightCard';
+import ShimmerButton from './ui/ShimmerButton';
 import '../styles/InterviewPrep.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -223,25 +225,31 @@ const InterviewPrep = ({ industry, userProfile }) => {
   }
 
   return (
-    <div className="interview-prep-container">
+    <div className="interview-prep-container min-h-screen bg-black relative overflow-hidden">
+      {/* Background atmosphere */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
+      <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
+
+      <div className="relative z-10">
       {/* Header */}
-      <div className="interview-prep-header">
-        <div className="header-left">
-          <h2>AI Interview Preparation</h2>
-          <p className="subtitle">
+      <div className="interview-prep-header relative z-10">
+        <div className="header-left relative z-10">
+          <h2 className="font-display">AI Interview Preparation</h2>
+          <p className="subtitle text-gray-400">
             {preps.length > 0
               ? `${preps.length} ${preps.length === 1 ? 'company' : 'companies'} prepared`
               : 'No interview preps yet'}
           </p>
         </div>
-        <div className="header-right">
-          <button
-            className="btn-primary btn-generate"
+        <div className="header-right relative z-10">
+          <ShimmerButton
             onClick={() => setShowGenerateModal(true)}
+            className="flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Generate Prep
-          </button>
+          </ShimmerButton>
         </div>
       </div>
 
@@ -255,13 +263,14 @@ const InterviewPrep = ({ industry, userProfile }) => {
             exit={{ opacity: 0 }}
             onClick={() => !generating && setShowGenerateModal(false)}
           >
-            <motion.div
-              className="modal-content"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-            >
+            <SpotlightCard className="modal-content relative z-50">
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative z-10"
+              >
               <h3>
                 <Sparkles className="w-5 h-5" />
                 Generate Interview Prep
@@ -311,14 +320,14 @@ const InterviewPrep = ({ industry, userProfile }) => {
                 >
                   Cancel
                 </button>
-                <button
-                  className="btn-primary"
+                <ShimmerButton
                   onClick={generateInterviewPrep}
                   disabled={generating || !generateForm.company.trim()}
+                  className="flex items-center gap-2"
                 >
                   {generating ? (
                     <>
-                      <RefreshCw className="w-4 h-4 spinning" />
+                      <RefreshCw className="w-4 h-4 animate-spin" />
                       Generating...
                     </>
                   ) : (
@@ -327,28 +336,29 @@ const InterviewPrep = ({ industry, userProfile }) => {
                       Generate Prep
                     </>
                   )}
-                </button>
+                </ShimmerButton>
               </div>
-            </motion.div>
+              </motion.div>
+            </SpotlightCard>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Main Content */}
       {preps.length === 0 ? (
-        <div className="empty-state">
-          <Building className="w-20 h-20 text-slate-400" />
-          <h3>No Interview Prep Yet</h3>
-          <p>Generate AI-powered interview preparation for any company</p>
-          <button className="btn-primary" onClick={() => setShowGenerateModal(true)}>
+        <SpotlightCard className="empty-state relative z-10">
+          <Building className="w-20 h-20 text-gray-400 relative z-10" />
+          <h3 className="font-display relative z-10">No Interview Prep Yet</h3>
+          <p className="text-gray-400 relative z-10">Generate AI-powered interview preparation for any company</p>
+          <ShimmerButton onClick={() => setShowGenerateModal(true)} className="flex items-center gap-2 relative z-10">
             <Plus className="w-4 h-4" />
             Generate Your First Prep
-          </button>
-        </div>
+          </ShimmerButton>
+        </SpotlightCard>
       ) : (
-        <div className="prep-layout">
+        <div className="prep-layout relative z-10">
           {/* Sidebar - Company List */}
-          <div className="prep-sidebar">
+          <SpotlightCard className="prep-sidebar relative z-10">
             <h3>Your Preps</h3>
             <div className="company-list">
               {preps.map((prep) => (
@@ -379,7 +389,7 @@ const InterviewPrep = ({ industry, userProfile }) => {
                 </motion.div>
               ))}
             </div>
-          </div>
+          </SpotlightCard>
 
           {/* Main Content - Prep Details */}
           {selectedPrep && (
@@ -620,10 +630,11 @@ const InterviewPrep = ({ industry, userProfile }) => {
                   </div>
                 </div>
               )}
-            </div>
+            </SpotlightCard>
           )}
         </div>
       )}
+      </div>
     </div>
   );
 };

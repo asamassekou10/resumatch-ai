@@ -350,8 +350,9 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
     return (
       <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4">
         {/* Background atmosphere */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
+        <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -378,11 +379,14 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
           </motion.div>
 
           {/* Overall Score Card */}
-          <motion.div
-            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+          <SpotlightCard
+            className="rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl"
           >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative z-10"
+            >
             <div className="flex flex-col sm:grid sm:grid-cols-2 gap-6">
               <div className="text-center">
                 <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
@@ -410,7 +414,8 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 </div>
               </div>
             </div>
-          </motion.div>
+            </motion.div>
+          </SpotlightCard>
 
           {/* Error Message */}
           {error && (
@@ -867,15 +872,13 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <motion.button
+            <ShimmerButton
               onClick={() => navigate(ROUTES.ANALYZE)}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              className="flex-1"
             >
               Analyze Another Resume
               <ArrowRight className="w-5 h-5" />
-            </motion.button>
+            </ShimmerButton>
             <motion.button
               onClick={() => navigate(ROUTES.DASHBOARD)}
               className="px-6 py-3 bg-white/10 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors"
@@ -910,17 +913,17 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
       {/* Error Message */}
       {error && (
         <motion.div
-          className="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-6 flex items-start gap-3"
+          className="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-6 flex items-start gap-3 relative z-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
           <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-          <p className="text-red-400 text-sm">{error}</p>
+          <p className="text-red-400 text-sm relative z-10">{error}</p>
         </motion.div>
       )}
 
       {/* Form */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
         {/* Resume Upload */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -990,26 +993,26 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
       {/* Progress Section */}
       {loading && (
         <motion.div
-          className="mt-6 space-y-4"
+          className="mt-6 space-y-4 relative z-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-white font-semibold flex items-center gap-2">
+            <div className="flex items-center justify-between relative z-10">
+              <span className="text-white font-semibold flex items-center gap-2 relative z-10">
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                 >
-                  <Loader className="w-4 h-4 text-cyan-400" />
+                  <Loader className="w-4 h-4 text-purple-400" />
                 </motion.div>
                 {loadingMessage}
               </span>
-              <span className="text-gray-400 text-sm">{Math.round(loadingProgress)}%</span>
+              <span className="text-gray-400 text-sm relative z-10">{Math.round(loadingProgress)}%</span>
             </div>
-            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden relative z-10">
               <motion.div
-                className="h-full bg-gradient-to-r from-cyan-500 to-purple-600"
+                className="h-full bg-gradient-to-r from-purple-500 to-blue-600"
                 initial={{ width: '0%' }}
                 animate={{ width: `${loadingProgress}%` }}
                 transition={{ ease: 'easeOut', duration: 0.3 }}
@@ -1021,16 +1024,16 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
 
       {/* Analyze Button */}
       {!loading && (
-        <motion.button
-          onClick={handleAnalyze}
-          disabled={loading || !resumeFile || !jobDescription}
-          className="w-full mt-6 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all"
-          whileHover={!loading && resumeFile && jobDescription ? { scale: 1.02 } : {}}
-          whileTap={!loading && resumeFile && jobDescription ? { scale: 0.98 } : {}}
-        >
-          Start Analysis
-          <ArrowRight className="w-5 h-5" />
-        </motion.button>
+        <div className="w-full mt-6 relative z-10">
+          <ShimmerButton
+            onClick={handleAnalyze}
+            disabled={loading || !resumeFile || !jobDescription}
+            className="w-full"
+          >
+            Start Analysis
+            <ArrowRight className="w-5 h-5" />
+          </ShimmerButton>
+        </div>
       )}
     </div>
   );

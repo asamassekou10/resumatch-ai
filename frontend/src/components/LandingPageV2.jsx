@@ -188,7 +188,7 @@ const LandingPageV2 = ({ token }) => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
-              <span className="text-xs font-medium text-gray-300 uppercase tracking-widest">AI Engine v2.0 Live</span>
+              <span className="text-xs font-medium text-gray-300 uppercase tracking-widest">AI-Powered Resume Analysis</span>
             </motion.div>
 
             <motion.h1
@@ -217,7 +217,7 @@ const LandingPageV2 = ({ token }) => {
               custom={3}
             >
               <ShimmerButton onClick={() => navigate(ROUTES.GUEST_ANALYZE)}>
-                Analyze My Resume <ArrowRight size={16} />
+                Try For Free <ArrowRight size={16} />
               </ShimmerButton>
 
               <motion.button
@@ -226,7 +226,7 @@ const LandingPageV2 = ({ token }) => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                View Sample Report
+                View Pricing
               </motion.button>
             </motion.div>
 
@@ -495,19 +495,19 @@ const LandingPageV2 = ({ token }) => {
             {[
               {
                 name: "Sarah Johnson",
-                role: "Software Engineer @ Google",
+                role: "Software Engineer",
                 text: "After using ResumeAnalyzer, I got 3 interviews in one week. The keyword optimization is a game changer.",
                 stars: 5
               },
               {
                 name: "David Chen",
-                role: "Product Manager @ Meta",
+                role: "Product Manager",
                 text: "The scoring system gave me a clear roadmap. It's like having a professional career coach in your pocket.",
                 stars: 5
               },
               {
                 name: "Elena Rodriguez",
-                role: "Marketing Director @ Amazon",
+                role: "Marketing Director",
                 text: "Simple, fast, and effective. I didn't realize my formatting was breaking ATS parsers until I ran the scan.",
                 stars: 5
               }
@@ -561,7 +561,7 @@ const LandingPageV2 = ({ token }) => {
               repeat: Infinity
             }}
           >
-            {["GOOGLE", "MICROSOFT", "AMAZON", "APPLE", "META", "NETFLIX", "TESLA", "NVIDIA", "GOOGLE", "MICROSOFT", "AMAZON", "APPLE", "META", "NETFLIX", "TESLA", "NVIDIA"].map((company, index) => (
+            {["TECHCORP", "INNOVATE", "FUTURELABS", "GLOBALAI", "NEXTGEN", "DATASYSTEMS", "ORBITAL", "SYNTHWAVE", "TECHCORP", "INNOVATE", "FUTURELABS", "GLOBALAI", "NEXTGEN", "DATASYSTEMS", "ORBITAL", "SYNTHWAVE"].map((company, index) => (
               <span key={index} className="text-xl md:text-2xl font-bold text-white/30 hover:text-white transition-colors cursor-default select-none font-display">
                 {company}
               </span>
@@ -591,7 +591,7 @@ const LandingPageV2 = ({ token }) => {
             onClick={() => navigate(token ? ROUTES.DASHBOARD : ROUTES.GUEST_ANALYZE)}
             className="px-12 py-5 h-16 text-lg"
           >
-            {token ? 'Go to Dashboard' : 'Analyze My Resume Now'} <ArrowRight size={20} />
+            {token ? 'Go to Dashboard' : 'Try For Free'} <ArrowRight size={20} />
           </ShimmerButton>
         </motion.div>
       </div>

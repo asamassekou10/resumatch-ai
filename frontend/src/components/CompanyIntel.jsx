@@ -7,6 +7,8 @@ import {
   CheckCircle, AlertCircle, Info, ThumbsUp, ThumbsDown
 } from 'lucide-react';
 import axios from 'axios';
+import SpotlightCard from './ui/SpotlightCard';
+import ShimmerButton from './ui/ShimmerButton';
 import '../styles/CompanyIntel.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -182,25 +184,31 @@ const CompanyIntel = ({ industry, userProfile }) => {
   }
 
   return (
-    <div className="company-intel-container">
+    <div className="company-intel-container min-h-screen bg-black relative overflow-hidden">
+      {/* Background atmosphere */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
+      <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
+
+      <div className="relative z-10">
       {/* Header */}
-      <div className="company-intel-header">
-        <div className="header-left">
-          <h2>Company Intelligence Hub</h2>
-          <p className="subtitle">
+      <div className="company-intel-header relative z-10">
+        <div className="header-left relative z-10">
+          <h2 className="font-display">Company Intelligence Hub</h2>
+          <p className="subtitle text-gray-400">
             {intels.length > 0
               ? `${intels.length} ${intels.length === 1 ? 'company' : 'companies'} researched`
               : 'No companies researched yet'}
           </p>
         </div>
-        <div className="header-right">
-          <button
-            className="btn-primary btn-generate"
+        <div className="header-right relative z-10">
+          <ShimmerButton
             onClick={() => setShowGenerateModal(true)}
+            className="flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Research Company
-          </button>
+          </ShimmerButton>
         </div>
       </div>
 
@@ -214,13 +222,14 @@ const CompanyIntel = ({ industry, userProfile }) => {
             exit={{ opacity: 0 }}
             onClick={() => !generating && setShowGenerateModal(false)}
           >
-            <motion.div
-              className="modal-content"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-            >
+            <SpotlightCard className="modal-content relative z-50">
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative z-10"
+              >
               <h3>
                 <Sparkles className="w-5 h-5" />
                 Research Company
@@ -259,14 +268,14 @@ const CompanyIntel = ({ industry, userProfile }) => {
                 >
                   Cancel
                 </button>
-                <button
-                  className="btn-primary"
+                <ShimmerButton
                   onClick={generateCompanyIntel}
                   disabled={generating || !generateForm.company.trim()}
+                  className="flex items-center gap-2"
                 >
                   {generating ? (
                     <>
-                      <RefreshCw className="w-4 h-4 spinning" />
+                      <RefreshCw className="w-4 h-4 animate-spin" />
                       Researching...
                     </>
                   ) : (
@@ -275,9 +284,10 @@ const CompanyIntel = ({ industry, userProfile }) => {
                       Generate Intelligence
                     </>
                   )}
-                </button>
+                </ShimmerButton>
               </div>
-            </motion.div>
+              </motion.div>
+            </SpotlightCard>
           </motion.div>
         )}
       </AnimatePresence>
@@ -690,6 +700,7 @@ const CompanyIntel = ({ industry, userProfile }) => {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 };
