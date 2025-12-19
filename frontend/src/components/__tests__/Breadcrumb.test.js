@@ -18,8 +18,9 @@ describe('Breadcrumb Component', () => {
     );
 
     // Breadcrumb only shows if there are more than 1 items
-    // For dashboard with token, it should show Dashboard
-    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    // For dashboard with token, there's only 1 item (Dashboard), so it returns null
+    const breadcrumb = screen.queryByRole('navigation');
+    expect(breadcrumb).not.toBeInTheDocument();
   });
 
   it('renders breadcrumb for analyze view', () => {
@@ -78,6 +79,10 @@ describe('Breadcrumb Component', () => {
       </MemoryRouter>
     );
 
+    // For analyze view with token, there are 2 items: Dashboard and Analyze Resume
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Analyze Resume')).toBeInTheDocument();
+    
     const dashboardLink = screen.getByText('Dashboard');
     fireEvent.click(dashboardLink);
     // The component uses navigate() from react-router-dom
