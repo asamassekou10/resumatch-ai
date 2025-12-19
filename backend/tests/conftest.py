@@ -152,10 +152,10 @@ def mock_gemini_api():
          patch('intelligent_resume_analyzer.GEMINI_API_KEY', 'test-key'), \
          patch('gemini_service.genai.GenerativeModel', mock_generative_model), \
          patch('gemini_service.genai.configure', MagicMock()), \
-         patch('app.generate_personalized_feedback', mock_generate_personalized_feedback), \
-         patch('app.generate_optimized_resume', mock_generate_optimized_resume), \
-         patch('app.generate_cover_letter', mock_generate_cover_letter), \
-         patch('app.suggest_missing_experience', mock_suggest_missing_experience), \
+         patch('gemini_service.generate_personalized_feedback', mock_generate_personalized_feedback), \
+         patch('gemini_service.generate_optimized_resume', mock_generate_optimized_resume), \
+         patch('gemini_service.generate_cover_letter', mock_generate_cover_letter), \
+         patch('gemini_service.suggest_missing_experience', mock_suggest_missing_experience), \
          patch('spacy.load', mock_spacy), \
          patch('ai_processor.spacy.load', mock_spacy):
         yield
