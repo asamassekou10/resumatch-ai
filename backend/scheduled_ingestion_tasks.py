@@ -312,21 +312,21 @@ def register_scheduled_tasks(app_instance):
     scheduler = get_scheduler()
 
     try:
-        # Schedule daily sample ingestion at 2 AM UTC
-        scheduler.add_cron_job(
-            func=ingest_sample_job_postings,
-            cron_expression={'hour': 2, 'minute': 0},
-            job_id='daily_sample_ingestion'
+        # Schedule real job ingestion every 24 hours (primary data source)
+        scheduler.add_interval_job(
+            func=ingest_real_job_postings,
+            hours=24,
+            job_id='real_job_ingestion'
         )
-        logger.info("Scheduled: Daily sample ingestion at 02:00 UTC")
+        logger.info("Scheduled: Real job ingestion every 24 hours")
 
-        # Schedule market statistics refresh every 12 hours
+        # Schedule market statistics refresh every 24 hours
         scheduler.add_interval_job(
             func=refresh_market_statistics,
-            hours=12,
+            hours=24,
             job_id='refresh_market_stats'
         )
-        logger.info("Scheduled: Market statistics refresh every 12 hours")
+        logger.info("Scheduled: Market statistics refresh every 24 hours")
 
         # Schedule data cleanup weekly on Sundays at 3 AM UTC
         scheduler.add_cron_job(

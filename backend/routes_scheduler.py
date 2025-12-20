@@ -362,8 +362,8 @@ def get_scheduler_config():
                 },
                 'refresh_market_stats': {
                     'description': 'Refresh market intelligence statistics',
-                    'schedule': 'Every 12 hours',
-                    'frequency': 'Twice per day',
+                    'schedule': 'Every 24 hours',
+                    'frequency': 'Once per day',
                     'retention_days': None
                 },
                 'cleanup_old_data': {
@@ -384,3 +384,49 @@ def get_scheduler_config():
     except Exception as e:
         logger.error(f"Error getting scheduler config: {str(e)}")
         return jsonify({'error': 'Failed to get scheduler config'}), 500
+
+
+@scheduler_bp.route('/refresh-market-data', methods=['POST'])
+@jwt_required()
+@require_admin
+def refresh_market_data():
+    """
+    Manually trigger market data refresh
+    
+    This endpoint runs both:
+    - Real job postings ingestion from external APIs
+    - Market statistics refresh
+    
+    Returns:
+        - success: Operation result
+        - jobs_result: Result from job ingestion
+        - stats_result: Result from stats refresh
+    """
+    try:
+        from scheduled_ingestion_tasks import (
+            ingest_real_job_postings,
+            refresh_market_statistics
+        )
+        
+        logger.info("Manual market data refresh triggered by admin")
+        
+        # Run job ingestion
+        jobs_result = ingest_real_job_postings()
+        
+        # Run stats refresh
+        stats_result = refresh_market_statistics()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Market data refresh completed',
+            'jobs_result': jobs_result,
+            'stats_result': stats_result,
+            'timestamp': datetime.utcnow().isoformat()
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error refreshing market data: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to refresh market data: {str(e)}'
+        }), 500

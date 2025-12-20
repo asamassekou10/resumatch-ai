@@ -1777,7 +1777,7 @@ def create_checkout_session():
                 'quantity': 1,
             }],
             mode='subscription',
-            success_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/dashboard?payment=success",
+            success_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/dashboard?payment=success&tier={tier_param}",
             cancel_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/pricing?payment=cancel",
             metadata={
                 'user_id': str(user_id),

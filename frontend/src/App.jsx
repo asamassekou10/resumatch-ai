@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import AppRoutes from './components/routing/AppRoutes';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import PaymentSuccessModal from './components/PaymentSuccessModal';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -29,6 +30,8 @@ function App() {
 
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [userProfile, setUserProfile] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentTier, setPaymentTier] = useState('pro');
 
   // ============================================
   // EFFECTS
@@ -91,8 +94,13 @@ function App() {
     // 3. Check for payment success/cancel
     else if (payment) {
       console.log('[App] Payment result:', payment);
+      const tierPurchased = urlParams.get('tier') || 'pro';
+      
       if (payment === 'success') {
-        alert('Payment successful! Welcome to Pro! Your credits have been added.');
+        // Show success modal and refresh profile
+        setPaymentTier(tierPurchased);
+        setShowPaymentModal(true);
+        // Profile will be refreshed via the existing useEffect when token exists
       } else if (payment === 'cancel') {
         alert('Payment cancelled. You can upgrade anytime from your dashboard.');
       }
@@ -184,6 +192,18 @@ function App() {
     localStorage.setItem('userProfile', JSON.stringify(profile));
   };
 
+  /**
+   * Handle payment success modal close
+   * Refreshes user profile to ensure credits are up to date
+   */
+  const handlePaymentModalClose = useCallback(() => {
+    setShowPaymentModal(false);
+    // Force refresh profile to get updated credits
+    if (token) {
+      fetchUserProfile();
+    }
+  }, [token, fetchUserProfile]);
+
   // ============================================
   // RENDER
   // ============================================
@@ -201,6 +221,14 @@ function App() {
           token={token}
           handleLogin={handleLogin}
           handleLogout={handleLogout}
+        />
+        
+        {/* Payment Success Modal */}
+        <PaymentSuccessModal
+          isOpen={showPaymentModal}
+          onClose={handlePaymentModalClose}
+          tier={paymentTier}
+          userCredits={userProfile?.credits}
         />
       </BrowserRouter>
     </ErrorBoundary>

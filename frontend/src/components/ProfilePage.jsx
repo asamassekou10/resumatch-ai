@@ -158,7 +158,9 @@ const ProfilePage = ({ user }) => {
 
                 <div>
                   <label className="block text-sm text-slate-400 mb-2">Credits Remaining</label>
-                  <p className="text-cyan-400 py-3 font-semibold">{user.credits || 0} / 100</p>
+                  <p className={`py-3 font-semibold ${user.subscription_tier === 'elite' ? 'text-amber-400' : user.subscription_tier === 'pro' ? 'text-cyan-400' : 'text-slate-400'}`}>
+                    {user.credits || 0} / {user.subscription_tier === 'elite' ? 1000 : user.subscription_tier === 'pro' ? 100 : 5}
+                  </p>
                 </div>
               </div>
 
