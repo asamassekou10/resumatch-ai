@@ -13,7 +13,12 @@ describe('Navigation Component', () => {
 
   it('renders navigation for authenticated user', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <Navigation
           token="fake-token"
           onLogout={mockOnLogout}
@@ -29,7 +34,12 @@ describe('Navigation Component', () => {
 
   it('renders navigation for non-authenticated user', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <Navigation
           token={null}
           onLogout={mockOnLogout}
@@ -47,7 +57,12 @@ describe('Navigation Component', () => {
     // Note: Navigation component doesn't have showBackButton prop
     // This test may need to be removed or updated based on actual component API
     render(
-      <MemoryRouter>
+      <MemoryRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <Navigation
           token={null}
           onLogout={mockOnLogout}
@@ -63,7 +78,12 @@ describe('Navigation Component', () => {
 
   it('logo links to dashboard when authenticated', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <Navigation
           token="fake-token"
           onLogout={mockOnLogout}
@@ -79,7 +99,12 @@ describe('Navigation Component', () => {
 
   it('calls onLogout when logout button is clicked', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <Navigation
           token="fake-token"
           onLogout={mockOnLogout}
@@ -102,7 +127,12 @@ describe('Navigation Component', () => {
 
   it('renders correctly for authenticated user with user menu', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <Navigation
           token="fake-token"
           onLogout={mockOnLogout}

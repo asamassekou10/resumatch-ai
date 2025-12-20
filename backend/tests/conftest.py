@@ -21,7 +21,11 @@ sys.modules["sendgrid.helpers"] = MagicMock()
 sys.modules["sendgrid.helpers.mail"] = MagicMock()
 
 sys.modules["apscheduler"] = MagicMock()
+sys.modules["apscheduler.schedulers"] = MagicMock()
 sys.modules["apscheduler.schedulers.background"] = MagicMock()
+sys.modules["apscheduler.triggers"] = MagicMock()
+sys.modules["apscheduler.triggers.interval"] = MagicMock()
+sys.modules["apscheduler.triggers.cron"] = MagicMock()
 # ---------------------------
 
 from app import create_app

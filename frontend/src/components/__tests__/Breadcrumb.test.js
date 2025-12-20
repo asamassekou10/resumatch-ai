@@ -9,7 +9,13 @@ const mockSetView = jest.fn();
 const renderWithContext = (ui, { route = '/' } = {}) => {
   return render(
     <AuthContext.Provider value={{ isAuthenticated: true, user: { name: 'Test' }, token: 'fake-token', isLoading: false }}>
-      <MemoryRouter initialEntries={[route]}>
+      <MemoryRouter 
+        initialEntries={[route]}
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         {ui}
       </MemoryRouter>
     </AuthContext.Provider>
@@ -26,9 +32,10 @@ describe('Breadcrumb Component', () => {
       <Breadcrumb view="dashboard" setView={mockSetView} token="fake-token" />, 
       { route: '/dashboard' }
     );
-    // Check for "Home" or "Dashboard" depending on your logic
-    const homeLink = screen.queryByText(/Home/i);
-    expect(homeLink).toBeInTheDocument();
+    // Breadcrumb only shows if there are more than 1 items
+    // For dashboard with token, there's only 1 item (Dashboard), so it returns null
+    const breadcrumb = screen.queryByRole('navigation');
+    expect(breadcrumb).not.toBeInTheDocument();
   });
 
   it('renders breadcrumb for analyze view', () => {
