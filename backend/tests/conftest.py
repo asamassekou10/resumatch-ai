@@ -4,12 +4,19 @@ import pytest
 import tempfile
 import os
 
-# FORCE MOCKS: Stop ALL Google network calls
-# These must run BEFORE 'app' is imported
+# --- AGGRESSIVE MOCKING ---
+# Mock ALL external services to prevent network calls during test collection
+# This must run BEFORE 'app' is imported
 sys.modules["google.generativeai"] = MagicMock()
 sys.modules["google.auth"] = MagicMock()
 sys.modules["google.oauth2"] = MagicMock()
 sys.modules["google.auth.transport.requests"] = MagicMock()
+sys.modules["sentry_sdk"] = MagicMock()
+sys.modules["stripe"] = MagicMock()
+sys.modules["sendgrid"] = MagicMock()
+sys.modules["apscheduler"] = MagicMock()
+sys.modules["apscheduler.schedulers.background"] = MagicMock()
+# ---------------------------
 
 from app import create_app
 from models import db

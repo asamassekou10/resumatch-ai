@@ -2,13 +2,27 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Breadcrumb from '../Breadcrumb';
+// Import the context (which will be mocked below)
 import AuthContext from '../../contexts/AuthContext';
+
+// 1. MOCK THE CONTEXT MODULE
+// This bypasses the real AuthContext.js and its dependencies
+jest.mock('../../contexts/AuthContext', () => {
+  const React = require('react');
+  const context = React.createContext();
+  return {
+    __esModule: true,
+    default: context,
+    // Mock the hook if used by component
+    useAuth: () => ({ isAuthenticated: true, user: { name: 'Test' }, isLoading: false }), 
+  };
+});
 
 const mockSetView = jest.fn();
 
 const renderWithContext = (ui, { route = '/' } = {}) => {
   return render(
-    <AuthContext.Provider value={{ isAuthenticated: true, user: { name: 'Test' }, token: 'fake-token' }}>
+    <AuthContext.Provider value={{ isAuthenticated: true, user: { name: 'Test' }, token: 'fake-token', isLoading: false }}>
       <MemoryRouter initialEntries={[route]}>
         {ui}
       </MemoryRouter>
@@ -17,16 +31,27 @@ const renderWithContext = (ui, { route = '/' } = {}) => {
 };
 
 describe('Breadcrumb Component', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('renders breadcrumb for dashboard view', () => {
-    renderWithContext(<Breadcrumb view="dashboard" setView={mockSetView} />, { route: '/dashboard' });
-    // Direct assertion is required by linter
-    expect(screen.getByText(/Home/i)).toBeInTheDocument();
+    renderWithContext(
+      <Breadcrumb view="dashboard" setView={mockSetView} token="fake-token" />, 
+      { route: '/dashboard' }
+    );
+    // Check for "Home" or "Dashboard" depending on your logic
+    const homeLink = screen.queryByText(/Home/i);
+    expect(homeLink).toBeInTheDocument();
   });
 
   it('renders breadcrumb for analyze view', () => {
-    renderWithContext(<Breadcrumb view="analyze" setView={mockSetView} />, { route: '/analyze' });
+    renderWithContext(
+      <Breadcrumb view="analyze" setView={mockSetView} token="fake-token" />, 
+      { route: '/analyze' }
+    );
     expect(screen.getByText(/Dashboard/i)).toBeInTheDocument();
-    // Matches "Analyze Resume" or "New Analysis"
+    // Flexible check for "Analyze Resume" or "New Analysis"
     expect(screen.getByText(/(Analyze|New)/i)).toBeInTheDocument();
   });
 });
