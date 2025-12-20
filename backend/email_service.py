@@ -8,14 +8,15 @@ from typing import Optional, List
 import base64
 from io import BytesIO
 
+# Configure logging first
+logger = logging.getLogger(__name__)
+
 try:
     from resend import Resend
     RESEND_AVAILABLE = True
 except ImportError:
     RESEND_AVAILABLE = False
-
-# Configure logging
-logger = logging.getLogger(__name__)
+    logger.warning("Resend package not installed. Run: pip install resend")
 
 class EmailService:
     def __init__(self):

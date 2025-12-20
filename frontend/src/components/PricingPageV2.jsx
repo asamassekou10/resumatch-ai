@@ -52,7 +52,9 @@ const PricingPageV2 = ({ token, userProfile }) => {
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
-      alert('Failed to start checkout. Please try again.');
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to start checkout. Please try again.';
+      const details = error.response?.data?.details;
+      alert(`${errorMessage}${details ? `\n\nDetails: ${details}` : ''}\n\nIf this problem persists, please contact support@resumeanalyzerai.com`);
       setLoading(false);
     }
   };
@@ -80,7 +82,9 @@ const PricingPageV2 = ({ token, userProfile }) => {
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
-      alert('Failed to start checkout. Please try again.');
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to start checkout. Please try again.';
+      const details = error.response?.data?.details;
+      alert(`${errorMessage}${details ? `\n\nDetails: ${details}` : ''}\n\nIf this problem persists, please contact support@resumeanalyzerai.com`);
       setLoading(false);
     }
   };

@@ -87,7 +87,12 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
       // Handle registration success
       if (!isLogin && data.verification_required) {
         setError('');
-        alert('Registration successful! Please check your email to verify your account before logging in.');
+        if (data.email_sent === false) {
+          // Email failed to send
+          alert(`Registration successful! However, we couldn't send the verification email.\n\nPlease use the "Resend Verification" feature on the login page, or contact support@resumeanalyzerai.com for assistance.`);
+        } else {
+          alert('Registration successful! Please check your email to verify your account before logging in.');
+        }
         navigate(ROUTES.LOGIN);
         setFormData({ email: '', password: '' });
         return;

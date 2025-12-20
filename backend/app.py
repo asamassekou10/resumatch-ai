@@ -536,14 +536,21 @@ def register():
 
         if email_sent:
             logging.info(f"New user registered: {email}, verification email sent")
+            response = {
+                'message': 'Registration successful! Please check your email to verify your account.',
+                'email': email,
+                'verification_required': True
+            }
         else:
-            logging.warning(f"User registered but verification email failed: {email}")
-
-        response = {
-            'message': 'Registration successful! Please check your email to verify your account.',
-            'email': email,
-            'verification_required': True
-        }
+            logging.error(f"User registered but verification email failed: {email}. User ID: {user.id}")
+            # Still allow registration, but inform user email failed
+            response = {
+                'message': 'Registration successful! However, we could not send the verification email. Please use the resend verification feature or contact support.',
+                'email': email,
+                'verification_required': True,
+                'email_sent': False,
+                'verification_link': verification_link  # Provide link as fallback
+            }
 
         if transferred_count > 0:
             response['analyses_transferred'] = transferred_count
@@ -1729,61 +1736,91 @@ def confirm_subscription():
 def create_checkout_session():
     """Create Stripe checkout session for subscription"""
     try:
+        # Check if Stripe is configured
+        if not STRIPE_API_KEY:
+            logging.error("Stripe API key not configured")
+            return jsonify({'error': 'Payment service is not configured. Please contact support.'}), 500
+        
         user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
         
         if not user:
+            logging.error(f"User not found for checkout: {user_id}")
             return jsonify({'error': 'User not found'}), 404
-        
-        # Create or get Stripe customer
-        if not user.stripe_customer_id:
-            customer = stripe.Customer.create(
-                email=user.email,
-                name=user.name or user.email.split('@')[0]
-            )
-            user.stripe_customer_id = customer.id
-            db.session.commit()
         
         # Determine which tier to upgrade to
         tier_param = request.args.get('tier', 'pro')
         
-        # Get Price ID from environment variables (PRODUCTION RECOMMENDED)
+        # Get Price ID from environment variables
         if tier_param == 'elite':
-            price_id = os.getenv('STRIPE_ELITE_PRICE_ID')
+            price_id = STRIPE_ELITE_PRICE_ID
         else:
-            price_id = os.getenv('STRIPE_PRO_PRICE_ID')
+            price_id = STRIPE_PRO_PRICE_ID
         
         if not price_id:
-            logging.error(f"Missing Stripe Price ID for tier: {tier_param}")
-            return jsonify({'error': 'Payment configuration error'}), 500
+            logging.error(f"Missing Stripe Price ID for tier: {tier_param}. PRO_ID: {bool(STRIPE_PRO_PRICE_ID)}, ELITE_ID: {bool(STRIPE_ELITE_PRICE_ID)}")
+            return jsonify({
+                'error': 'Payment configuration error. Please contact support.',
+                'details': f'Price ID missing for {tier_param} tier'
+            }), 500
+        
+        # Create or get Stripe customer
+        try:
+            if not user.stripe_customer_id:
+                customer = stripe.Customer.create(
+                    email=user.email,
+                    name=user.name or user.email.split('@')[0]
+                )
+                user.stripe_customer_id = customer.id
+                db.session.commit()
+                logging.info(f"Created Stripe customer for user {user_id}: {customer.id}")
+        except stripe.error.StripeError as e:
+            logging.error(f"Stripe customer creation error: {str(e)}")
+            return jsonify({'error': 'Failed to create customer account. Please try again.'}), 500
         
         # Create checkout session with actual Price ID
-        checkout_session = stripe.checkout.Session.create(
-            customer=user.stripe_customer_id,
-            payment_method_types=['card'],
-            line_items=[{
-                'price': price_id,  # Use actual Stripe Price ID
-                'quantity': 1,
-            }],
-            mode='subscription',
-            success_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/dashboard?payment=success&tier={tier_param}",
-            cancel_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/pricing?payment=cancel",
-            metadata={
-                'user_id': str(user_id),
-                'tier': tier_param
-            }
-        )
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                customer=user.stripe_customer_id,
+                payment_method_types=['card'],
+                line_items=[{
+                    'price': price_id,
+                    'quantity': 1,
+                }],
+                mode='subscription',
+                success_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/dashboard?payment=success&tier={tier_param}",
+                cancel_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/pricing?payment=cancel",
+                metadata={
+                    'user_id': str(user_id),
+                    'tier': tier_param
+                }
+            )
+            
+            logging.info(f"Checkout session created for user {user_id}, tier {tier_param}: {checkout_session.id}")
+            
+            return jsonify({
+                'checkout_url': checkout_session.url
+            }), 200
+            
+        except stripe.error.InvalidRequestError as e:
+            logging.error(f"Stripe invalid request error: {str(e)}")
+            return jsonify({
+                'error': 'Invalid payment configuration',
+                'details': str(e) if app.config.get('DEBUG') else None
+            }), 500
+        except stripe.error.StripeError as e:
+            logging.error(f"Stripe API error: {str(e)}")
+            return jsonify({
+                'error': 'Payment service error',
+                'details': str(e) if app.config.get('DEBUG') else None
+            }), 500
         
-        return jsonify({
-            'checkout_url': checkout_session.url
-        }), 200
-        
-    except stripe.error.StripeError as e:
-        logging.error(f"Stripe error: {str(e)}")
-        return jsonify({'error': 'Payment service error'}), 500
     except Exception as e:
-        logging.error(f"Error creating checkout session: {str(e)}")
-        return jsonify({'error': 'Failed to create checkout session'}), 500
+        logging.error(f"Unexpected error creating checkout session: {str(e)}", exc_info=True)
+        return jsonify({
+            'error': 'Failed to create checkout session',
+            'details': str(e) if app.config.get('DEBUG') else None
+        }), 500
 
 @app.route('/api/payments/webhook', methods=['POST'])
 def stripe_webhook():
