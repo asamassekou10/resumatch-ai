@@ -19,10 +19,8 @@ const renderWithContext = (ui, { route = '/' } = {}) => {
 describe('Breadcrumb Component', () => {
   it('renders breadcrumb for dashboard view', () => {
     renderWithContext(<Breadcrumb view="dashboard" setView={mockSetView} />, { route: '/dashboard' });
-    // Depending on your logic, Dashboard might show "Home" or nothing.
-    // This assertion checks that it doesn't crash.
-    const homeLink = screen.queryByText(/Home/i);
-    if (homeLink) expect(homeLink).toBeInTheDocument();
+    // Direct assertion is required by linter
+    expect(screen.getByText(/Home/i)).toBeInTheDocument();
   });
 
   it('renders breadcrumb for analyze view', () => {

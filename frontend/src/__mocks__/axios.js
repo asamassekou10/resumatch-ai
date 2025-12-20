@@ -1,4 +1,4 @@
-export default {
+const mockAxios = {
   create: jest.fn(() => ({
     interceptors: {
       request: { use: jest.fn(), eject: jest.fn() },
@@ -12,4 +12,5 @@ export default {
   put: jest.fn(() => Promise.resolve({ data: {} })),
   delete: jest.fn(() => Promise.resolve({ data: {} })),
 };
+export default mockAxios;
 
