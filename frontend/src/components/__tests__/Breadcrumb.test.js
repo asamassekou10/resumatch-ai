@@ -2,21 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Breadcrumb from '../Breadcrumb';
-// Import the context (which will be mocked below)
 import AuthContext from '../../contexts/AuthContext';
-
-// 1. MOCK THE CONTEXT MODULE
-// This bypasses the real AuthContext.js and its dependencies
-jest.mock('../../contexts/AuthContext', () => {
-  const React = require('react');
-  const context = React.createContext();
-  return {
-    __esModule: true,
-    default: context,
-    // Mock the hook if used by component
-    useAuth: () => ({ isAuthenticated: true, user: { name: 'Test' }, isLoading: false }), 
-  };
-});
 
 const mockSetView = jest.fn();
 

@@ -13,7 +13,13 @@ sys.modules["google.oauth2"] = MagicMock()
 sys.modules["google.auth.transport.requests"] = MagicMock()
 sys.modules["sentry_sdk"] = MagicMock()
 sys.modules["stripe"] = MagicMock()
-sys.modules["sendgrid"] = MagicMock()
+
+# FIX: Mock SendGrid submodules explicitly to allow 'from sendgrid.helpers.mail import ...'
+mock_sendgrid = MagicMock()
+sys.modules["sendgrid"] = mock_sendgrid
+sys.modules["sendgrid.helpers"] = MagicMock()
+sys.modules["sendgrid.helpers.mail"] = MagicMock()
+
 sys.modules["apscheduler"] = MagicMock()
 sys.modules["apscheduler.schedulers.background"] = MagicMock()
 # ---------------------------
