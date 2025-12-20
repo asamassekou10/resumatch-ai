@@ -528,28 +528,47 @@ def register():
         verification_link = create_verification_link(user.id, verification_token)
 
         # Send verification email
-        email_sent = email_service.send_verification_email(
-            recipient_email=email,
-            recipient_name=email.split('@')[0],
-            verification_link=verification_link
-        )
+        try:
+            email_sent = email_service.send_verification_email(
+                recipient_email=email,
+                recipient_name=email.split('@')[0],
+                verification_link=verification_link
+            )
 
-        if email_sent:
-            logging.info(f"New user registered: {email}, verification email sent")
+            if email_sent:
+                logging.info(f"New user registered: {email}, verification email sent")
+                response = {
+                    'message': 'Registration successful! Please check your email to verify your account.',
+                    'email': email,
+                    'verification_required': True
+                }
+            else:
+                logging.error(f"User registered but verification email failed: {email}. User ID: {user.id}")
+                # Log email service status for debugging
+                email_status = {
+                    'resend_available': email_service.resend is not None,
+                    'api_key_set': bool(email_service.resend_api_key),
+                    'api_key_length': len(email_service.resend_api_key) if email_service.resend_api_key else 0,
+                    'from_email': email_service.from_email
+                }
+                logging.error(f"Email service status: {email_status}")
+                
+                # Still allow registration, but inform user email failed
+                response = {
+                    'message': 'Registration successful! However, we could not send the verification email. Please use the resend verification feature or contact support@resumeanalyzerai.com.',
+                    'email': email,
+                    'verification_required': True,
+                    'email_sent': False,
+                    'verification_link': verification_link  # Provide link as fallback
+                }
+        except Exception as e:
+            logging.error(f"Exception during email sending for {email}: {str(e)}", exc_info=True)
             response = {
-                'message': 'Registration successful! Please check your email to verify your account.',
-                'email': email,
-                'verification_required': True
-            }
-        else:
-            logging.error(f"User registered but verification email failed: {email}. User ID: {user.id}")
-            # Still allow registration, but inform user email failed
-            response = {
-                'message': 'Registration successful! However, we could not send the verification email. Please use the resend verification feature or contact support.',
+                'message': 'Registration successful! However, we encountered an error sending the verification email. Please use the resend verification feature or contact support@resumeanalyzerai.com.',
                 'email': email,
                 'verification_required': True,
                 'email_sent': False,
-                'verification_link': verification_link  # Provide link as fallback
+                'verification_link': verification_link
             }
 
         if transferred_count > 0:

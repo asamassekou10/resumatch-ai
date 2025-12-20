@@ -293,6 +293,9 @@ class EmailService:
             </html>
             """
             
+            logger.info(f"Attempting to send verification email to {recipient_email}")
+            logger.debug(f"Resend client initialized: {self.resend is not None}, API key present: {bool(self.resend_api_key)}")
+            
             response = self.resend.emails.send({
                 "from": self.from_email,
                 "to": [recipient_email],
@@ -301,15 +304,45 @@ class EmailService:
                 "reply_to": self.reply_to
             })
             
-            if response and isinstance(response, dict) and 'id' in response:
-                logger.info(f"Verification email sent successfully to {recipient_email} (ID: {response.get('id')})")
-                return True
-            else:
-                logger.error(f"Failed to send verification email. Response: {response}")
-                return False
+            logger.debug(f"Resend API response: {response}, type: {type(response)}")
+            
+            # Resend can return different response formats
+            if response:
+                # Check if it's a dict with 'id' (success)
+                if isinstance(response, dict):
+                    if 'id' in response:
+                        logger.info(f"Verification email sent successfully to {recipient_email} (ID: {response.get('id')})")
+                        return True
+                    elif 'error' in response:
+                        logger.error(f"Resend API error: {response.get('error')}")
+                        return False
+                    else:
+                        # Some versions return response object with .id attribute
+                        email_id = getattr(response, 'id', None)
+                        if email_id:
+                            logger.info(f"Verification email sent successfully to {recipient_email} (ID: {email_id})")
+                            return True
+                
+                # Check if it's an object with id attribute
+                email_id = getattr(response, 'id', None)
+                if email_id:
+                    logger.info(f"Verification email sent successfully to {recipient_email} (ID: {email_id})")
+                    return True
+            
+            logger.error(f"Failed to send verification email. Unexpected response format: {response} (type: {type(response)})")
+            return False
                 
         except Exception as e:
-            logger.error(f"Error sending verification email to {recipient_email}: {str(e)}")
+            error_type = type(e).__name__
+            error_msg = str(e)
+            logger.error(f"Exception sending verification email to {recipient_email}: {error_type}: {error_msg}", exc_info=True)
+            
+            # Check for specific Resend errors
+            if 'domain' in error_msg.lower() or 'unauthorized' in error_msg.lower():
+                logger.error("Resend API key may be invalid or domain not verified in Resend dashboard")
+            elif 'rate limit' in error_msg.lower():
+                logger.error("Resend rate limit exceeded")
+            
             return False
 
 

@@ -63,6 +63,20 @@ def health_check():
     elif redis_status == 'unhealthy':
         overall_status = 'degraded'
 
+    # Check email service status
+    email_status = 'not_configured'
+    try:
+        from email_service import email_service
+        if email_service.resend:
+            email_status = 'configured'
+        elif email_service.resend_api_key:
+            email_status = 'api_key_set_but_package_missing'
+        else:
+            email_status = 'api_key_missing'
+    except Exception as e:
+        logger.error(f"Error checking email service: {e}")
+        email_status = 'error'
+
     # Environment variable diagnostics (only essential info)
     env_diagnostics = {
         'flask_env': os.getenv('FLASK_ENV', 'production'),
@@ -72,6 +86,8 @@ def health_check():
         'has_database_url': 'yes' if os.getenv('DATABASE_URL') else 'no',
         'has_redis_url': 'yes' if os.getenv('REDIS_URL') else 'no',
         'has_stripe_key': 'yes' if os.getenv('STRIPE_SECRET_KEY') else 'no',
+        'email_service': email_status,
+        'has_resend_key': 'yes' if os.getenv('RESEND_API_KEY') else 'no',
     }
 
     services = {
