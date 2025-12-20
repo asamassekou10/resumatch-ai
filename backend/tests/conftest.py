@@ -4,6 +4,13 @@ import pytest
 import tempfile
 import os
 
+# --- SET REQUIRED ENVIRONMENT VARIABLES FOR TESTING ---
+os.environ['JWT_SECRET_KEY'] = 'test-jwt-secret-key-for-testing-only'
+os.environ['SECRET_KEY'] = 'test-secret-key-for-testing-only'
+os.environ['FLASK_ENV'] = 'testing'
+os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
+# ---
+
 # --- AGGRESSIVE MOCKING ---
 # Mock ALL external services to prevent network calls during test collection
 # This must run BEFORE 'app' is imported
@@ -26,6 +33,12 @@ sys.modules["apscheduler.schedulers.background"] = MagicMock()
 sys.modules["apscheduler.triggers"] = MagicMock()
 sys.modules["apscheduler.triggers.interval"] = MagicMock()
 sys.modules["apscheduler.triggers.cron"] = MagicMock()
+
+# Mock Redis to prevent connection attempts
+mock_redis = MagicMock()
+mock_redis.Redis = MagicMock(return_value=MagicMock())
+mock_redis.from_url = MagicMock(return_value=MagicMock())
+sys.modules["redis"] = mock_redis
 # ---------------------------
 
 from app import create_app

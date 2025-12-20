@@ -98,17 +98,20 @@ CORS(app, resources={
 })
 
 # Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://localhost/resume_optimizer')
+database_url = os.getenv('DATABASE_URL', 'postgresql://localhost/resume_optimizer')
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Database connection pooling for production scalability
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_size': 20,              # Base pool size
-    'max_overflow': 40,           # Additional connections when needed
-    'pool_timeout': 30,           # Wait 30s for connection
-    'pool_recycle': 1800,         # Recycle connections after 30min
-    'pool_pre_ping': True,        # Test connections before use
-}
+# Database connection pooling for production scalability (PostgreSQL only)
+# SQLite doesn't support these pooling options
+if not database_url.startswith('sqlite'):
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_size': 20,              # Base pool size
+        'max_overflow': 40,           # Additional connections when needed
+        'pool_timeout': 30,           # Wait 30s for connection
+        'pool_recycle': 1800,         # Recycle connections after 30min
+        'pool_pre_ping': True,        # Test connections before use
+    }
 
 app.config['JWT_SECRET_KEY'] = JWT_SECRET
 # Shorter access token expiration for security (1 hour)
@@ -141,6 +144,10 @@ migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 oauth = OAuth(app)
+
+# Register custom error handlers
+from errors import register_error_handlers
+register_error_handlers(app)
 
 # Initialize request logging for monitoring
 request_logger = RequestLogger(app)

@@ -98,7 +98,7 @@ def detailed_health_check():
         user = User.query.get(int(get_jwt_identity()))
         
         # Test database connection
-        db.session.execute('SELECT 1')
+        db.session.execute(text('SELECT 1'))
         db_status = 'healthy'
         
         # Test user access
