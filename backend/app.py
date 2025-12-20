@@ -1724,9 +1724,12 @@ def confirm_subscription():
             'credits': credits
         }), 200
 
-    except stripe.error.CardError as e:
-        logging.error(f"Card error: {str(e)}")
-        return jsonify({'error': f'Payment failed: {e.user_message}'}), 402
+    except Exception as e:
+        error_str = str(e)
+        if 'Card' in type(e).__name__ or 'card' in error_str.lower():
+            logging.error(f"Card error: {error_str}")
+            user_message = getattr(e, 'user_message', 'Payment failed. Please check your card details.')
+            return jsonify({'error': f'Payment failed: {user_message}'}), 402
     except Exception as e:
         logging.error(f"Error confirming subscription: {str(e)}")
         return jsonify({'error': 'Failed to confirm subscription'}), 500
@@ -1765,23 +1768,38 @@ def create_checkout_session():
             }), 500
         
         # Create or get Stripe customer
-        try:
-            if not user.stripe_customer_id:
+        # Handle case where customer ID exists in DB but not in Stripe (test/live mode mismatch)
+        customer_id = user.stripe_customer_id
+        if customer_id:
+            try:
+                # Verify customer exists in Stripe
+                stripe.Customer.retrieve(customer_id)
+                logging.info(f"Using existing Stripe customer for user {user_id}: {customer_id}")
+            except Exception as e:
+                # Customer doesn't exist in Stripe, clear it and create new one
+                logging.warning(f"Stripe customer {customer_id} not found, creating new one. Error: {str(e)}")
+                customer_id = None
+                user.stripe_customer_id = None
+                db.session.commit()
+        
+        if not customer_id:
+            try:
                 customer = stripe.Customer.create(
                     email=user.email,
                     name=user.name or user.email.split('@')[0]
                 )
                 user.stripe_customer_id = customer.id
+                customer_id = customer.id
                 db.session.commit()
-                logging.info(f"Created Stripe customer for user {user_id}: {customer.id}")
-        except stripe.error.StripeError as e:
-            logging.error(f"Stripe customer creation error: {str(e)}")
-            return jsonify({'error': 'Failed to create customer account. Please try again.'}), 500
+                logging.info(f"Created Stripe customer for user {user_id}: {customer_id}")
+            except Exception as e:
+                logging.error(f"Stripe customer creation error: {str(e)}")
+                return jsonify({'error': 'Failed to create customer account. Please try again.'}), 500
         
         # Create checkout session with actual Price ID
         try:
             checkout_session = stripe.checkout.Session.create(
-                customer=user.stripe_customer_id,
+                customer=customer_id,
                 payment_method_types=['card'],
                 line_items=[{
                     'price': price_id,
@@ -1802,18 +1820,32 @@ def create_checkout_session():
                 'checkout_url': checkout_session.url
             }), 200
             
-        except stripe.error.InvalidRequestError as e:
-            logging.error(f"Stripe invalid request error: {str(e)}")
-            return jsonify({
-                'error': 'Invalid payment configuration',
-                'details': str(e) if app.config.get('DEBUG') else None
-            }), 500
-        except stripe.error.StripeError as e:
-            logging.error(f"Stripe API error: {str(e)}")
-            return jsonify({
-                'error': 'Payment service error',
-                'details': str(e) if app.config.get('DEBUG') else None
-            }), 500
+        except Exception as e:
+            # Catch all Stripe errors (including _error module)
+            error_str = str(e)
+            error_type = type(e).__name__
+            
+            # Check if it's a Stripe error
+            if 'stripe' in error_type.lower() or 'InvalidRequestError' in error_type or 'No such customer' in error_str:
+                logging.error(f"Stripe error creating checkout: {error_type}: {error_str}")
+                if 'No such customer' in error_str:
+                    # Customer was deleted, clear it and retry
+                    user.stripe_customer_id = None
+                    db.session.commit()
+                    return jsonify({
+                        'error': 'Payment account issue. Please try again.',
+                        'retry': True
+                    }), 500
+                return jsonify({
+                    'error': 'Payment service error. Please contact support if this persists.',
+                    'details': error_str if app.config.get('DEBUG') else None
+                }), 500
+            else:
+                logging.error(f"Unexpected error creating checkout session: {error_type}: {error_str}", exc_info=True)
+                return jsonify({
+                    'error': 'Failed to create checkout session',
+                    'details': error_str if app.config.get('DEBUG') else None
+                }), 500
         
     except Exception as e:
         logging.error(f"Unexpected error creating checkout session: {str(e)}", exc_info=True)
@@ -1835,9 +1867,11 @@ def stripe_webhook():
     except ValueError:
         logging.error("Invalid payload")
         return jsonify({'error': 'Invalid payload'}), 400
-    except stripe.error.SignatureVerificationError:
-        logging.error("Invalid signature")
-        return jsonify({'error': 'Invalid signature'}), 400
+    except Exception as e:
+        if 'SignatureVerificationError' in type(e).__name__ or 'signature' in str(e).lower():
+            logging.error("Invalid signature")
+            return jsonify({'error': 'Invalid signature'}), 400
+        raise
     
     # Handle the event
     if event['type'] == 'checkout.session.completed':
@@ -1918,11 +1952,12 @@ def get_payment_method():
         else:
             return jsonify({'payment_method': None}), 200
 
-    except stripe.error.StripeError as e:
-        logging.error(f"Stripe error retrieving payment method: {str(e)}")
-        return jsonify({'error': 'Failed to retrieve payment method'}), 500
     except Exception as e:
-        logging.error(f"Error retrieving payment method: {str(e)}")
+        error_str = str(e)
+        if 'Stripe' in type(e).__name__ or 'stripe' in str(type(e)).lower():
+            logging.error(f"Stripe error retrieving payment method: {error_str}")
+        else:
+            logging.error(f"Error retrieving payment method: {error_str}")
         return jsonify({'error': 'Failed to retrieve payment method'}), 500
 
 @app.route('/api/billing/history', methods=['GET'])
@@ -1961,11 +1996,12 @@ def get_billing_history():
 
         return jsonify({'invoices': invoice_list}), 200
 
-    except stripe.error.StripeError as e:
-        logging.error(f"Stripe error retrieving billing history: {str(e)}")
-        return jsonify({'error': 'Failed to retrieve billing history'}), 500
     except Exception as e:
-        logging.error(f"Error retrieving billing history: {str(e)}")
+        error_str = str(e)
+        if 'Stripe' in type(e).__name__ or 'stripe' in str(type(e)).lower():
+            logging.error(f"Stripe error retrieving billing history: {error_str}")
+        else:
+            logging.error(f"Error retrieving billing history: {error_str}")
         return jsonify({'error': 'Failed to retrieve billing history'}), 500
 
 @app.route('/api/billing/cancel-subscription', methods=['POST'])
@@ -1995,11 +2031,12 @@ def cancel_subscription():
             'cancel_at': subscription.cancel_at
         }), 200
 
-    except stripe.error.StripeError as e:
-        logging.error(f"Stripe error canceling subscription: {str(e)}")
-        return jsonify({'error': 'Failed to cancel subscription'}), 500
     except Exception as e:
-        logging.error(f"Error canceling subscription: {str(e)}")
+        error_str = str(e)
+        if 'Stripe' in type(e).__name__ or 'stripe' in str(type(e)).lower():
+            logging.error(f"Stripe error canceling subscription: {error_str}")
+        else:
+            logging.error(f"Error canceling subscription: {error_str}")
         return jsonify({'error': 'Failed to cancel subscription'}), 500
 
 

@@ -54,7 +54,12 @@ class EmailService:
             bool: True if email sent successfully, False otherwise
         """
         if not self.resend:
-            logger.error("Resend not configured. Cannot send email.")
+            if not self.resend_api_key:
+                logger.error("Resend API key not configured. Set RESEND_API_KEY environment variable.")
+            elif not RESEND_AVAILABLE:
+                logger.error("Resend package not installed. Run: pip install resend")
+            else:
+                logger.error("Resend not configured. Cannot send email.")
             return False
 
         try:
@@ -110,7 +115,12 @@ class EmailService:
     ) -> bool:
         """Send generated cover letter to user"""
         if not self.resend:
-            logger.error("Resend not configured. Cannot send email.")
+            if not self.resend_api_key:
+                logger.error("Resend API key not configured. Set RESEND_API_KEY environment variable.")
+            elif not RESEND_AVAILABLE:
+                logger.error("Resend package not installed. Run: pip install resend")
+            else:
+                logger.error("Resend not configured. Cannot send email.")
             return False
 
         try:
@@ -142,7 +152,12 @@ class EmailService:
     def send_verification_email(self, recipient_email: str, recipient_name: str, verification_link: str) -> bool:
         """Send email verification link to new user"""
         if not self.resend:
-            logger.error("Resend not configured. Cannot send email.")
+            if not self.resend_api_key:
+                logger.error("Resend API key not configured. Set RESEND_API_KEY environment variable.")
+            elif not RESEND_AVAILABLE:
+                logger.error("Resend package not installed. Run: pip install resend")
+            else:
+                logger.error("Resend not configured. Cannot send email.")
             return False
 
         try:
@@ -308,7 +323,12 @@ class EmailService:
     ) -> bool:
         """Send optimized resume to user"""
         if not self.resend:
-            logger.error("Resend not configured. Cannot send email.")
+            if not self.resend_api_key:
+                logger.error("Resend API key not configured. Set RESEND_API_KEY environment variable.")
+            elif not RESEND_AVAILABLE:
+                logger.error("Resend package not installed. Run: pip install resend")
+            else:
+                logger.error("Resend not configured. Cannot send email.")
             return False
 
         try:
