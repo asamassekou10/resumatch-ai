@@ -1,27 +1,37 @@
 """
 Email service module for sending AI analysis results to users
+Uses Resend API for email delivery
 """
 import os
 import logging
 from typing import Optional, List
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
 import base64
 from io import BytesIO
+
+try:
+    from resend import Resend
+    RESEND_AVAILABLE = True
+except ImportError:
+    RESEND_AVAILABLE = False
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
 class EmailService:
     def __init__(self):
-        self.sendgrid_api_key = os.getenv('SENDGRID_API_KEY')
-        self.from_email = os.getenv('FROM_EMAIL', 'noreply@resumatch-ai.com')
+        self.resend_api_key = os.getenv('RESEND_API_KEY')
+        # Use professional sender identity
+        self.from_email = 'Resume Analyzer AI <support@resumeanalyzerai.com>'
+        self.reply_to = 'support@resumeanalyzerai.com'
         
-        if self.sendgrid_api_key:
-            self.sg = SendGridAPIClient(api_key=self.sendgrid_api_key)
+        if self.resend_api_key and RESEND_AVAILABLE:
+            self.resend = Resend(api_key=self.resend_api_key)
         else:
-            self.sg = None
-            logger.warning("SendGrid API key not found. Email functionality will be disabled.")
+            self.resend = None
+            if not RESEND_AVAILABLE:
+                logger.warning("Resend package not installed. Email functionality will be disabled.")
+            elif not self.resend_api_key:
+                logger.warning("Resend API key not found. Email functionality will be disabled.")
 
     def send_analysis_results(
         self, 
@@ -42,8 +52,8 @@ class EmailService:
         Returns:
             bool: True if email sent successfully, False otherwise
         """
-        if not self.sg:
-            logger.error("SendGrid not configured. Cannot send email.")
+        if not self.resend:
+            logger.error("Resend not configured. Cannot send email.")
             return False
 
         try:
@@ -53,35 +63,36 @@ class EmailService:
             # Generate HTML email content
             html_content = self._generate_analysis_email_html(recipient_name, analysis_data)
             
-            # Create email message
-            message = Mail(
-                from_email=self.from_email,
-                to_emails=recipient_email,
-                subject=subject,
-                html_content=html_content
-            )
+            # Prepare email params
+            email_params = {
+                "from": self.from_email,
+                "to": [recipient_email],
+                "subject": subject,
+                "html": html_content,
+                "reply_to": self.reply_to
+            }
             
             # Add attachments if provided
             if attachments:
+                email_attachments = []
                 for attachment in attachments:
                     if all(key in attachment for key in ['content', 'filename', 'type']):
-                        file_content = base64.b64encode(attachment['content']).decode()
-                        attached_file = Attachment(
-                            FileContent(file_content),
-                            FileName(attachment['filename']),
-                            FileType(attachment['type']),
-                            Disposition('attachment')
-                        )
-                        message.attachment = attached_file
+                        email_attachments.append({
+                            "filename": attachment['filename'],
+                            "content": base64.b64encode(attachment['content']).decode('utf-8')
+                        })
+                if email_attachments:
+                    email_params["attachments"] = email_attachments
             
             # Send email
-            response = self.sg.send(message)
+            response = self.resend.emails.send(email_params)
             
-            if response.status_code in [200, 201, 202]:
-                logger.info(f"Email sent successfully to {recipient_email}")
+            # Resend returns a dict with 'id' key on success, or raises an exception on error
+            if response and isinstance(response, dict) and 'id' in response:
+                logger.info(f"Email sent successfully to {recipient_email} (ID: {response.get('id')})")
                 return True
             else:
-                logger.error(f"Failed to send email. Status code: {response.status_code}")
+                logger.error(f"Failed to send email. Response: {response}")
                 return False
                 
         except Exception as e:
@@ -97,8 +108,8 @@ class EmailService:
         company_name: str
     ) -> bool:
         """Send generated cover letter to user"""
-        if not self.sg:
-            logger.error("SendGrid not configured. Cannot send email.")
+        if not self.resend:
+            logger.error("Resend not configured. Cannot send email.")
             return False
 
         try:
@@ -108,20 +119,19 @@ class EmailService:
                 recipient_name, cover_letter, job_title, company_name
             )
             
-            message = Mail(
-                from_email=self.from_email,
-                to_emails=recipient_email,
-                subject=subject,
-                html_content=html_content
-            )
+            response = self.resend.emails.send({
+                "from": self.from_email,
+                "to": [recipient_email],
+                "subject": subject,
+                "html": html_content,
+                "reply_to": self.reply_to
+            })
             
-            response = self.sg.send(message)
-            
-            if response.status_code in [200, 201, 202]:
-                logger.info(f"Cover letter email sent successfully to {recipient_email}")
+            if response and isinstance(response, dict) and 'id' in response:
+                logger.info(f"Cover letter email sent successfully to {recipient_email} (ID: {response.get('id')})")
                 return True
             else:
-                logger.error(f"Failed to send cover letter email. Status code: {response.status_code}")
+                logger.error(f"Failed to send cover letter email. Response: {response}")
                 return False
                 
         except Exception as e:
@@ -130,8 +140,8 @@ class EmailService:
 
     def send_verification_email(self, recipient_email: str, recipient_name: str, verification_link: str) -> bool:
         """Send email verification link to new user"""
-        if not self.sg:
-            logger.error("SendGrid not configured. Cannot send email.")
+        if not self.resend:
+            logger.error("Resend not configured. Cannot send email.")
             return False
 
         try:
@@ -267,20 +277,19 @@ class EmailService:
             </html>
             """
             
-            message = Mail(
-                from_email=self.from_email,
-                to_emails=recipient_email,
-                subject=subject,
-                html_content=html_content
-            )
+            response = self.resend.emails.send({
+                "from": self.from_email,
+                "to": [recipient_email],
+                "subject": subject,
+                "html": html_content,
+                "reply_to": self.reply_to
+            })
             
-            response = self.sg.send(message)
-            
-            if response.status_code in [200, 201, 202]:
-                logger.info(f"Verification email sent successfully to {recipient_email}")
+            if response and isinstance(response, dict) and 'id' in response:
+                logger.info(f"Verification email sent successfully to {recipient_email} (ID: {response.get('id')})")
                 return True
             else:
-                logger.error(f"Failed to send verification email. Status code: {response.status_code}")
+                logger.error(f"Failed to send verification email. Response: {response}")
                 return False
                 
         except Exception as e:
@@ -297,8 +306,8 @@ class EmailService:
         attachments: Optional[List[dict]] = None
     ) -> bool:
         """Send optimized resume to user"""
-        if not self.sg:
-            logger.error("SendGrid not configured. Cannot send email.")
+        if not self.resend:
+            logger.error("Resend not configured. Cannot send email.")
             return False
 
         try:
@@ -308,33 +317,33 @@ class EmailService:
                 recipient_name, optimized_resume, job_title
             )
             
-            message = Mail(
-                from_email=self.from_email,
-                to_emails=recipient_email,
-                subject=subject,
-                html_content=html_content
-            )
+            email_params = {
+                "from": self.from_email,
+                "to": [recipient_email],
+                "subject": subject,
+                "html": html_content,
+                "reply_to": self.reply_to
+            }
             
             # Add attachments if provided
             if attachments:
+                email_attachments = []
                 for attachment in attachments:
                     if all(key in attachment for key in ['content', 'filename', 'type']):
-                        file_content = base64.b64encode(attachment['content']).decode()
-                        attached_file = Attachment(
-                            FileContent(file_content),
-                            FileName(attachment['filename']),
-                            FileType(attachment['type']),
-                            Disposition('attachment')
-                        )
-                        message.attachment = attached_file
+                        email_attachments.append({
+                            "filename": attachment['filename'],
+                            "content": base64.b64encode(attachment['content']).decode('utf-8')
+                        })
+                if email_attachments:
+                    email_params["attachments"] = email_attachments
             
-            response = self.sg.send(message)
+            response = self.resend.emails.send(email_params)
             
-            if response.status_code in [200, 201, 202]:
-                logger.info(f"Optimized resume email sent successfully to {recipient_email}")
+            if response and isinstance(response, dict) and 'id' in response:
+                logger.info(f"Optimized resume email sent successfully to {recipient_email} (ID: {response.get('id')})")
                 return True
             else:
-                logger.error(f"Failed to send optimized resume email. Status code: {response.status_code}")
+                logger.error(f"Failed to send optimized resume email. Response: {response}")
                 return False
                 
         except Exception as e:
@@ -567,8 +576,6 @@ class EmailService:
         """
         return html
 
-# In email_service.py
-
     def _generate_analysis_email_html(self, recipient_name: str, analysis_data: dict) -> str:
         """Generate HTML content for analysis results email"""
         match_score = analysis_data.get('match_score', 0)
@@ -631,7 +638,7 @@ class EmailService:
                     
                     <div class="section">
                         <h3>Keyword Analysis</h3>
-                        <p style="color: #475569; margin-bottom: 20px;">Your resume was scanned for crucial keywords from the job description. Here’s how you stack up:</p>
+                        <p style="color: #475569; margin-bottom: 20px;">Your resume was scanned for crucial keywords from the job description. Here's how you stack up:</p>
                         
                         <strong><span style="color: #16a34a;">Keywords Found ({len(analysis_data.get('keywords_found', []))}):</span></strong>
                         <div class="keywords-grid" style="margin-top: 10px; margin-bottom: 20px;">
@@ -695,8 +702,6 @@ class EmailService:
         
         return keyword_html
 
-# In email_service.py
-
     def _format_keywords_grid(self, keywords: List[str], keyword_type: str) -> str:
         """Format keywords in a grid layout with 5 keywords per line"""
         if not keywords:
@@ -723,4 +728,3 @@ class EmailService:
 
 # Global email service instance
 email_service = EmailService()
- 

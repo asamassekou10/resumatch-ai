@@ -1051,39 +1051,7 @@ def analyze_resume():
             # Don't fail the entire analysis if skill extraction fails
             extracted_skills = []
         
-        # Send email with analysis results
-        try:
-            user = User.query.get(user_id)
-            if user and user.email:
-                # Prepare new analysis data format
-                recommendations = result.get('recommendations', {})
-                priority_improvements = recommendations.get('priority_improvements', [])
-
-                analysis_data = {
-                    'match_score': result.get('overall_score', 0),
-                    'interpretation': result.get('interpretation', ''),
-                    'keywords_found': keywords_found[:10],
-                    'keywords_missing': keywords_missing[:10],
-                    'suggestions': result.get('interpretation', ''),
-                    'priority_improvements': priority_improvements[:3] if priority_improvements else [],
-                    'job_title': job_title,
-                    'company_name': company_name,
-                    'analysis_id': analysis.id,
-                    'industry': result.get('job_industry', 'Unknown'),
-                    'ats_pass_rate': result.get('expected_ats_pass_rate', 'N/A')
-                }
-
-                email_sent = email_service.send_analysis_results(
-                    recipient_email=user.email,
-                    recipient_name=user.name or user.email.split('@')[0],
-                    analysis_data=analysis_data
-                )
-
-                if email_sent:
-                    logging.info(f"Analysis results email sent to {user.email}")
-
-        except Exception as e:
-            logging.error(f"Error sending analysis results email: {str(e)}")
+        # Note: Email sending is now on-demand via /api/email-analysis endpoint
 
         # Industry is already detected by intelligent analyzer
         detected_industry = result.get('job_industry', 'Unknown')
@@ -1561,31 +1529,51 @@ def get_skill_suggestions(analysis_id):
         logging.error(f"Failed to generate suggestions: {str(e)}", exc_info=True)
         return jsonify({'error': 'Failed to generate suggestions'}), 500
 
-@app.route('/api/analyses/<int:analysis_id>/resend-email', methods=['POST'])
+@app.route('/api/email-analysis', methods=['POST'])
 @jwt_required()
-def resend_analysis_email(analysis_id):
-    """Manually resend analysis results via email"""
+def email_analysis():
+    """Send analysis results to user's email on-demand"""
     user_id = int(get_jwt_identity())
-    analysis = Analysis.query.filter_by(id=analysis_id, user_id=user_id).first()
-    
-    if not analysis:
-        return jsonify({'error': 'Analysis not found'}), 404
     
     try:
+        data = request.get_json()
+        analysis_id = data.get('analysis_id')
+        
+        if not analysis_id:
+            return jsonify({'error': 'analysis_id is required'}), 400
+        
+        analysis = Analysis.query.filter_by(id=analysis_id, user_id=user_id).first()
+        
+        if not analysis:
+            return jsonify({'error': 'Analysis not found'}), 404
+        
         user = User.query.get(user_id)
         if not user or not user.email:
             return jsonify({'error': 'User email not found'}), 400
         
-        # Prepare analysis data
+        # Prepare analysis data with all available information
+        recommendations = {}
+        if hasattr(analysis, 'recommendations') and analysis.recommendations:
+            try:
+                import json
+                recommendations = json.loads(analysis.recommendations) if isinstance(analysis.recommendations, str) else analysis.recommendations
+            except:
+                recommendations = {}
+        
+        priority_improvements = recommendations.get('priority_improvements', []) if recommendations else []
+        
         analysis_data = {
-            'match_score': analysis.match_score,
-            'keywords_found': analysis.keywords_found,
-            'keywords_missing': analysis.keywords_missing,
-            'suggestions': analysis.suggestions,
-            'ai_feedback': analysis.ai_feedback,
-            'job_title': analysis.job_title,
-            'company_name': analysis.company_name,
-            'analysis_id': analysis_id
+            'match_score': analysis.match_score or 0,
+            'interpretation': analysis.interpretation or analysis.suggestions or '',
+            'keywords_found': analysis.keywords_found[:10] if analysis.keywords_found else [],
+            'keywords_missing': analysis.keywords_missing[:10] if analysis.keywords_missing else [],
+            'suggestions': analysis.suggestions or analysis.interpretation or '',
+            'priority_improvements': priority_improvements[:3] if priority_improvements else [],
+            'job_title': analysis.job_title or 'Position',
+            'company_name': analysis.company_name or 'Company',
+            'analysis_id': analysis_id,
+            'industry': getattr(analysis, 'industry', 'Unknown'),
+            'ats_pass_rate': getattr(analysis, 'ats_pass_rate', 'N/A')
         }
         
         email_sent = email_service.send_analysis_results(
@@ -1595,13 +1583,14 @@ def resend_analysis_email(analysis_id):
         )
         
         if email_sent:
+            logging.info(f"Analysis results email sent to {user.email} for analysis {analysis_id}")
             return jsonify({'message': 'Email sent successfully'}), 200
         else:
             return jsonify({'error': 'Failed to send email'}), 500
             
     except Exception as e:
-        logging.error(f"Error resending analysis email: {str(e)}", exc_info=True)
-        return jsonify({'error': 'Failed to resend email'}), 500
+        logging.error(f"Error sending analysis email: {str(e)}", exc_info=True)
+        return jsonify({'error': 'Failed to send email'}), 500
 
 @app.route('/api/auth/google/test', methods=['GET'])
 def test_google_config():

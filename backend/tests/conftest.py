@@ -21,11 +21,13 @@ sys.modules["google.auth.transport.requests"] = MagicMock()
 sys.modules["sentry_sdk"] = MagicMock()
 sys.modules["stripe"] = MagicMock()
 
-# FIX: Mock SendGrid submodules explicitly to allow 'from sendgrid.helpers.mail import ...'
-mock_sendgrid = MagicMock()
-sys.modules["sendgrid"] = mock_sendgrid
-sys.modules["sendgrid.helpers"] = MagicMock()
-sys.modules["sendgrid.helpers.mail"] = MagicMock()
+# Mock Resend email service
+mock_resend = MagicMock()
+mock_resend_instance = MagicMock()
+mock_resend_instance.emails = MagicMock()
+mock_resend_instance.emails.send = MagicMock(return_value={'id': 'test-email-id'})
+mock_resend.Resend = MagicMock(return_value=mock_resend_instance)
+sys.modules["resend"] = mock_resend
 
 sys.modules["apscheduler"] = MagicMock()
 sys.modules["apscheduler.schedulers"] = MagicMock()

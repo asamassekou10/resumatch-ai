@@ -40,7 +40,7 @@ google-auth-oauthlib==1.1.0
 google-auth-httplib2==0.1.1
 
 # Email services
-sendgrid==6.10.0
+resend==2.1.0
 
 # Payment processing
 stripe==13.0.0

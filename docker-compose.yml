@@ -27,8 +27,8 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
-      FROM_EMAIL: ${FROM_EMAIL:-alhassane.samassekou@gmail.com}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      FROM_EMAIL: ${FROM_EMAIL:-support@resumeanalyzerai.com}
       BACKEND_URL: ${BACKEND_URL:-http://localhost:5000}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}

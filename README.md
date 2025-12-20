@@ -31,12 +31,12 @@ This repository contains the complete full-stack application: backend API, front
 - **Google OAuth Integration**: One-click social login
 - **Guest Access**: Try features without registration (with limits)
 - **Admin Dashboard**: User management and system diagnostics
-- **Email Verification**: SendGrid integration for secure account activation
+- **Email Verification**: Resend integration for secure account activation
 
 ### User Experience
 - **Interactive Dashboard**: Historical analysis tracking with visualizations
 - **PDF Resume Upload**: Secure file processing and storage
-- **Email Delivery**: Results sent via SendGrid
+- **Email Delivery**: Results sent via Resend (on-demand)
 - **Responsive Design**: Mobile-friendly React UI
 - **Real-time Feedback**: Interactive skill verification system
 
@@ -179,7 +179,7 @@ docker-compose up --build
    - `DATABASE_URL` - PostgreSQL connection string
    - `JWT_SECRET_KEY` - Secure random key for JWT
    - `GEMINI_API_KEY` - Google Gemini API key
-   - `SENDGRID_API_KEY` - SendGrid for email
+   - `RESEND_API_KEY` - Resend API key for email delivery
    - `GOOGLE_CLIENT_ID` - Google OAuth
    - `GOOGLE_CLIENT_SECRET` - Google OAuth
    - `ADZUNA_APP_ID` - Adzuna job API (optional)
@@ -213,7 +213,7 @@ Access admin diagnostics at: `/api/v1/admin/diagnostics/full-diagnostic`
 
 ## Configuration
 
-Edit environment variables in `docker-compose.yml` or in a local `.env` file. Important variables include `DATABASE_URL`, `JWT_SECRET_KEY`, `GEMINI_API_KEY`, and email/sendgrid settings. See `SETUP_GUIDE.md` for more details.
+Edit environment variables in `docker-compose.yml` or in a local `.env` file. Important variables include `DATABASE_URL`, `JWT_SECRET_KEY`, `GEMINI_API_KEY`, and `RESEND_API_KEY` for email. See `SETUP_GUIDE.md` for more details.
 
 ## 🙏 Acknowledgments
 

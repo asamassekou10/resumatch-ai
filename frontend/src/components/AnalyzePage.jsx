@@ -206,16 +206,23 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
   };
 
   const handleSendEmail = async () => {
+    if (!id) {
+      setError('Analysis ID not found');
+      return;
+    }
+
     setSendingEmail(true);
     setError('');
+    setEmailSent(false);
 
     try {
-      const response = await fetch(`${API_URL}/analyses/${id}/resend-email`, {
+      const response = await fetch(`${API_URL}/email-analysis`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ analysis_id: parseInt(id) })
       });
 
       const data = await response.json();
@@ -225,9 +232,11 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
       }
 
       setEmailSent(true);
-      setTimeout(() => setEmailSent(false), 3000);
+      // Show success message for 5 seconds
+      setTimeout(() => setEmailSent(false), 5000);
     } catch (err) {
       setError(err.message || 'Failed to send email');
+      setEmailSent(false);
     } finally {
       setSendingEmail(false);
     }
@@ -423,13 +432,32 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
           {error && (
             <motion.div
               className="bg-red-500/10 backdrop-blur-xl border border-red-500/30 rounded-xl p-4 flex items-start gap-3"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
             >
               <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
               <p className="text-red-300 text-sm">{error}</p>
             </motion.div>
           )}
+
+          {/* Success Toast - Email Sent */}
+          <AnimatePresence>
+            {emailSent && (
+              <motion.div
+                className="bg-green-500/10 backdrop-blur-xl border border-green-500/30 rounded-xl p-4 flex items-start gap-3"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-green-300 text-sm font-semibold">Email sent successfully!</p>
+                  <p className="text-green-400/80 text-xs mt-1">Your analysis report has been sent to your email address.</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* AI Feature Progress */}
           <AnimatePresence>
@@ -773,8 +801,8 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
               <h3 className="text-white font-semibold">AI-Powered Features</h3>
               <button
                 onClick={handleSendEmail}
-                disabled={sendingEmail}
-                className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-slate-600 disabled:opacity-50 text-white text-sm rounded-lg transition"
+                disabled={sendingEmail || emailSent}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600/20 to-purple-600/20 hover:from-cyan-600/30 hover:to-purple-600/30 border border-cyan-400/30 hover:border-cyan-400/60 disabled:opacity-50 text-white text-sm rounded-lg transition-all"
               >
                 {sendingEmail ? (
                   <>
@@ -789,7 +817,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 ) : (
                   <>
                     <Mail className="w-4 h-4" />
-                    Email Results
+                    Email me this Report
                   </>
                 )}
               </button>
