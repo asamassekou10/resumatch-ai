@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, Sparkles, Crown, Zap, X } from 'lucide-react';
+import { CheckCircle, Sparkles, Crown, Zap } from 'lucide-react';
 
 const TIER_INFO = {
   pro: {
