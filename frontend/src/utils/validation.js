@@ -238,7 +238,7 @@ export const debounce = (func, wait) => {
   };
 };
 
-export default {
+const validationUtils = {
   validators,
   validateForm,
   validationRules,
@@ -247,3 +247,5 @@ export default {
   isEmpty,
   debounce
 };
+
+export default validationUtils;

@@ -14,12 +14,6 @@ export default function JobMarketStats({ userProfile, onRepersonalize }) {
                        userProfile?.detected_industries?.[0]?.industry ||
                        null;
 
-  useEffect(() => {
-    console.log('[JobMarketStats] UserProfile:', userProfile);
-    console.log('[JobMarketStats] Derived industry:', userIndustry);
-    loadStats();
-  }, [loadStats, userProfile]); // Re-fetch when user's industry changes
-
   const loadStats = async () => {
     setLoading(true);
     setError('');
@@ -35,6 +29,13 @@ export default function JobMarketStats({ userProfile, onRepersonalize }) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    console.log('[JobMarketStats] UserProfile:', userProfile);
+    console.log('[JobMarketStats] Derived industry:', userIndustry);
+    loadStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userIndustry]); // Re-fetch when user's industry changes
 
   const salaryStats = stats?.salary_statistics || {};
 

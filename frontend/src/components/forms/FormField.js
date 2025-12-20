@@ -356,7 +356,7 @@ export const CheckboxField = ({
   );
 };
 
-export default {
+const formComponents = {
   InputField,
   TextareaField,
   FileUploadField,
@@ -364,3 +364,5 @@ export default {
   SelectField,
   CheckboxField
 };
+
+export default formComponents;

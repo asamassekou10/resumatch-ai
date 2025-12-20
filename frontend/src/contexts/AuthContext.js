@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }) => {
         
         if (token && userData) {
           // Verify token is still valid
-          const user = JSON.parse(userData);
+          JSON.parse(userData); // Validate JSON structure
           
           // Optionally verify with server
           try {

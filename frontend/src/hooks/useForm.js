@@ -40,6 +40,7 @@ export const useForm = (initialValues = {}, validationRules = {}, options = {}) 
     if (shouldValidate && validateOnChange) {
       validateField(name, sanitizedValue);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validateOnChange, sanitizeOnChange]);
 
   // Validate single field
@@ -64,6 +65,7 @@ export const useForm = (initialValues = {}, validationRules = {}, options = {}) 
     
     // Update overall form validity
     updateFormValidity();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values, validationRules]);
 
   // Update overall form validity

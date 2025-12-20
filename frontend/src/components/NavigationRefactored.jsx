@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import UserMenu from './UserMenu';
@@ -19,7 +19,6 @@ import { ROUTES } from '../config/routes';
  */
 const Navigation = ({ token, onLogout, user }) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const [showMarketMenu, setShowMarketMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -30,12 +29,6 @@ const Navigation = ({ token, onLogout, user }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Check if current route is a market intelligence page
-  const isMarketRoute = location.pathname.startsWith('/market');
-
-  // Check if current path matches a route (for active styling)
-  const isActive = (path) => location.pathname === path;
 
   return (
     <>

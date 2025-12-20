@@ -94,7 +94,7 @@ const Dashboard = ({ userProfile }) => {
     } finally {
       setLoading(false);
     }
-  }, [token, navigate]);
+  }, [token]);
 
   // Fetch data on mount
   useEffect(() => {

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Lock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Lock, CheckCircle, AlertCircle } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -256,7 +256,7 @@ const StripeCheckout = ({ token, navigate: parentNavigate }) => {
     } else {
       navigate('/login');
     }
-  }, [tier, token, navigate, API_URL]);
+  }, [tier, token, navigate]);
 
   const handlePaymentSuccess = async () => {
     // Create the subscription with the saved payment method
