@@ -63,6 +63,9 @@ jobs:
         echo "SECRET_KEY=test-secret-key" >> $GITHUB_ENV
         echo "JWT_SECRET_KEY=test-jwt-secret-key" >> $GITHUB_ENV
         echo "GEMINI_API_KEY=test-key" >> $GITHUB_ENV
+        echo "STRIPE_SECRET_KEY=sk_test_fake_key_for_ci" >> $GITHUB_ENV
+        echo "STRIPE_PRO_PRICE_ID=price_test_pro" >> $GITHUB_ENV
+        echo "STRIPE_ELITE_PRICE_ID=price_test_elite" >> $GITHUB_ENV
     
     - name: Run linting
       run: |
@@ -224,8 +227,12 @@ jobs:
       run: |
         echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/resume_optimizer_dev" >> $GITHUB_ENV
         echo "SECRET_KEY=test-secret-key" >> $GITHUB_ENV
+        echo "JWT_SECRET_KEY=test-jwt-secret-key" >> $GITHUB_ENV
         echo "GEMINI_API_KEY=test-key" >> $GITHUB_ENV
         echo "FLASK_ENV=development" >> $GITHUB_ENV
+        echo "STRIPE_SECRET_KEY=sk_test_fake_key_for_ci" >> $GITHUB_ENV
+        echo "STRIPE_PRO_PRICE_ID=price_test_pro" >> $GITHUB_ENV
+        echo "STRIPE_ELITE_PRICE_ID=price_test_elite" >> $GITHUB_ENV
     
     - name: Run database migrations
       run: |

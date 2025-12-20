@@ -130,12 +130,18 @@ app.config['GOOGLE_CLIENT_SECRET'] = os.getenv('GOOGLE_CLIENT_SECRET')
 STRIPE_API_KEY = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
 
+# Price IDs for subscriptions
+STRIPE_PRO_PRICE_ID = os.getenv('STRIPE_PRO_PRICE_ID')
+STRIPE_ELITE_PRICE_ID = os.getenv('STRIPE_ELITE_PRICE_ID')
+
 if STRIPE_API_KEY:
     stripe.api_key = STRIPE_API_KEY
     if not STRIPE_WEBHOOK_SECRET:
         app.logger.warning("STRIPE_WEBHOOK_SECRET not configured - webhook validation will not work")
+    if not STRIPE_PRO_PRICE_ID or not STRIPE_ELITE_PRICE_ID:
+        app.logger.warning("Stripe Price IDs not configured - subscriptions won't work")
 else:
-    app.logger.warning("STRIPE_SECRET_KEY not configured - payment features will not work")
+    app.logger.warning("STRIPE_SECRET_KEY not configured - payment features disabled")
 
 # Import db from models to use the same instance for all models
 from models import db
@@ -1732,7 +1738,7 @@ def confirm_subscription():
 @app.route('/api/payments/create-checkout-session', methods=['POST'])
 @jwt_required()
 def create_checkout_session():
-    """Create Stripe checkout session for Pro subscription"""
+    """Create Stripe checkout session for subscription"""
     try:
         user_id = int(get_jwt_identity())
         user = User.query.get(user_id)
@@ -1750,40 +1756,29 @@ def create_checkout_session():
             db.session.commit()
         
         # Determine which tier to upgrade to
-        tier_param = request.args.get('tier', 'pro')  # 'pro' or 'elite'
-
+        tier_param = request.args.get('tier', 'pro')
+        
+        # Get Price ID from environment variables (PRODUCTION RECOMMENDED)
         if tier_param == 'elite':
-            # Elite tier: 1000 credits/month at $49.99
-            price = 4999
-            description = 'Monthly subscription - 1000 AI credits'
-            tier_name = 'Elite'
+            price_id = os.getenv('STRIPE_ELITE_PRICE_ID')
         else:
-            # Pro tier: 100 credits/month at $9.99
-            price = 999
-            description = 'Monthly subscription - 100 AI credits'
-            tier_name = 'Pro'
-
-        # Create checkout session
+            price_id = os.getenv('STRIPE_PRO_PRICE_ID')
+        
+        if not price_id:
+            logging.error(f"Missing Stripe Price ID for tier: {tier_param}")
+            return jsonify({'error': 'Payment configuration error'}), 500
+        
+        # Create checkout session with actual Price ID
         checkout_session = stripe.checkout.Session.create(
             customer=user.stripe_customer_id,
             payment_method_types=['card'],
             line_items=[{
-                'price_data': {
-                    'currency': 'usd',
-                    'product_data': {
-                        'name': f'ResumeAnalyzer AI {tier_name}',
-                        'description': description,
-                    },
-                    'unit_amount': price,
-                    'recurring': {
-                        'interval': 'month',
-                    },
-                },
+                'price': price_id,  # Use actual Stripe Price ID
                 'quantity': 1,
             }],
             mode='subscription',
             success_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/dashboard?payment=success",
-            cancel_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/dashboard?payment=cancel",
+            cancel_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/pricing?payment=cancel",
             metadata={
                 'user_id': str(user_id),
                 'tier': tier_param
@@ -1794,6 +1789,9 @@ def create_checkout_session():
             'checkout_url': checkout_session.url
         }), 200
         
+    except stripe.error.StripeError as e:
+        logging.error(f"Stripe error: {str(e)}")
+        return jsonify({'error': 'Payment service error'}), 500
     except Exception as e:
         logging.error(f"Error creating checkout session: {str(e)}")
         return jsonify({'error': 'Failed to create checkout session'}), 500
