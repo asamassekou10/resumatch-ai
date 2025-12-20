@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import UserMenu from './UserMenu';
 import MobileMenu from './MobileMenu';
@@ -18,7 +18,6 @@ import { ROUTES } from '../config/routes';
  */
 const Navigation = ({ token, onLogout, user }) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const [showMarketMenu, setShowMarketMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 

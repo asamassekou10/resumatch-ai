@@ -13,7 +13,7 @@ import { Helmet } from 'react-helmet-async';
  * - Keywords (optional)
  *
  * @param {Object} props
- * @param {string} props.title - Page title (will be appended with " | ResuMatch AI")
+ * @param {string} props.title - Page title (will be appended with " | ResumeAnalyzer AI")
  * @param {string} props.description - Page meta description
  * @param {string} props.keywords - Comma-separated keywords (optional)
  * @param {string} props.image - Social media share image URL (optional)
@@ -30,10 +30,10 @@ const SEO = ({
 }) => {
   // Default values
   const siteUrl = 'https://resumeanalyzerai.com';
-  const defaultTitle = 'ResuMatch AI - AI-Powered Resume Analysis & Job Matching';
-  const defaultDescription = 'Optimize your resume with AI-powered analysis, ATS scoring, skill gap analysis, and personalized job matching. Get hired faster with ResuMatch AI.';
+  const defaultTitle = 'ResumeAnalyzer AI - AI-Powered Resume Analysis & Job Matching';
+  const defaultDescription = 'Optimize your resume with AI-powered analysis, ATS scoring, skill gap analysis, and personalized job matching. Get hired faster with ResumeAnalyzer AI.';
   const defaultImage = `${siteUrl}/og-image.png`; // You'll need to add this image
-  const siteName = 'ResuMatch AI';
+  const siteName = 'ResumeAnalyzer AI';
 
   // Construct final values
   const pageTitle = title ? `${title} | ${siteName}` : defaultTitle;
@@ -72,7 +72,7 @@ const SEO = ({
 
       {/* Additional Meta Tags */}
       <meta name="robots" content="index, follow" />
-      <meta name="author" content="ResuMatch AI" />
+      <meta name="author" content="ResumeAnalyzer AI" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
       {/* Theme Color for Mobile Browsers */}

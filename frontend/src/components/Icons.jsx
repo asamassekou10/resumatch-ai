@@ -1,6 +1,6 @@
 /**
  * Professional Icon Components
- * Consistent SVG icons for the ResuMatch AI application
+ * Consistent SVG icons for the ResumeAnalyzer AI application
  */
 
 // Common icon props
@@ -283,7 +283,7 @@ export const ClockIcon = ({ className = "w-5 h-5", ...props }) => (
   </svg>
 );
 
-export default {
+const Icons = {
   ChartIcon,
   ChartBarIcon,
   PieChartIcon,
@@ -319,3 +319,5 @@ export default {
   AlertIcon,
   ClockIcon
 };
+
+export default Icons;

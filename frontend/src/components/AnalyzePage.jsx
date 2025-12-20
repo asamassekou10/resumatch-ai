@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, ArrowLeft, Mail, Sparkles, FileText } from 'lucide-react';
@@ -46,14 +46,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
-  // Fetch analysis result if in view mode
-  useEffect(() => {
-    if (viewMode === 'result' && id && token) {
-      fetchAnalysisResult();
-    }
-  }, [viewMode, id, token]);
-
-  const fetchAnalysisResult = async () => {
+  const fetchAnalysisResult = useCallback(async () => {
     setResultLoading(true);
     try {
       const response = await fetch(`${API_URL}/analyses/${id}`, {
@@ -73,7 +66,14 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
     } finally {
       setResultLoading(false);
     }
-  };
+  }, [id, token]);
+
+  // Fetch analysis result if in view mode
+  useEffect(() => {
+    if (viewMode === 'result' && id && token) {
+      fetchAnalysisResult();
+    }
+  }, [viewMode, id, token, fetchAnalysisResult]);
 
   const handleGenerateFeedback = async () => {
     setAiFeatureLoading('feedback');

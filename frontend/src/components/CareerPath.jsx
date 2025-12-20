@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -68,19 +68,7 @@ const CareerPath = ({ industry, userProfile }) => {
     </div>
   );
 
-  useEffect(() => {
-    if (token) {
-      fetchCareerPaths();
-    }
-  }, [token]);
-
-  useEffect(() => {
-    if (selectedPath && selectedPath.notes) {
-      setNotesText(selectedPath.notes);
-    }
-  }, [selectedPath]);
-
-  const fetchCareerPaths = async () => {
+  const fetchCareerPaths = useCallback(async () => {
     try {
       const response = await axios.get(`${API_URL}/career-path/`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -92,7 +80,19 @@ const CareerPath = ({ industry, userProfile }) => {
     } catch (error) {
       console.error('Error fetching career paths:', error);
     }
-  };
+  }, [token, selectedPath]);
+
+  useEffect(() => {
+    if (token) {
+      fetchCareerPaths();
+    }
+  }, [token, fetchCareerPaths]);
+
+  useEffect(() => {
+    if (selectedPath && selectedPath.notes) {
+      setNotesText(selectedPath.notes);
+    }
+  }, [selectedPath]);
 
   const generateCareerPath = async () => {
     setLoading(true);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building, Briefcase, CheckCircle, Bookmark, Trash2, Plus, RefreshCw,
@@ -28,16 +28,7 @@ const InterviewPrep = ({ industry, userProfile }) => {
     industry: industry || ''
   });
 
-  useEffect(() => {
-    fetchInterviewPreps();
-  }, []);
-
-  useEffect(() => {
-    // Update industry in generate form when prop changes
-    setGenerateForm(prev => ({ ...prev, industry: industry || '' }));
-  }, [industry]);
-
-  const fetchInterviewPreps = async () => {
+  const fetchInterviewPreps = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -62,7 +53,16 @@ const InterviewPrep = ({ industry, userProfile }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedPrep]);
+
+  useEffect(() => {
+    fetchInterviewPreps();
+  }, [fetchInterviewPreps]);
+
+  useEffect(() => {
+    // Update industry in generate form when prop changes
+    setGenerateForm(prev => ({ ...prev, industry: industry || '' }));
+  }, [industry]);
 
   const generateInterviewPrep = async () => {
     if (!generateForm.company.trim()) {

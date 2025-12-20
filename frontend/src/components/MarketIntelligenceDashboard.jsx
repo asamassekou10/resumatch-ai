@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import {
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell,
-  Area, AreaChart, RadialBarChart, RadialBar
+  Area, AreaChart
 } from 'recharts';
-import { Briefcase, Users, Lightbulb, TrendingUp, Sparkles, Lock } from 'lucide-react';
+import { Briefcase, Users, Lightbulb, TrendingUp, Sparkles } from 'lucide-react';
 import ApiService, { handleApiError } from '../services/api';
 import {
   ChartBarIcon, PieChartIcon, TrendingUpIcon, TargetIcon, FireIcon,
@@ -93,11 +93,7 @@ export default function MarketIntelligenceDashboard({ userProfile, onRepersonali
     userProfile?.preferred_industry || userProfile?.detected_industries?.[0] || 'General'
   );
 
-  useEffect(() => {
-    loadDashboardData();
-  }, [selectedIndustry]);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -114,7 +110,11 @@ export default function MarketIntelligenceDashboard({ userProfile, onRepersonali
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedIndustry]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   const loadSampleData = async () => {
     setLoading(true);

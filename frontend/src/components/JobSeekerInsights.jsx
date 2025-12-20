@@ -1,46 +1,13 @@
 import { useState, useEffect } from 'react';
-import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid,
-  PolarAngleAxis, PolarRadiusAxis, Radar, Cell
-} from 'recharts';
 import ApiService, { handleApiError } from '../services/api';
 import {
-  TrendingUpIcon, TargetIcon, DollarIcon, BookOpenIcon, MapPinIcon,
-  AlertIcon, CheckCircleIcon, ClockIcon, LoadingIcon, RefreshIcon,
+  TrendingUpIcon, TargetIcon, BookOpenIcon, MapPinIcon,
+  AlertIcon, LoadingIcon, RefreshIcon,
   ArrowUpIcon, ArrowDownIcon, BriefcaseIcon, FireIcon
 } from './Icons';
 import RepersonalizeButton from './RepersonalizeButton';
 import '../styles/theme.css';
 import '../styles/JobSeekerInsights.css';
-
-// Chart colors
-const CHART_COLORS = {
-  primary: '#06b6d4',
-  secondary: '#3b82f6',
-  success: '#10b981',
-  warning: '#f59e0b',
-  error: '#ef4444'
-};
-
-// Custom Tooltip
-const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="custom-tooltip">
-        <p className="tooltip-label">{label}</p>
-        {payload.map((entry, index) => (
-          <p key={index} className="tooltip-value" style={{ color: entry.color }}>
-            {entry.name}: {typeof entry.value === 'number'
-              ? entry.value.toLocaleString()
-              : entry.value}
-          </p>
-        ))}
-      </div>
-    );
-  }
-  return null;
-};
 
 // Insight Card Component
 const InsightCard = ({ icon: Icon, title, value, description, color = 'primary', actionButton = null }) => (

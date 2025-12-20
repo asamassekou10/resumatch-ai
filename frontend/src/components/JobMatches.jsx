@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   Briefcase, MapPin, DollarSign, Clock, Bookmark, ExternalLink,
@@ -18,11 +18,7 @@ const JobMatches = ({ industry, userProfile }) => {
   const [filter, setFilter] = useState('all'); // all, saved, high-match
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchJobMatches();
-  }, [industry]);
-
-  const fetchJobMatches = async (forceRefresh = false) => {
+  const fetchJobMatches = useCallback(async (forceRefresh = false) => {
     setLoading(true);
     setError(null);
     try {
@@ -43,7 +39,11 @@ const JobMatches = ({ industry, userProfile }) => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [industry]);
+
+  useEffect(() => {
+    fetchJobMatches();
+  }, [fetchJobMatches]);
 
   const handleRefresh = () => {
     setRefreshing(true);

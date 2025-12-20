@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -49,14 +49,7 @@ const Dashboard = ({ userProfile }) => {
     }
   }, [searchParams, userProfile, setSearchParams]);
 
-  // Fetch data on mount
-  useEffect(() => {
-    if (token) {
-      fetchDashboardData();
-    }
-  }, [token]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -101,7 +94,14 @@ const Dashboard = ({ userProfile }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, navigate]);
+
+  // Fetch data on mount
+  useEffect(() => {
+    if (token) {
+      fetchDashboardData();
+    }
+  }, [token, fetchDashboardData]);
 
   const viewAnalysis = async (analysisId) => {
     // Navigate to result page with analysis ID

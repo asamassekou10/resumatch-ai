@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Building, Briefcase, Users, TrendingUp, DollarSign, MapPin, Globe,
-  Calendar, Award, Target, Code, Lightbulb, BookOpen, FileText,
+  Building, Briefcase, Users, TrendingUp, MapPin, Globe,
+  Calendar, Award, Target, Code, Lightbulb, FileText,
   Bookmark, Trash2, Plus, RefreshCw, Sparkles, Edit3, Save, X,
   CheckCircle, AlertCircle, Info, ThumbsUp, ThumbsDown
 } from 'lucide-react';
@@ -29,15 +29,7 @@ const CompanyIntel = ({ industry, userProfile }) => {
     industry: industry || ''
   });
 
-  useEffect(() => {
-    fetchCompanyIntels();
-  }, []);
-
-  useEffect(() => {
-    setGenerateForm(prev => ({ ...prev, industry: industry || '' }));
-  }, [industry]);
-
-  const fetchCompanyIntels = async () => {
+  const fetchCompanyIntels = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -62,7 +54,15 @@ const CompanyIntel = ({ industry, userProfile }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedIntel]);
+
+  useEffect(() => {
+    fetchCompanyIntels();
+  }, [fetchCompanyIntels]);
+
+  useEffect(() => {
+    setGenerateForm(prev => ({ ...prev, industry: industry || '' }));
+  }, [industry]);
 
   const generateCompanyIntel = async () => {
     if (!generateForm.company.trim()) {

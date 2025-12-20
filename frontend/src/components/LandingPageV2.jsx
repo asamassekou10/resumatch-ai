@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, ArrowUpRight, Star, Quote, TrendingUp, Shield, Upload } from 'lucide-react';
+import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, Star, Quote, TrendingUp } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import ShimmerButton from './ui/ShimmerButton';
@@ -43,7 +43,6 @@ const CountUp = ({ from = 0, to, duration = 2, suffix = '' }) => {
 
 const LandingPageV2 = ({ token }) => {
   const navigate = useNavigate();
-  const [hoveredFeature, setHoveredFeature] = useState(null);
   const [showEntrance, setShowEntrance] = useState(true);
 
   // Animation variants

@@ -18,7 +18,7 @@ export default function JobMarketStats({ userProfile, onRepersonalize }) {
     console.log('[JobMarketStats] UserProfile:', userProfile);
     console.log('[JobMarketStats] Derived industry:', userIndustry);
     loadStats();
-  }, [userIndustry]); // Re-fetch when user's industry changes
+  }, [loadStats, userProfile]); // Re-fetch when user's industry changes
 
   const loadStats = async () => {
     setLoading(true);

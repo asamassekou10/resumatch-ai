@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileUp, LogIn, Zap, ArrowRight, AlertCircle, CheckCircle, Loader, Clock } from 'lucide-react';
+import { FileUp, Zap, ArrowRight, AlertCircle, CheckCircle, Loader, Clock } from 'lucide-react';
 import guestService from '../services/guestService';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const GuestAnalyze = () => {
   const navigate = useNavigate();
@@ -24,7 +22,6 @@ const GuestAnalyze = () => {
   const [jobTitle, setJobTitle] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [analysisResults, setAnalysisResults] = useState(null);
-  const [sessionInfo, setSessionInfo] = useState(null);
 
   // Initialize guest session on mount
   useEffect(() => {

@@ -24,7 +24,9 @@ const UserMenu = ({ user, onLogout }) => {
   // Don't render if no user (must be after hooks)
   if (!user) return null;
 
-  const creditPercentage = ((user.credits || 0) / 100) * 100;
+  // Calculate credit percentage - cap at 100% for display
+  const maxCredits = user.subscription_tier === 'premium' || user.subscription_tier === 'elite' ? 1000 : 100;
+  const creditPercentage = Math.min(((user.credits || 0) / maxCredits) * 100, 100);
   const creditColor = creditPercentage > 50 ? 'cyan' : creditPercentage > 20 ? 'yellow' : 'red';
 
   return (
@@ -49,7 +51,14 @@ const UserMenu = ({ user, onLogout }) => {
         <div className="absolute right-0 mt-2 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
           {/* User Info Header */}
           <div className="p-3 border-b border-slate-700">
-            <p className="text-sm font-semibold text-white">{user.name}</p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-white">{user.name}</p>
+              {user.is_admin && (
+                <span className="px-2 py-0.5 bg-purple-600/20 text-purple-400 text-xs font-semibold rounded">
+                  ADMIN
+                </span>
+              )}
+            </div>
             <p className="text-xs text-slate-400">{user.email}</p>
           </div>
 
@@ -57,11 +66,15 @@ const UserMenu = ({ user, onLogout }) => {
           <div className="p-3 border-b border-slate-700">
             <div className="flex justify-between items-center mb-1">
               <span className="text-xs text-slate-400">Credits</span>
-              <span className="text-sm font-semibold text-white">{user.credits || 0}/100</span>
+              <span className="text-sm font-semibold text-white">{user.credits || 0}/{maxCredits}</span>
             </div>
             <div className="w-full bg-slate-700 rounded-full h-2">
               <div
-                className={`bg-${creditColor}-500 h-2 rounded-full transition-all`}
+                className={`h-2 rounded-full transition-all ${
+                  creditColor === 'cyan' ? 'bg-cyan-500' :
+                  creditColor === 'yellow' ? 'bg-yellow-500' :
+                  'bg-red-500'
+                }`}
                 style={{ width: `${creditPercentage}%` }}
               ></div>
             </div>
