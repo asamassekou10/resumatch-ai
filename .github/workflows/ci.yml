@@ -168,7 +168,7 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: resume_optimizer
+          POSTGRES_DB: postgres
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -192,6 +192,11 @@ jobs:
         cache: 'npm'
         cache-dependency-path: frontend/package-lock.json
     
+    - name: Install PostgreSQL client
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
+    
     - name: Install backend dependencies
       run: |
         cd backend
@@ -208,9 +213,16 @@ jobs:
         cd frontend
         npm run build
     
+    - name: Create development database
+      env:
+        PGPASSWORD: postgres
+      run: |
+        psql -h localhost -U postgres -c "CREATE DATABASE resume_optimizer_dev;"
+        psql -h localhost -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE resume_optimizer_dev TO postgres;"
+    
     - name: Set environment variables
       run: |
-        echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/resume_optimizer" >> $GITHUB_ENV
+        echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/resume_optimizer_dev" >> $GITHUB_ENV
         echo "SECRET_KEY=test-secret-key" >> $GITHUB_ENV
         echo "GEMINI_API_KEY=test-key" >> $GITHUB_ENV
         echo "FLASK_ENV=development" >> $GITHUB_ENV
