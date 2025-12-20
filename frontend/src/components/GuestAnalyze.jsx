@@ -22,7 +22,7 @@ const GuestAnalyze = () => {
   const [jobTitle, setJobTitle] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [analysisResults, setAnalysisResults] = useState(null);
-  const [sessionInfo, setSessionInfo] = useState(null);
+  const [, setSessionInfo] = useState(null);
 
   // Initialize guest session on mount
   useEffect(() => {
