@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Breadcrumb from '../Breadcrumb';
-import { AuthContext } from '../../contexts/AuthContext';
+import AuthContext from '../../contexts/AuthContext';
 
 const mockSetView = jest.fn();
 

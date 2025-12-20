@@ -4,10 +4,14 @@ import pytest
 import tempfile
 import os
 
-# 1. Force-mock the GenerativeAI module IMMEDIATELY
-# This prevents any network calls when 'app' imports it
+# FORCE MOCKS: Stop all Google network calls immediately
+# This must run BEFORE 'app' is imported
 mock_genai = MagicMock()
 sys.modules["google.generativeai"] = mock_genai
+
+mock_google_auth = MagicMock()
+sys.modules["google.auth"] = mock_google_auth
+sys.modules["google.oauth2"] = MagicMock()
 
 from app import create_app
 from models import db
