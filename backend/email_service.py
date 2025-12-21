@@ -11,12 +11,26 @@ from io import BytesIO
 # Configure logging first
 logger = logging.getLogger(__name__)
 
-try:
-    from resend import Resend
-    RESEND_AVAILABLE = True
-except ImportError:
-    RESEND_AVAILABLE = False
-    logger.warning("Resend package not installed. Run: pip install resend")
+# Try importing resend - retry logic for cases where package is installed but import fails initially
+RESEND_AVAILABLE = False
+Resend = None
+
+def _check_resend_availability():
+    """Check if Resend package is available and import it"""
+    global RESEND_AVAILABLE, Resend
+    try:
+        from resend import Resend as ResendClass
+        Resend = ResendClass
+        RESEND_AVAILABLE = True
+        return True
+    except ImportError as e:
+        RESEND_AVAILABLE = False
+        Resend = None
+        logger.warning(f"Resend package not available: {e}")
+        return False
+
+# Initial check
+_check_resend_availability()
 
 class EmailService:
     def __init__(self):
@@ -25,8 +39,16 @@ class EmailService:
         self.from_email = 'Resume Analyzer AI <support@resumeanalyzerai.com>'
         self.reply_to = 'support@resumeanalyzerai.com'
         
-        if self.resend_api_key and RESEND_AVAILABLE:
-            self.resend = Resend(api_key=self.resend_api_key)
+        # Re-check Resend availability in case package was installed after module load
+        _check_resend_availability()
+        
+        if self.resend_api_key and RESEND_AVAILABLE and Resend:
+            try:
+                self.resend = Resend(api_key=self.resend_api_key)
+                logger.info("Resend email service initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize Resend client: {e}")
+                self.resend = None
         else:
             self.resend = None
             if not RESEND_AVAILABLE:
