@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app
-from models import db, User, Analysis, AdminLog, JobMatch, InterviewPrep, CompanyIntel, CareerPath, UserSkillHistory, GuestSession, SystemConfiguration, Keyword
+from models import db, User, Analysis, AdminLog, JobMatch, InterviewPrep, CompanyIntel, CareerPath, UserSkillHistory, GuestSession, SystemConfiguration, Keyword, SkillExtraction
 from sqlalchemy import text, func
 
 # Load environment variables
@@ -103,11 +103,32 @@ def cleanup_users(keep_email='alhassane.samassekou@gmail.com'):
             # Delete related data using bulk SQL operations (memory efficient)
             print("\nDeleting related data in batches...")
             
-            # Use bulk delete operations
+            # Delete in correct order to respect foreign key constraints
+            # 1. Delete UserSkillHistory first (references both users and analyses)
+            deleted_skill_history = UserSkillHistory.query.filter(UserSkillHistory.user_id != user_to_keep.id).delete(synchronize_session=False)
+            db.session.commit()
+            print(f"  ✓ Deleted {deleted_skill_history} skill history records")
+            
+            # 2. Delete records that reference analyses (must be before deleting analyses)
+            # Get analysis IDs for users to delete
+            analysis_ids_query = db.session.query(Analysis.id).filter(
+                Analysis.user_id != user_to_keep.id
+            )
+            
+            # Delete SkillExtraction records that reference these analyses
+            deleted_skill_extractions = SkillExtraction.query.filter(
+                SkillExtraction.analysis_id.in_(analysis_ids_query)
+            ).delete(synchronize_session=False)
+            db.session.commit()
+            if deleted_skill_extractions > 0:
+                print(f"  ✓ Deleted {deleted_skill_extractions} skill extractions")
+            
+            # 3. Now delete analyses (after all foreign key references are removed)
             deleted_analyses = Analysis.query.filter(Analysis.user_id != user_to_keep.id).delete(synchronize_session=False)
             db.session.commit()
             print(f"  ✓ Deleted {deleted_analyses} analyses")
             
+            # 4. Delete other user-related data
             deleted_admin_logs = AdminLog.query.filter(AdminLog.admin_user_id != user_to_keep.id).delete(synchronize_session=False)
             db.session.commit()
             print(f"  ✓ Deleted {deleted_admin_logs} admin logs")
@@ -127,10 +148,6 @@ def cleanup_users(keep_email='alhassane.samassekou@gmail.com'):
             deleted_career_paths = CareerPath.query.filter(CareerPath.user_id != user_to_keep.id).delete(synchronize_session=False)
             db.session.commit()
             print(f"  ✓ Deleted {deleted_career_paths} career paths")
-            
-            deleted_skill_history = UserSkillHistory.query.filter(UserSkillHistory.user_id != user_to_keep.id).delete(synchronize_session=False)
-            db.session.commit()
-            print(f"  ✓ Deleted {deleted_skill_history} skill history records")
             
             # Update guest sessions (set converted_user_id to NULL)
             updated_guest_sessions = GuestSession.query.filter(
