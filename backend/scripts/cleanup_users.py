@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app
-from models import db, User, Analysis, AdminLog, JobMatch, InterviewPrep, CompanyIntel, CareerPath, UserSkillHistory, GuestAnalysis, SystemConfiguration, Keyword
+from models import db, User, Analysis, AdminLog, JobMatch, InterviewPrep, CompanyIntel, CareerPath, UserSkillHistory, GuestSession, SystemConfiguration, Keyword
 from sqlalchemy import text, func
 
 # Load environment variables
@@ -77,9 +77,9 @@ def cleanup_users(keep_email='alhassane.samassekou@gmail.com'):
                 UserSkillHistory.user_id != user_to_keep.id
             ).scalar() or 0
             
-            total_guest_analyses = db.session.query(func.count(GuestAnalysis.id)).filter(
-                GuestAnalysis.converted_user_id != None,
-                GuestAnalysis.converted_user_id != user_to_keep.id
+            total_guest_sessions = db.session.query(func.count(GuestSession.id)).filter(
+                GuestSession.converted_user_id != None,
+                GuestSession.converted_user_id != user_to_keep.id
             ).scalar() or 0
             
             print(f"\nRelated data to be deleted:")
@@ -90,7 +90,7 @@ def cleanup_users(keep_email='alhassane.samassekou@gmail.com'):
             print(f"  - Company Intels: {total_company_intels}")
             print(f"  - Career Paths: {total_career_paths}")
             print(f"  - Skill History: {total_skill_history}")
-            print(f"  - Guest Analyses (converted): {total_guest_analyses}")
+            print(f"  - Guest Sessions (converted): {total_guest_sessions}")
             
             # Confirm deletion
             print(f"\n⚠️  WARNING: This will permanently delete {user_count} users and all their data!")
@@ -132,13 +132,13 @@ def cleanup_users(keep_email='alhassane.samassekou@gmail.com'):
             db.session.commit()
             print(f"  ✓ Deleted {deleted_skill_history} skill history records")
             
-            # Update guest analyses (set converted_user_id to NULL)
-            updated_guest_analyses = GuestAnalysis.query.filter(
-                GuestAnalysis.converted_user_id != None,
-                GuestAnalysis.converted_user_id != user_to_keep.id
+            # Update guest sessions (set converted_user_id to NULL)
+            updated_guest_sessions = GuestSession.query.filter(
+                GuestSession.converted_user_id != None,
+                GuestSession.converted_user_id != user_to_keep.id
             ).update({'converted_user_id': None}, synchronize_session=False)
             db.session.commit()
-            print(f"  ✓ Updated {updated_guest_analyses} guest analyses")
+            print(f"  ✓ Updated {updated_guest_sessions} guest sessions")
             
             # Update system configurations (set updated_by_id to NULL)
             updated_configs = SystemConfiguration.query.filter(
