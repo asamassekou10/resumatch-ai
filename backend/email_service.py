@@ -11,42 +11,33 @@ from io import BytesIO
 # Configure logging first
 logger = logging.getLogger(__name__)
 
-# Try importing resend - retry logic for cases where package is installed but import fails initially
+# Try importing resend - Resend 2.x uses module-level API
 RESEND_AVAILABLE = False
-_ResendClass = None
+_resend_module = None
 
 def _check_resend_availability():
     """Check if Resend package is available and import it"""
-    global RESEND_AVAILABLE, _ResendClass
+    global RESEND_AVAILABLE, _resend_module
     try:
-        # Resend 2.0+ uses: import resend; resend = Resend(api_key=...)
-        # The package structure changed - Resend is now a class in the resend module
+        # Resend 2.x uses: import resend; resend.api_key = "..."; resend.Emails.send(...)
         import resend
         
-        # Check if Resend class exists in the module
-        if hasattr(resend, 'Resend'):
-            _ResendClass = resend.Resend
-        else:
-            # Try alternative: might be resend.client.Resend or similar
-            try:
-                from resend.client import Resend as ResendClient
-                _ResendClass = ResendClient
-            except ImportError:
-                # Last resort: check what's actually in the module
-                logger.error(f"Resend module contents: {dir(resend)}")
-                raise ImportError("Resend class not found in resend module")
+        # Verify that Emails class exists
+        if not hasattr(resend, 'Emails'):
+            raise ImportError("Resend.Emails not found in resend module")
         
+        _resend_module = resend
         RESEND_AVAILABLE = True
         logger.info("Resend package successfully imported")
         return True
     except ImportError as e:
         RESEND_AVAILABLE = False
-        _ResendClass = None
+        _resend_module = None
         logger.warning(f"Resend package not available: {e}")
         return False
     except Exception as e:
         RESEND_AVAILABLE = False
-        _ResendClass = None
+        _resend_module = None
         logger.error(f"Unexpected error importing Resend: {e}")
         return False
 
@@ -63,12 +54,14 @@ class EmailService:
         # Re-check Resend availability in case package was installed after module load
         _check_resend_availability()
         
-        if self.resend_api_key and RESEND_AVAILABLE and _ResendClass:
+        if self.resend_api_key and RESEND_AVAILABLE and _resend_module:
             try:
-                self.resend = _ResendClass(api_key=self.resend_api_key)
+                # Resend 2.x: Set API key at module level
+                _resend_module.api_key = self.resend_api_key
+                self.resend = _resend_module  # Store reference to module for convenience
                 logger.info("Resend email service initialized successfully")
             except Exception as e:
-                logger.error(f"Failed to initialize Resend client: {e}")
+                logger.error(f"Failed to initialize Resend: {e}")
                 self.resend = None
         else:
             self.resend = None
@@ -133,8 +126,8 @@ class EmailService:
                 if email_attachments:
                     email_params["attachments"] = email_attachments
             
-            # Send email
-            response = self.resend.emails.send(email_params)
+            # Send email using Resend 2.x API
+            response = self.resend.Emails.send(email_params)
             
             # Resend returns a dict with 'id' key on success, or raises an exception on error
             if response and isinstance(response, dict) and 'id' in response:
@@ -173,7 +166,7 @@ class EmailService:
                 recipient_name, cover_letter, job_title, company_name
             )
             
-            response = self.resend.emails.send({
+            response = self.resend.Emails.send({
                 "from": self.from_email,
                 "to": [recipient_email],
                 "subject": subject,
@@ -339,7 +332,7 @@ class EmailService:
             logger.info(f"Attempting to send verification email to {recipient_email}")
             logger.debug(f"Resend client initialized: {self.resend is not None}, API key present: {bool(self.resend_api_key)}")
             
-            response = self.resend.emails.send({
+            response = self.resend.Emails.send({
                 "from": self.from_email,
                 "to": [recipient_email],
                 "subject": subject,
@@ -434,7 +427,7 @@ class EmailService:
                 if email_attachments:
                     email_params["attachments"] = email_attachments
             
-            response = self.resend.emails.send(email_params)
+            response = self.resend.Emails.send(email_params)
             
             if response and isinstance(response, dict) and 'id' in response:
                 logger.info(f"Optimized resume email sent successfully to {recipient_email} (ID: {response.get('id')})")
