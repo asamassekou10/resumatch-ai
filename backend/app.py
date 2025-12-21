@@ -2219,6 +2219,29 @@ app.register_blueprint(admin_diag_bp)
 limiter.exempt(health_bp)
 
 
+# ============== VERIFY CRITICAL PACKAGES ==============
+
+def verify_critical_packages():
+    """Verify that critical packages are installed"""
+    missing_packages = []
+    
+    # Check Resend package
+    try:
+        import resend
+        logging.info("✓ Resend package is installed")
+    except ImportError:
+        missing_packages.append("resend")
+        logging.error("❌ CRITICAL: Resend package is NOT installed!")
+        logging.error("   This will prevent email functionality from working.")
+        logging.error("   Run: pip install resend")
+        logging.error("   Or trigger a rebuild on Render to install from requirements.txt")
+    
+    if missing_packages:
+        logging.error(f"Missing critical packages: {', '.join(missing_packages)}")
+        logging.error("Please install missing packages or trigger a rebuild.")
+    else:
+        logging.info("✓ All critical packages are installed")
+
 # ============== INITIALIZE SCHEDULER ==============
 
 def initialize_app():
@@ -2240,6 +2263,32 @@ def initialize_app():
             logging.error(f"Critical error initializing application: {str(e)}")
             raise
 
+
+# ============== VERIFY CRITICAL PACKAGES ==============
+
+def verify_critical_packages():
+    """Verify that critical packages are installed"""
+    missing_packages = []
+    
+    # Check Resend package
+    try:
+        import resend
+        logging.info("✓ Resend package is installed")
+    except ImportError:
+        missing_packages.append("resend")
+        logging.error("❌ CRITICAL: Resend package is NOT installed!")
+        logging.error("   This will prevent email functionality from working.")
+        logging.error("   Run: pip install resend")
+        logging.error("   Or trigger a rebuild on Render to install from requirements.txt")
+    
+    if missing_packages:
+        logging.error(f"Missing critical packages: {', '.join(missing_packages)}")
+        logging.error("Please install missing packages or trigger a rebuild.")
+    else:
+        logging.info("✓ All critical packages are installed")
+
+# Verify packages before initialization
+verify_critical_packages()
 
 # Initialize on app startup
 try:
