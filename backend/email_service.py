@@ -19,8 +19,23 @@ def _check_resend_availability():
     """Check if Resend package is available and import it"""
     global RESEND_AVAILABLE, _ResendClass
     try:
-        from resend import Resend
-        _ResendClass = Resend
+        # Resend 2.0+ uses: import resend; resend = Resend(api_key=...)
+        # The package structure changed - Resend is now a class in the resend module
+        import resend
+        
+        # Check if Resend class exists in the module
+        if hasattr(resend, 'Resend'):
+            _ResendClass = resend.Resend
+        else:
+            # Try alternative: might be resend.client.Resend or similar
+            try:
+                from resend.client import Resend as ResendClient
+                _ResendClass = ResendClient
+            except ImportError:
+                # Last resort: check what's actually in the module
+                logger.error(f"Resend module contents: {dir(resend)}")
+                raise ImportError("Resend class not found in resend module")
+        
         RESEND_AVAILABLE = True
         logger.info("Resend package successfully imported")
         return True
