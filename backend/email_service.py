@@ -13,20 +13,26 @@ logger = logging.getLogger(__name__)
 
 # Try importing resend - retry logic for cases where package is installed but import fails initially
 RESEND_AVAILABLE = False
-Resend = None
+_ResendClass = None
 
 def _check_resend_availability():
     """Check if Resend package is available and import it"""
-    global RESEND_AVAILABLE, Resend
+    global RESEND_AVAILABLE, _ResendClass
     try:
-        from resend import Resend as ResendClass
-        Resend = ResendClass
+        from resend import Resend
+        _ResendClass = Resend
         RESEND_AVAILABLE = True
+        logger.info("Resend package successfully imported")
         return True
     except ImportError as e:
         RESEND_AVAILABLE = False
-        Resend = None
+        _ResendClass = None
         logger.warning(f"Resend package not available: {e}")
+        return False
+    except Exception as e:
+        RESEND_AVAILABLE = False
+        _ResendClass = None
+        logger.error(f"Unexpected error importing Resend: {e}")
         return False
 
 # Initial check
@@ -42,9 +48,9 @@ class EmailService:
         # Re-check Resend availability in case package was installed after module load
         _check_resend_availability()
         
-        if self.resend_api_key and RESEND_AVAILABLE and Resend:
+        if self.resend_api_key and RESEND_AVAILABLE and _ResendClass:
             try:
-                self.resend = Resend(api_key=self.resend_api_key)
+                self.resend = _ResendClass(api_key=self.resend_api_key)
                 logger.info("Resend email service initialized successfully")
             except Exception as e:
                 logger.error(f"Failed to initialize Resend client: {e}")
