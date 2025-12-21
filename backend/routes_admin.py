@@ -30,26 +30,61 @@ def get_dashboard_stats():
         total_analyses = Analysis.query.count()
         analyses_30d = Analysis.query.filter(Analysis.created_at >= thirty_days_ago).count()
 
-        # Average match score
-        avg_match_score = db.session.query(func.avg(Analysis.match_score)).scalar() or 0
+        # Average match score (optimized - limit calculation to avoid memory issues)
+        try:
+            # For large datasets, calculate average on recent analyses only
+            if total_analyses > 5000:
+                # Use recent 5000 analyses for average calculation
+                avg_match_score = db.session.query(
+                    func.avg(Analysis.match_score)
+                ).filter(
+                    Analysis.id.in_(
+                        db.session.query(Analysis.id)
+                        .order_by(Analysis.created_at.desc())
+                        .limit(5000)
+                    )
+                ).scalar() or 0
+            else:
+                avg_match_score = db.session.query(func.avg(Analysis.match_score)).scalar() or 0
+        except Exception as e:
+            logger.warning(f"Error calculating average match score: {e}")
+            # Fallback: calculate on recent analyses only
+            try:
+                avg_match_score = db.session.query(
+                    func.avg(Analysis.match_score)
+                ).filter(
+                    Analysis.created_at >= thirty_days_ago
+                ).scalar() or 0
+            except:
+                avg_match_score = 0
 
-        # Users by signup date (daily for last 30 days)
-        daily_signups = db.session.query(
-            func.date(User.created_at).label('date'),
-            func.count(User.id).label('count')
-        ).filter(User.created_at >= thirty_days_ago).group_by(func.date(User.created_at)).all()
+        # Users by signup date (daily for last 30 days) - optimized with limit
+        try:
+            daily_signups = db.session.query(
+                func.date(User.created_at).label('date'),
+                func.count(User.id).label('count')
+            ).filter(
+                User.created_at >= thirty_days_ago
+            ).group_by(func.date(User.created_at)).order_by(func.date(User.created_at)).limit(31).all()
 
-        signup_trend = [{'date': str(d[0]), 'count': d[1]} for d in daily_signups]
+            signup_trend = [{'date': str(d[0]), 'count': d[1]} for d in daily_signups]
+        except Exception as e:
+            logger.warning(f"Error fetching signup trend: {e}")
+            signup_trend = []
 
-        # Analyses by day (last 30 days)
-        daily_analyses = db.session.query(
-            func.date(Analysis.created_at).label('date'),
-            func.count(Analysis.id).label('count')
-        ).filter(Analysis.created_at >= thirty_days_ago).group_by(
-            func.date(Analysis.created_at)
-        ).all()
+        # Analyses by day (last 30 days) - optimized with limit
+        try:
+            daily_analyses = db.session.query(
+                func.date(Analysis.created_at).label('date'),
+                func.count(Analysis.id).label('count')
+            ).filter(
+                Analysis.created_at >= thirty_days_ago
+            ).group_by(func.date(Analysis.created_at)).order_by(func.date(Analysis.created_at)).limit(31).all()
 
-        analyses_trend = [{'date': str(d[0]), 'count': d[1]} for d in daily_analyses]
+            analyses_trend = [{'date': str(d[0]), 'count': d[1]} for d in daily_analyses]
+        except Exception as e:
+            logger.warning(f"Error fetching analyses trend: {e}")
+            analyses_trend = []
 
         return jsonify({
             'status': 'success',

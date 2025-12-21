@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app
 from models import db, User, Analysis, AdminLog, JobMatch, InterviewPrep, CompanyIntel, CareerPath, UserSkillHistory, GuestAnalysis, SystemConfiguration, Keyword
-from sqlalchemy import text
+from sqlalchemy import text, func
 
 # Load environment variables
 load_dotenv()
@@ -38,36 +38,49 @@ def cleanup_users(keep_email='alhassane.samassekou@gmail.com'):
             
             print(f"Found user to keep: {user_to_keep.email} (ID: {user_to_keep.id})")
             
-            # Get all other users
-            users_to_delete = User.query.filter(User.email != keep_email).all()
+            # Count users to delete (without loading into memory)
+            user_count = User.query.filter(User.email != keep_email).count()
             
-            if not users_to_delete:
+            if user_count == 0:
                 print("No users to delete. Only the specified user exists.")
                 return True
             
-            print(f"\nFound {len(users_to_delete)} users to delete:")
-            for u in users_to_delete:
-                print(f"  - {u.email} (ID: {u.id})")
+            print(f"\nFound {user_count} users to delete")
             
-            # Count related data
-            total_analyses = 0
-            total_admin_logs = 0
-            total_job_matches = 0
-            total_interview_preps = 0
-            total_company_intels = 0
-            total_career_paths = 0
-            total_skill_history = 0
-            total_guest_analyses = 0
+            # Count related data using SQL aggregates (memory efficient)
+            print("Counting related data...")
+            total_analyses = db.session.query(func.count(Analysis.id)).filter(
+                Analysis.user_id != user_to_keep.id
+            ).scalar() or 0
             
-            for user in users_to_delete:
-                total_analyses += Analysis.query.filter_by(user_id=user.id).count()
-                total_admin_logs += AdminLog.query.filter_by(admin_user_id=user.id).count()
-                total_job_matches += JobMatch.query.filter_by(user_id=user.id).count()
-                total_interview_preps += InterviewPrep.query.filter_by(user_id=user.id).count()
-                total_company_intels += CompanyIntel.query.filter_by(user_id=user.id).count()
-                total_career_paths += CareerPath.query.filter_by(user_id=user.id).count()
-                total_skill_history += UserSkillHistory.query.filter_by(user_id=user.id).count()
-                total_guest_analyses += GuestAnalysis.query.filter_by(converted_user_id=user.id).count()
+            total_admin_logs = db.session.query(func.count(AdminLog.id)).filter(
+                AdminLog.admin_user_id != user_to_keep.id
+            ).scalar() or 0
+            
+            total_job_matches = db.session.query(func.count(JobMatch.id)).filter(
+                JobMatch.user_id != user_to_keep.id
+            ).scalar() or 0
+            
+            total_interview_preps = db.session.query(func.count(InterviewPrep.id)).filter(
+                InterviewPrep.user_id != user_to_keep.id
+            ).scalar() or 0
+            
+            total_company_intels = db.session.query(func.count(CompanyIntel.id)).filter(
+                CompanyIntel.user_id != user_to_keep.id
+            ).scalar() or 0
+            
+            total_career_paths = db.session.query(func.count(CareerPath.id)).filter(
+                CareerPath.user_id != user_to_keep.id
+            ).scalar() or 0
+            
+            total_skill_history = db.session.query(func.count(UserSkillHistory.id)).filter(
+                UserSkillHistory.user_id != user_to_keep.id
+            ).scalar() or 0
+            
+            total_guest_analyses = db.session.query(func.count(GuestAnalysis.id)).filter(
+                GuestAnalysis.converted_user_id != None,
+                GuestAnalysis.converted_user_id != user_to_keep.id
+            ).scalar() or 0
             
             print(f"\nRelated data to be deleted:")
             print(f"  - Analyses: {total_analyses}")
@@ -80,64 +93,106 @@ def cleanup_users(keep_email='alhassane.samassekou@gmail.com'):
             print(f"  - Guest Analyses (converted): {total_guest_analyses}")
             
             # Confirm deletion
-            print(f"\n⚠️  WARNING: This will permanently delete {len(users_to_delete)} users and all their data!")
+            print(f"\n⚠️  WARNING: This will permanently delete {user_count} users and all their data!")
             response = input("Type 'DELETE' to confirm: ")
             
             if response != 'DELETE':
                 print("Deletion cancelled.")
                 return False
             
-            # Delete related data first (some may cascade, but being explicit)
-            print("\nDeleting related data...")
+            # Delete related data using bulk SQL operations (memory efficient)
+            print("\nDeleting related data in batches...")
             
-            for user in users_to_delete:
-                # Delete analyses (should cascade, but being explicit)
-                Analysis.query.filter_by(user_id=user.id).delete()
-                
-                # Delete admin logs
-                AdminLog.query.filter_by(admin_user_id=user.id).delete()
-                
-                # Delete job matches
-                JobMatch.query.filter_by(user_id=user.id).delete()
-                
-                # Delete interview preps
-                InterviewPrep.query.filter_by(user_id=user.id).delete()
-                
-                # Delete company intels
-                CompanyIntel.query.filter_by(user_id=user.id).delete()
-                
-                # Delete career paths
-                CareerPath.query.filter_by(user_id=user.id).delete()
-                
-                # Delete skill history
-                UserSkillHistory.query.filter_by(user_id=user.id).delete()
-                
-                # Update guest analyses (set converted_user_id to NULL)
-                GuestAnalysis.query.filter_by(converted_user_id=user.id).update({'converted_user_id': None})
-                
-                # Update system configurations (set updated_by_id to NULL)
-                SystemConfiguration.query.filter_by(updated_by_id=user.id).update({'updated_by_id': None})
-                
-                # Update keywords (set updated_by_id to NULL)
-                Keyword.query.filter_by(updated_by_id=user.id).update({'updated_by_id': None})
-                
-                # Delete user roles associations
-                db.session.execute(
-                    text("DELETE FROM user_roles WHERE user_id = :user_id"),
-                    {'user_id': user.id}
-                )
-            
-            # Commit related data deletions
+            # Use bulk delete operations
+            deleted_analyses = Analysis.query.filter(Analysis.user_id != user_to_keep.id).delete(synchronize_session=False)
             db.session.commit()
+            print(f"  ✓ Deleted {deleted_analyses} analyses")
+            
+            deleted_admin_logs = AdminLog.query.filter(AdminLog.admin_user_id != user_to_keep.id).delete(synchronize_session=False)
+            db.session.commit()
+            print(f"  ✓ Deleted {deleted_admin_logs} admin logs")
+            
+            deleted_job_matches = JobMatch.query.filter(JobMatch.user_id != user_to_keep.id).delete(synchronize_session=False)
+            db.session.commit()
+            print(f"  ✓ Deleted {deleted_job_matches} job matches")
+            
+            deleted_interview_preps = InterviewPrep.query.filter(InterviewPrep.user_id != user_to_keep.id).delete(synchronize_session=False)
+            db.session.commit()
+            print(f"  ✓ Deleted {deleted_interview_preps} interview preps")
+            
+            deleted_company_intels = CompanyIntel.query.filter(CompanyIntel.user_id != user_to_keep.id).delete(synchronize_session=False)
+            db.session.commit()
+            print(f"  ✓ Deleted {deleted_company_intels} company intels")
+            
+            deleted_career_paths = CareerPath.query.filter(CareerPath.user_id != user_to_keep.id).delete(synchronize_session=False)
+            db.session.commit()
+            print(f"  ✓ Deleted {deleted_career_paths} career paths")
+            
+            deleted_skill_history = UserSkillHistory.query.filter(UserSkillHistory.user_id != user_to_keep.id).delete(synchronize_session=False)
+            db.session.commit()
+            print(f"  ✓ Deleted {deleted_skill_history} skill history records")
+            
+            # Update guest analyses (set converted_user_id to NULL)
+            updated_guest_analyses = GuestAnalysis.query.filter(
+                GuestAnalysis.converted_user_id != None,
+                GuestAnalysis.converted_user_id != user_to_keep.id
+            ).update({'converted_user_id': None}, synchronize_session=False)
+            db.session.commit()
+            print(f"  ✓ Updated {updated_guest_analyses} guest analyses")
+            
+            # Update system configurations (set updated_by_id to NULL)
+            updated_configs = SystemConfiguration.query.filter(
+                SystemConfiguration.updated_by_id != None,
+                SystemConfiguration.updated_by_id != user_to_keep.id
+            ).update({'updated_by_id': None}, synchronize_session=False)
+            db.session.commit()
+            print(f"  ✓ Updated {updated_configs} system configurations")
+            
+            # Update keywords (set updated_by_id to NULL)
+            updated_keywords = Keyword.query.filter(
+                Keyword.updated_by_id != None,
+                Keyword.updated_by_id != user_to_keep.id
+            ).update({'updated_by_id': None}, synchronize_session=False)
+            db.session.commit()
+            print(f"  ✓ Updated {updated_keywords} keywords")
+            
+            # Delete user roles associations
+            deleted_roles = db.session.execute(
+                text("DELETE FROM user_roles WHERE user_id != :keep_user_id"),
+                {'keep_user_id': user_to_keep.id}
+            ).rowcount
+            db.session.commit()
+            print(f"  ✓ Deleted {deleted_roles} user role associations")
+            
             print("✓ Related data deleted")
             
-            # Delete users
-            print("\nDeleting users...")
-            for user in users_to_delete:
-                db.session.delete(user)
+            # Delete users in batches (process 100 at a time to avoid memory issues)
+            print("\nDeleting users in batches...")
+            batch_size = 100
+            deleted_count = 0
             
-            db.session.commit()
-            print(f"✓ Deleted {len(users_to_delete)} users")
+            while True:
+                # Get a batch of user IDs to delete
+                user_ids = db.session.query(User.id).filter(
+                    User.email != keep_email
+                ).limit(batch_size).all()
+                
+                if not user_ids:
+                    break
+                
+                user_ids_list = [uid[0] for uid in user_ids]
+                
+                # Delete this batch
+                batch_deleted = User.query.filter(User.id.in_(user_ids_list)).delete(synchronize_session=False)
+                db.session.commit()
+                deleted_count += batch_deleted
+                print(f"  ✓ Deleted batch: {batch_deleted} users (total: {deleted_count}/{user_count})")
+                
+                # Small delay to avoid overwhelming the database
+                import time
+                time.sleep(0.1)
+            
+            print(f"✓ Deleted {deleted_count} users")
             
             # Verify
             remaining_users = User.query.all()
