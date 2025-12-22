@@ -130,7 +130,7 @@ export const trackSearch = (searchTerm, category) => {
   });
 };
 
-export default {
+const analytics = {
   initAnalytics,
   trackPageView,
   trackEvent,
@@ -140,4 +140,6 @@ export default {
   trackButtonClick,
   trackSearch,
 };
+
+export default analytics;
 

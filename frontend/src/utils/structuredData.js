@@ -130,7 +130,7 @@ export const generateServiceSchema = () => ({
   description: 'AI-powered resume optimization, ATS scoring, skill gap analysis, and intelligent job matching services',
 });
 
-export default {
+const structuredData = {
   generateOrganizationSchema,
   generateWebApplicationSchema,
   generateBreadcrumbSchema,
@@ -138,4 +138,6 @@ export default {
   generateProductSchema,
   generateServiceSchema,
 };
+
+export default structuredData;
 

@@ -6,6 +6,50 @@ import Footer from './ui/Footer';
 import SEO from './common/SEO';
 import { generateFAQSchema } from '../utils/structuredData';
 
+// FAQs data - defined at module level before use
+const faqs = [
+  {
+    question: 'How do I analyze my resume?',
+    answer: 'To analyze your resume, go to the Dashboard and click "Analyze Resume". Upload your resume file (PDF, DOCX, or TXT), optionally add a job description, and click "Analyze". You\'ll receive detailed feedback within seconds.'
+  },
+  {
+    question: 'What file formats are supported?',
+    answer: 'We support PDF (.pdf), Microsoft Word (.docx), and plain text (.txt) files. For best results, we recommend using PDF format as it preserves formatting and structure.'
+  },
+  {
+    question: 'How do I get more credits?',
+    answer: 'Credits are included with your subscription plan. Free users get 5 credits, Pro users get 100 credits per month, and Elite users get 1000 credits. You can also purchase additional credits from the Billing page or upgrade your plan for more monthly credits.'
+  },
+  {
+    question: 'What is the job matching feature?',
+    answer: 'Our AI-powered job matching analyzes your resume and finds relevant job opportunities from our database of real-time job listings. It scores each match based on your skills, experience, and the job requirements, helping you find the best opportunities.'
+  },
+  {
+    question: 'How accurate is the AI analysis?',
+    answer: 'Our AI is trained on thousands of successful resumes and hiring patterns across multiple industries. It provides industry-standard feedback with 95%+ accuracy. However, we recommend using it as a guide alongside professional resume services for best results.'
+  },
+  {
+    question: 'Can I cancel my subscription anytime?',
+    answer: 'Yes! You can cancel your subscription at any time from the Billing page. You\'ll retain access to your plan features until the end of your current billing period. No questions asked, no cancellation fees.'
+  },
+  {
+    question: 'What makes your resume analysis different?',
+    answer: 'Our AI analyzes multiple factors including ATS compatibility, keyword optimization, formatting, content quality, and industry-specific requirements. We provide actionable feedback with specific suggestions for improvement, not just generic advice.'
+  },
+  {
+    question: 'How does the ATS score work?',
+    answer: 'The ATS (Applicant Tracking System) score measures how well your resume will perform when scanned by automated systems that companies use. We check for proper formatting, keyword usage, section organization, and readability. A score above 80% means your resume is well-optimized for ATS systems.'
+  },
+  {
+    question: 'Can I analyze the same resume multiple times?',
+    answer: 'Yes! Each analysis uses one credit, but you can analyze the same resume as many times as you want. This is useful for tracking improvements as you update your resume based on our feedback.'
+  },
+  {
+    question: 'Is my resume data kept private?',
+    answer: 'Absolutely. We take privacy seriously. Your resume data is encrypted, never shared with third parties, and you can delete it anytime from your profile. We only use anonymized data to improve our AI models, and you can opt out of this in your privacy settings.'
+  },
+];
+
 const HelpPage = ({ defaultTab = 'help' }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedFaq, setExpandedFaq] = useState(null);
@@ -67,49 +111,6 @@ const HelpPage = ({ defaultTab = 'help' }) => {
       title: 'AI Features',
       articles: 6,
       color: 'from-yellow-500 to-orange-500'
-    },
-  ];
-
-  const faqs = [
-    {
-      question: 'How do I analyze my resume?',
-      answer: 'To analyze your resume, go to the Dashboard and click "Analyze Resume". Upload your resume file (PDF, DOCX, or TXT), optionally add a job description, and click "Analyze". You\'ll receive detailed feedback within seconds.'
-    },
-    {
-      question: 'What file formats are supported?',
-      answer: 'We support PDF (.pdf), Microsoft Word (.docx), and plain text (.txt) files. For best results, we recommend using PDF format as it preserves formatting and structure.'
-    },
-    {
-      question: 'How do I get more credits?',
-      answer: 'Credits are included with your subscription plan. Free users get 5 credits, Pro users get 100 credits per month, and Elite users get 1000 credits. You can also purchase additional credits from the Billing page or upgrade your plan for more monthly credits.'
-    },
-    {
-      question: 'What is the job matching feature?',
-      answer: 'Our AI-powered job matching analyzes your resume and finds relevant job opportunities from our database of real-time job listings. It scores each match based on your skills, experience, and the job requirements, helping you find the best opportunities.'
-    },
-    {
-      question: 'How accurate is the AI analysis?',
-      answer: 'Our AI is trained on thousands of successful resumes and hiring patterns across multiple industries. It provides industry-standard feedback with 95%+ accuracy. However, we recommend using it as a guide alongside professional resume services for best results.'
-    },
-    {
-      question: 'Can I cancel my subscription anytime?',
-      answer: 'Yes! You can cancel your subscription at any time from the Billing page. You\'ll retain access to your plan features until the end of your current billing period. No questions asked, no cancellation fees.'
-    },
-    {
-      question: 'What makes your resume analysis different?',
-      answer: 'Our AI analyzes multiple factors including ATS compatibility, keyword optimization, formatting, content quality, and industry-specific requirements. We provide actionable feedback with specific suggestions for improvement, not just generic advice.'
-    },
-    {
-      question: 'How does the ATS score work?',
-      answer: 'The ATS (Applicant Tracking System) score measures how well your resume will perform when scanned by automated systems that companies use. We check for proper formatting, keyword usage, section organization, and readability. A score above 80% means your resume is well-optimized for ATS systems.'
-    },
-    {
-      question: 'Can I analyze the same resume multiple times?',
-      answer: 'Yes! Each analysis uses one credit, but you can analyze the same resume as many times as you want. This is useful for tracking improvements as you update your resume based on our feedback.'
-    },
-    {
-      question: 'Is my resume data kept private?',
-      answer: 'Absolutely. We take privacy seriously. Your resume data is encrypted, never shared with third parties, and you can delete it anytime from your profile. We only use anonymized data to improve our AI models, and you can opt out of this in your privacy settings.'
     },
   ];
 
