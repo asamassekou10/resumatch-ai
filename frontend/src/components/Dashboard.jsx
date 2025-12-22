@@ -4,6 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, X } from 'lucide-react';
 import { ROUTES } from '../config/routes';
+import { getCreditsDisplay } from '../utils/credits';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -191,7 +192,7 @@ const Dashboard = ({ userProfile }) => {
                 <svg className={`w-4 h-4 ${userProfile.subscription_tier === 'elite' ? 'text-amber-400' : userProfile.subscription_tier === 'pro' ? 'text-cyan-400' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                <span className={`font-semibold ${userProfile.subscription_tier === 'elite' ? 'text-amber-400' : userProfile.subscription_tier === 'pro' ? 'text-cyan-400' : 'text-gray-400'}`}>{userProfile.credits} Credits</span>
+                <span className={`font-semibold ${userProfile.subscription_tier === 'elite' ? 'text-amber-400' : userProfile.subscription_tier === 'pro' ? 'text-cyan-400' : 'text-gray-400'}`}>{getCreditsDisplay(userProfile.credits, userProfile.subscription_tier || 'free')} Credits</span>
               </div>
             </div>
             {userProfile.subscription_tier === 'free' && (

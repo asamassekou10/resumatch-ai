@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ROUTES } from '../config/routes';
 import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
+import SEO from './common/SEO';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -145,8 +146,29 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
     navigate(isLogin ? ROUTES.REGISTER : ROUTES.LOGIN);
   };
 
+  const seoMetadata = isLogin
+    ? {
+        title: 'Login',
+        description: 'Sign in to your ResumeAnalyzer AI account to access your resume analysis, job matches, and career insights. Secure login with email, Google, or LinkedIn.',
+        keywords: 'login, sign in, resume analyzer login, account access',
+        url: 'https://resumeanalyzerai.com/login'
+      }
+    : {
+        title: 'Create Account',
+        description: 'Create a free ResumeAnalyzer AI account to start optimizing your resume with AI-powered analysis, ATS scoring, and personalized job matching.',
+        keywords: 'register, sign up, create account, resume analyzer registration, free account',
+        url: 'https://resumeanalyzerai.com/register'
+      };
+
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
+    <>
+      <SEO
+        title={seoMetadata.title}
+        description={seoMetadata.description}
+        keywords={seoMetadata.keywords}
+        url={seoMetadata.url}
+      />
+      <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
       {/* Background atmosphere */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
@@ -308,6 +330,7 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
         </motion.div>
       </div>
     </div>
+    </>
   );
 };
 

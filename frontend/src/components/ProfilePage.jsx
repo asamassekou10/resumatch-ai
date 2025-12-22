@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { User, Upload, Mail, Calendar, Award, FileText } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SpotlightCard from './ui/SpotlightCard';
+import { getCreditsDisplay } from '../utils/credits';
 
 const ProfilePage = ({ user }) => {
   const navigate = useNavigate();
@@ -62,7 +63,7 @@ const ProfilePage = ({ user }) => {
                 <div className="grid grid-cols-2 gap-3 mt-4 relative z-10">
                   <div className="bg-white/5 rounded-lg p-3 relative z-10">
                     <p className="text-gray-400 text-xs mb-1 relative z-10">Credits</p>
-                    <p className="text-cyan-400 text-lg font-bold font-display relative z-10">{user.credits || 0}</p>
+                    <p className="text-cyan-400 text-lg font-bold font-display relative z-10">{getCreditsDisplay(user.credits, user.subscription_tier || 'free')}</p>
                   </div>
                   <div className="bg-white/5 rounded-lg p-3 relative z-10">
                     <p className="text-gray-400 text-xs mb-1 relative z-10">Plan</p>

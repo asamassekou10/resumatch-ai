@@ -71,16 +71,17 @@ function App() {
           setToken(data.access_token);
           localStorage.setItem('token', data.access_token);
           alert('Email verified successfully! Welcome to ResumeAnalyzer AI!');
+          // Navigate to dashboard using full navigation
+          window.location.href = '/dashboard';
         } else {
           alert('Error: ' + (data.error || 'Verification failed. Please try again.'));
+          window.location.href = '/login';
         }
-        // Clean the URL and redirect to dashboard
-        window.history.replaceState({}, document.title, '/dashboard');
       })
       .catch(err => {
         console.error('[App] Verification error:', err);
         alert('Verification failed. Please try again.');
-        window.history.replaceState({}, document.title, '/login');
+        window.location.href = '/login';
       });
     }
     // 2. Check for OAuth callback (Google or LinkedIn)
@@ -88,8 +89,8 @@ function App() {
       console.log('[App] OAuth callback - setting token', provider || 'google');
       setToken(tokenParam);
       localStorage.setItem('token', tokenParam);
-      // Clean the URL and redirect to dashboard
-      window.history.replaceState({}, document.title, '/dashboard');
+      // Navigate to dashboard using full navigation
+      window.location.href = '/dashboard';
     }
     // 3. Check for payment success/cancel
     else if (payment) {
@@ -101,17 +102,18 @@ function App() {
         setPaymentTier(tierPurchased);
         setShowPaymentModal(true);
         // Profile will be refreshed via the existing useEffect when token exists
+        // Navigate to dashboard using full navigation
+        window.location.href = '/dashboard';
       } else if (payment === 'cancel') {
         alert('Payment cancelled. You can upgrade anytime from your dashboard.');
+        window.location.href = '/dashboard';
       }
-      // Clean the URL
-      window.history.replaceState({}, document.title, '/dashboard');
     }
     // 4. Check for error message
     else if (errorMessage) {
       console.log('[App] OAuth or other error:', errorMessage);
       alert('Error: ' + decodeURIComponent(errorMessage));
-      window.history.replaceState({}, document.title, '/login');
+      window.location.href = '/login';
     }
     // 5. Check for error param (from LinkedIn OAuth)
     else if (errorParam) {
@@ -123,7 +125,7 @@ function App() {
         errorText = 'Security validation failed. Please try again.';
       }
       alert(errorText);
-      window.history.replaceState({}, document.title, '/login');
+      window.location.href = '/login';
     }
   }, []); // Empty dependency array - runs once on mount
 

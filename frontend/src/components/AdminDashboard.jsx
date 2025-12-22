@@ -46,30 +46,57 @@ const AdminDashboard = ({ token, onLogout, onNavigate }) => {
   const [jobStats, setJobStats] = useState(null);
   const [ingesting, setIngesting] = useState(false);
   const [ingestResult, setIngestResult] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
+    setError('');
+    setLoadingTimeout(false);
+    
+    // Set timeout for loading (10 seconds)
+    const timeoutId = setTimeout(() => {
+      if (loading && !stats) {
+        setLoadingTimeout(true);
+        setError('Request timed out. The server may be slow or unresponsive.');
+        setLoading(false);
+      }
+    }, 10000);
+
     fetchDashboardStats();
     fetchUsers();
     fetchJobSources();
     fetchJobStats();
+
+    return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   const fetchDashboardStats = async () => {
     try {
+      setError('');
       // API_URL already includes /v1, so just append admin/dashboard/stats
       const response = await fetch(`${API_URL}/admin/dashboard/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       if (data.status === 'success') {
         setStats(data.data);
+        setLoading(false);
+        setLoadingTimeout(false);
       } else {
         setError(data.message || 'Failed to fetch stats');
+        setLoading(false);
       }
     } catch (err) {
       console.error('Dashboard stats error:', err);
-      setError('Failed to fetch dashboard stats');
+      setError(err.message || 'Failed to fetch dashboard stats. Please check your connection and try again.');
+      setLoading(false);
     }
   };
 
@@ -155,12 +182,71 @@ const AdminDashboard = ({ token, onLogout, onNavigate }) => {
     );
   };
 
-  if (!stats) {
+  // Show loading state only if we're loading and haven't timed out
+  if (loading && !stats && !error && !loadingTimeout) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-500 mb-4"></div>
           <p className="text-white text-xl">Loading admin dashboard...</p>
+          <p className="text-slate-400 text-sm mt-2">This may take a few moments</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if there's an error or timeout
+  if (error || loadingTimeout) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center max-w-md">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-white text-2xl font-bold mb-2">Failed to Load Admin Dashboard</h2>
+          <p className="text-slate-400 mb-6">{error || 'Request timed out. The server may be slow or unresponsive.'}</p>
+          <button
+            onClick={() => {
+              setError('');
+              setLoadingTimeout(false);
+              setLoading(true);
+              setStats(null);
+              fetchDashboardStats();
+              fetchUsers();
+              fetchJobSources();
+              fetchJobStats();
+            }}
+            className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center gap-2 mx-auto"
+          >
+            <RefreshIcon className="w-5 h-5" />
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // If stats is still null but we're not loading, show error
+  if (!stats) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center max-w-md">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-white text-2xl font-bold mb-2">No Data Available</h2>
+          <p className="text-slate-400 mb-6">Unable to load dashboard statistics.</p>
+          <button
+            onClick={() => {
+              setError('');
+              setLoading(true);
+              setStats(null);
+              fetchDashboardStats();
+              fetchUsers();
+              fetchJobSources();
+              fetchJobStats();
+            }}
+            className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center gap-2 mx-auto"
+          >
+            <RefreshIcon className="w-5 h-5" />
+            Retry
+          </button>
         </div>
       </div>
     );

@@ -3,11 +3,45 @@ import { motion } from 'framer-motion';
 import { Search, ChevronDown, Mail, MessageSquare, BookOpen, FileText, Shield } from 'lucide-react';
 import SpotlightCard from './ui/SpotlightCard';
 import Footer from './ui/Footer';
+import SEO from './common/SEO';
+import { generateFAQSchema } from '../utils/structuredData';
 
-const HelpPage = () => {
+const HelpPage = ({ defaultTab = 'help' }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedFaq, setExpandedFaq] = useState(null);
-  const [activeView, setActiveView] = useState('help'); // 'help', 'terms', 'privacy'
+  const [activeView, setActiveView] = useState(defaultTab); // 'help', 'terms', 'privacy'
+  
+  // Get SEO metadata based on active view
+  const getSEOMetadata = () => {
+    switch (activeView) {
+      case 'terms':
+        return {
+          title: 'Terms of Service',
+          description: 'Read our Terms of Service to understand the terms and conditions for using ResumeAnalyzer AI. Learn about user rights, subscription terms, and acceptable use policies.',
+          keywords: 'terms of service, user agreement, legal terms, resume analyzer terms',
+          url: 'https://resumeanalyzerai.com/help/terms'
+        };
+      case 'privacy':
+        return {
+          title: 'Privacy Policy',
+          description: 'Learn how ResumeAnalyzer AI protects your privacy. Our Privacy Policy explains how we collect, use, and safeguard your personal information and resume data.',
+          keywords: 'privacy policy, data protection, GDPR, user privacy, resume data security',
+          url: 'https://resumeanalyzerai.com/help/privacy'
+        };
+      default:
+        return {
+          title: 'Help & Support',
+          description: 'Get help with ResumeAnalyzer AI. Find answers to frequently asked questions, learn how to use our features, and contact our support team for assistance.',
+          keywords: 'help, support, FAQ, resume analyzer help, how to use, customer support',
+          url: 'https://resumeanalyzerai.com/help'
+        };
+    }
+  };
+  
+  const seoMetadata = getSEOMetadata();
+  
+  // Generate FAQ schema for help page
+  const faqSchema = activeView === 'help' ? generateFAQSchema(faqs) : null;
 
   const categories = [
     {
@@ -87,8 +121,16 @@ const HelpPage = () => {
     : faqs;
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Background atmosphere */}
+    <>
+      <SEO
+        title={seoMetadata.title}
+        description={seoMetadata.description}
+        keywords={seoMetadata.keywords}
+        url={seoMetadata.url}
+        structuredData={faqSchema ? [faqSchema] : null}
+      />
+      <div className="min-h-screen bg-black relative overflow-hidden">
+        {/* Background atmosphere */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
       <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
@@ -618,6 +660,7 @@ const HelpPage = () => {
       </div>
       <Footer />
     </div>
+    </>
   );
 };
 

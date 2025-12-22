@@ -8,13 +8,32 @@ Disallow: /admin
 Disallow: /analyze
 Disallow: /result
 Disallow: /checkout
+Disallow: /profile
+Disallow: /settings
+Disallow: /billing
+Disallow: /market
 
 # Allow public pages
 Allow: /
 Allow: /pricing
 Allow: /guest-analyze
+Allow: /help
+Allow: /help/terms
+Allow: /help/privacy
 Allow: /login
 Allow: /register
+
+# Allow static assets
+Allow: /static/
+Allow: /*.css
+Allow: /*.js
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.gif
+Allow: /*.svg
+Allow: /*.webp
+Allow: /*.ico
 
 # Sitemap location
 Sitemap: https://resumeanalyzerai.com/sitemap.xml

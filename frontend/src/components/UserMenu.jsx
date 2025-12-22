@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Settings, CreditCard, HelpCircle, LogOut, Crown, ChevronDown } from 'lucide-react';
 import { ROUTES } from '../config/routes';
+import { getMaxCredits, getCreditsDisplay } from '../utils/credits';
 
 const UserMenu = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,7 +26,7 @@ const UserMenu = ({ user, onLogout }) => {
   if (!user) return null;
 
   // Calculate credit percentage - cap at 100% for display
-  const maxCredits = user.subscription_tier === 'premium' || user.subscription_tier === 'elite' ? 1000 : 100;
+  const maxCredits = getMaxCredits(user.subscription_tier || 'free');
   const creditPercentage = Math.min(((user.credits || 0) / maxCredits) * 100, 100);
   const creditColor = creditPercentage > 50 ? 'cyan' : creditPercentage > 20 ? 'yellow' : 'red';
 
@@ -66,7 +67,7 @@ const UserMenu = ({ user, onLogout }) => {
           <div className="p-3 border-b border-slate-700">
             <div className="flex justify-between items-center mb-1">
               <span className="text-xs text-slate-400">Credits</span>
-              <span className="text-sm font-semibold text-white">{user.credits || 0}/{maxCredits}</span>
+              <span className="text-sm font-semibold text-white">{getCreditsDisplay(user.credits, user.subscription_tier || 'free')}</span>
             </div>
             <div className="w-full bg-slate-700 rounded-full h-2">
               <div

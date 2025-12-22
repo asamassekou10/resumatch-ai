@@ -22,7 +22,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "npm run generate:sitemap && react-scripts build",
+    "build:prod": "npm run generate:sitemap && REACT_APP_ENABLE_ANALYTICS=true react-scripts build",
+    "generate:sitemap": "node scripts/generate-sitemap.js",
+    "generate:favicon": "node scripts/generate-favicon.js",
     "test": "react-scripts test --watchAll=false",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
     "test:e2e": "echo 'E2E tests not configured yet'",
@@ -62,6 +65,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "postcss": "^8.5.6",
     "prettier": "^3.1.1",
-    "tailwindcss": "^4.1.14"
+    "tailwindcss": "^4.1.14",
+    "to-ico": "^1.1.5"
   }
 }

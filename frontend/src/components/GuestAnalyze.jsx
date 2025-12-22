@@ -407,26 +407,26 @@ const GuestAnalyze = () => {
 
             {/* Overall Score Card */}
             <motion.div
-              className="bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-600 rounded-lg p-8"
+              className="bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-600 rounded-lg p-4 sm:p-6 md:p-8"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
             >
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="text-center">
-                  <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
+                  <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
                     {analysisResults.overall_score || 0}%
                   </div>
-                  <p className="text-slate-300 font-semibold">Overall Match Score</p>
-                  <p className="text-slate-400 text-sm mt-2">{analysisResults.interpretation}</p>
+                  <p className="text-slate-300 font-semibold text-sm sm:text-base">Overall Match Score</p>
+                  <p className="text-slate-400 text-xs sm:text-sm mt-2">{analysisResults.interpretation}</p>
                 </div>
-                <div className="flex flex-col justify-center gap-3">
+                <div className="flex flex-col justify-center gap-3 text-center sm:text-left">
                   <div>
-                    <p className="text-slate-400 text-sm mb-1">Industry</p>
-                    <p className="text-white font-semibold">{analysisResults.job_industry || 'Unknown'}</p>
+                    <p className="text-slate-400 text-xs sm:text-sm mb-1">Industry</p>
+                    <p className="text-white font-semibold text-sm sm:text-base">{analysisResults.job_industry || 'Unknown'}</p>
                   </div>
                   <div>
-                    <p className="text-slate-400 text-sm mb-1">ATS Pass Rate</p>
-                    <p className="text-cyan-400 font-semibold">{analysisResults.expected_ats_pass_rate}</p>
+                    <p className="text-slate-400 text-xs sm:text-sm mb-1">ATS Pass Rate</p>
+                    <p className="text-cyan-400 font-semibold text-sm sm:text-base">{analysisResults.expected_ats_pass_rate}</p>
                   </div>
                 </div>
               </div>

@@ -1,4 +1,8 @@
 import { Helmet } from 'react-helmet-async';
+import {
+  generateOrganizationSchema,
+  generateWebApplicationSchema,
+} from '../../utils/structuredData';
 
 /**
  * SEO Component
@@ -11,6 +15,7 @@ import { Helmet } from 'react-helmet-async';
  * - Twitter Card tags
  * - Canonical URLs
  * - Keywords (optional)
+ * - Structured data (JSON-LD)
  *
  * @param {Object} props
  * @param {string} props.title - Page title (will be appended with " | ResumeAnalyzer AI")
@@ -19,6 +24,7 @@ import { Helmet } from 'react-helmet-async';
  * @param {string} props.image - Social media share image URL (optional)
  * @param {string} props.url - Canonical URL for this page (optional)
  * @param {string} props.type - Open Graph type (default: "website")
+ * @param {Object} props.structuredData - Additional structured data schemas (optional)
  */
 const SEO = ({
   title,
@@ -26,13 +32,14 @@ const SEO = ({
   keywords,
   image,
   url,
-  type = 'website'
+  type = 'website',
+  structuredData = null
 }) => {
   // Default values
   const siteUrl = 'https://resumeanalyzerai.com';
   const defaultTitle = 'ResumeAnalyzer AI - AI-Powered Resume Analysis & Job Matching';
   const defaultDescription = 'Optimize your resume with AI-powered analysis, ATS scoring, skill gap analysis, and personalized job matching. Get hired faster with ResumeAnalyzer AI.';
-  const defaultImage = `${siteUrl}/og-image.png`; // You'll need to add this image
+  const defaultImage = `${siteUrl}/og-image.png`;
   const siteName = 'ResumeAnalyzer AI';
 
   // Construct final values
@@ -40,6 +47,17 @@ const SEO = ({
   const pageDescription = description || defaultDescription;
   const pageUrl = url || siteUrl;
   const pageImage = image || defaultImage;
+
+  // Generate default structured data
+  const defaultStructuredData = [
+    generateOrganizationSchema(),
+    generateWebApplicationSchema(),
+  ];
+
+  // Merge with custom structured data if provided
+  const allStructuredData = structuredData
+    ? [...defaultStructuredData, ...(Array.isArray(structuredData) ? structuredData : [structuredData])]
+    : defaultStructuredData;
 
   return (
     <Helmet>
@@ -57,6 +75,7 @@ const SEO = ({
       <meta property="og:image" content={pageImage} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt" content={pageTitle} />
       <meta property="og:locale" content="en_US" />
 
       {/* Twitter Card Tags */}
@@ -64,6 +83,7 @@ const SEO = ({
       <meta name="twitter:title" content={pageTitle} />
       <meta name="twitter:description" content={pageDescription} />
       <meta name="twitter:image" content={pageImage} />
+      <meta name="twitter:image:alt" content={pageTitle} />
       <meta name="twitter:site" content="@resumatchai" />
       <meta name="twitter:creator" content="@resumatchai" />
 
@@ -77,6 +97,15 @@ const SEO = ({
 
       {/* Theme Color for Mobile Browsers */}
       <meta name="theme-color" content="#0f172a" />
+
+      {/* Structured Data (JSON-LD) */}
+      {allStructuredData.map((data, index) => (
+        <script
+          key={index}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+        />
+      ))}
     </Helmet>
   );
 };

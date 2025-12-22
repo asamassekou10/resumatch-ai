@@ -5,6 +5,7 @@ import PublicLayout from '../layouts/PublicLayout';
 import MainLayout from '../layouts/MainLayout';
 import MarketLayout from '../layouts/MarketLayout';
 import LoadingSpinner from '../common/LoadingSpinner';
+import RouteTracker from './RouteTracker';
 import { ROUTES } from '../../config/routes';
 
 // ============================================
@@ -66,6 +67,7 @@ const AdminDashboard = lazy(() => import('../AdminDashboard'));
 const AppRoutes = ({ userProfile, token, handleLogout, handleLogin }) => {
   return (
     <Suspense fallback={<LoadingSpinner message="Loading page..." />}>
+      <RouteTracker />
       <Routes>
         {/* ============================================ */}
         {/* PUBLIC ROUTES (No Authentication Required)  */}
