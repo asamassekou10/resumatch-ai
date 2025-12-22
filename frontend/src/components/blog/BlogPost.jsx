@@ -35,8 +35,8 @@ const BlogPost = () => {
     image: post.image,
   });
 
-  // For MVP, we'll use the excerpt as content. In production, load from markdown file
-  const content = `
+  // Use full content if available, otherwise use placeholder
+  const content = post.content || `
     <p>${post.excerpt}</p>
     <p>This is a placeholder blog post. In production, the full content would be loaded from a markdown file or CMS.</p>
     <h2>Key Takeaways</h2>
