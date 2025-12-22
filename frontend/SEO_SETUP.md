@@ -52,10 +52,28 @@ You can use tools like:
 
 ### 3. Favicon Icons
 
-Ensure you have all favicon sizes in `frontend/public/`:
-- `favicon.ico` (16x16, 32x32, 48x48)
+**Important:** If your favicon appears as a solid color (e.g., all green), the PNG files are likely placeholders. Generate proper favicons from your logo:
+
+**Recommended Method (Online Tool):**
+1. Go to https://realfavicongenerator.net/
+2. Upload `logo512.png` from `frontend/public/`
+3. Configure settings (default settings work well)
+4. Click "Generate your Favicons and HTML code"
+5. Download the generated package
+6. Extract and replace these files in `frontend/public/`:
+   - `favicon.ico`
+   - `favicon-16x16.png`
+   - `favicon-32x32.png`
+   - `apple-touch-icon.png`
+   - Any other generated sizes
+
+**Alternative:** Use https://www.favicon-generator.org/ with the same process.
+
+**Required files in `frontend/public/`:**
+- `favicon.ico` (multi-resolution: 16x16, 32x32, 48x48)
 - `favicon-16x16.png`
 - `favicon-32x32.png`
+- `favicon-48x48.png` (optional but recommended)
 - `apple-touch-icon.png` (180x180)
 - `logo192.png` (192x192) - already exists
 - `logo512.png` (512x512) - already exists
