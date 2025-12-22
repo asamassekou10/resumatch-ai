@@ -10,6 +10,57 @@ const path = require('path');
 
 const SITE_URL = 'https://resumeanalyzerai.com';
 
+// Import job roles for dynamic pages
+let JOB_ROLES = [];
+try {
+  // Use require to load the module (Node.js can handle ES modules with proper setup)
+  // For MVP, we'll use a simpler approach: read the file and extract slugs
+  const jobRolesPath = path.join(__dirname, '../src/utils/jobRoles.js');
+  if (fs.existsSync(jobRolesPath)) {
+    const jobRolesContent = fs.readFileSync(jobRolesPath, 'utf8');
+    // Extract all slug values from the JOB_ROLES array
+    const slugRegex = /slug:\s*['"]([^'"]+)['"]/g;
+    let match;
+    while ((match = slugRegex.exec(jobRolesContent)) !== null) {
+      const slug = match[1];
+      JOB_ROLES.push({
+        path: `/resume-for/${slug}`,
+        priority: '0.8',
+        changefreq: 'monthly',
+        lastmod: new Date().toISOString().split('T')[0]
+      });
+    }
+    console.log(`✅ Found ${JOB_ROLES.length} job role pages for sitemap`);
+  }
+} catch (err) {
+  console.log('⚠️  Could not load job roles for sitemap:', err.message);
+}
+
+// Import blog posts for dynamic pages
+let BLOG_POSTS = [];
+try {
+  const blogContentPath = path.join(__dirname, '../src/utils/blogContent.js');
+  if (fs.existsSync(blogContentPath)) {
+    const blogContent = fs.readFileSync(blogContentPath, 'utf8');
+    // Extract all slug values from the BLOG_POSTS array
+    const slugRegex = /slug:\s*['"]([^'"]+)['"]/g;
+    let match;
+    while ((match = slugRegex.exec(blogContent)) !== null) {
+      const slug = match[1];
+      BLOG_POSTS.push({
+        path: `/blog/${slug}`,
+        priority: '0.7',
+        changefreq: 'monthly',
+        lastmod: new Date().toISOString().split('T')[0]
+      });
+    }
+    console.log(`✅ Found ${BLOG_POSTS.length} blog posts for sitemap`);
+  }
+} catch (err) {
+  // Blog content may not exist yet, that's okay
+  console.log('⚠️  Could not load blog posts for sitemap:', err.message);
+}
+
 const ROUTE_CONFIG = [
   {
     path: '/',
@@ -58,7 +109,23 @@ const ROUTE_CONFIG = [
     priority: '0.7',
     changefreq: 'yearly',
     lastmod: new Date().toISOString().split('T')[0]
-  }
+  },
+  {
+    path: '/blog',
+    priority: '0.8',
+    changefreq: 'weekly',
+    lastmod: new Date().toISOString().split('T')[0]
+  },
+  {
+    path: '/resources/for-students',
+    priority: '0.8',
+    changefreq: 'monthly',
+    lastmod: new Date().toISOString().split('T')[0]
+  },
+  // Add job role pages
+  ...JOB_ROLES,
+  // Add blog post pages
+  ...BLOG_POSTS,
 ];
 
 function generateSitemap() {

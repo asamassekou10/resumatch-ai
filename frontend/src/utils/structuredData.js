@@ -130,6 +130,69 @@ export const generateServiceSchema = () => ({
   description: 'AI-powered resume optimization, ATS scoring, skill gap analysis, and intelligent job matching services',
 });
 
+/**
+ * Generate JobPosting schema for role pages
+ * @param {Object} jobData - Job information
+ */
+export const generateJobPostingSchema = (jobData) => ({
+  '@context': 'https://schema.org',
+  '@type': 'JobPosting',
+  title: jobData.title,
+  description: jobData.description || `Resume optimization and analysis services for ${jobData.title} positions`,
+  industry: jobData.industry,
+  skills: jobData.skills || [],
+  employmentType: 'FULL_TIME',
+  jobLocation: {
+    '@type': 'Place',
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'US',
+    },
+  },
+  baseSalary: {
+    '@type': 'MonetaryAmount',
+    currency: 'USD',
+  },
+  datePosted: new Date().toISOString(),
+  validThrough: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 days from now
+  hiringOrganization: {
+    '@type': 'Organization',
+    name: SITE_NAME,
+    sameAs: SITE_URL,
+  },
+});
+
+/**
+ * Generate Article schema for blog posts
+ * @param {Object} articleData - Article information
+ */
+export const generateArticleSchema = (articleData) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: articleData.headline,
+  description: articleData.description,
+  author: {
+    '@type': 'Organization',
+    name: SITE_NAME,
+    url: SITE_URL,
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: SITE_NAME,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${SITE_URL}/logo512.png`,
+    },
+  },
+  datePublished: articleData.datePublished,
+  dateModified: articleData.dateModified || articleData.datePublished,
+  image: articleData.image || `${SITE_URL}/og-image.png`,
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': articleData.url,
+  },
+});
+
 const structuredData = {
   generateOrganizationSchema,
   generateWebApplicationSchema,
@@ -137,6 +200,8 @@ const structuredData = {
   generateFAQSchema,
   generateProductSchema,
   generateServiceSchema,
+  generateJobPostingSchema,
+  generateArticleSchema,
 };
 
 export default structuredData;

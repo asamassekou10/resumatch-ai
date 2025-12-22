@@ -8,6 +8,7 @@ import ShimmerButton from './ui/ShimmerButton';
 import EntranceOverlay from './ui/EntranceOverlay';
 import Footer from './ui/Footer';
 import SpotlightCard from './ui/SpotlightCard';
+import { generateFAQSchema } from '../utils/structuredData';
 
 
 
@@ -118,6 +119,32 @@ const LandingPageV2 = ({ token }) => {
     }
   ];
 
+  // FAQ data for homepage
+  const homepageFAQs = [
+    {
+      question: 'Is ResumeAnalyzer AI free?',
+      answer: 'Yes! We offer a free tier that includes 5 resume analysis credits. You can analyze your resume and get basic feedback at no cost. Upgrade to Pro or Elite plans for more credits and advanced features like job matching and career path analysis.'
+    },
+    {
+      question: 'How accurate is the AI resume analysis?',
+      answer: 'Our AI is trained on thousands of successful resumes and hiring patterns across multiple industries. It provides industry-standard feedback with 95%+ accuracy. However, we recommend using it as a guide alongside professional resume services for best results.'
+    },
+    {
+      question: 'What file formats are supported?',
+      answer: 'We support PDF (.pdf), Microsoft Word (.docx), and plain text (.txt) files. For best results, we recommend using PDF format as it preserves formatting and structure better than other formats.'
+    },
+    {
+      question: 'How does ATS optimization work?',
+      answer: 'Our AI analyzes your resume for ATS compatibility by checking formatting, keyword usage, section organization, and readability. We provide an ATS score and specific recommendations to improve your resume\'s chances of passing automated screening systems used by 99% of Fortune 500 companies.'
+    },
+    {
+      question: 'Can I use this for any job role?',
+      answer: 'Absolutely! ResumeAnalyzer AI works for all job roles and industries. We have specialized landing pages for specific roles (software engineer, nurse, marketing manager, etc.) with role-specific tips and keywords. Our AI adapts its analysis based on the job description you provide.'
+    }
+  ];
+
+  const faqSchema = generateFAQSchema(homepageFAQs);
+
   return (
     <>
       <SEO
@@ -125,6 +152,7 @@ const LandingPageV2 = ({ token }) => {
         description="Optimize your resume with AI-powered analysis, ATS scoring, skill gap analysis, and personalized job matching. Get hired faster with ResumeAnalyzer AI."
         keywords="resume analyzer, AI resume, ATS score, job matching, career tools, resume optimization"
         url="https://resumeanalyzerai.com/"
+        structuredData={[faqSchema]}
       />
       <AnimatePresence>
         {showEntrance && <EntranceOverlay onComplete={() => setShowEntrance(false)} />}
@@ -593,6 +621,48 @@ const LandingPageV2 = ({ token }) => {
             {token ? 'Go to Dashboard' : 'Try For Free'} <ArrowRight size={20} />
           </ShimmerButton>
         </motion.div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="py-16 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            className="text-center mb-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            custom={0}
+          >
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 font-display">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-gray-400">
+              Everything you need to know about ResumeAnalyzer AI
+            </p>
+          </motion.div>
+
+          <div className="space-y-4">
+            {homepageFAQs.map((faq, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <SpotlightCard className="rounded-xl p-6">
+                  <h3 className="text-lg font-bold text-white mb-3 font-display">
+                    {faq.question}
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed">
+                    {faq.answer}
+                  </p>
+                </SpotlightCard>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </div>
 
       <Footer />

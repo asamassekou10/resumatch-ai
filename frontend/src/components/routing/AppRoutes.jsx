@@ -19,6 +19,17 @@ const GuestAnalyze = lazy(() => import('../GuestAnalyze'));
 const PricingPage = lazy(() => import('../PricingPageV2'));
 const HelpPage = lazy(() => import('../HelpPage'));
 
+// SEO Pages
+const JobRoleLandingPage = lazy(() => import('../seo/JobRoleLandingPage'));
+
+// Blog Pages
+const BlogLayout = lazy(() => import('../blog/BlogLayout'));
+const BlogList = lazy(() => import('../blog/BlogList'));
+const BlogPost = lazy(() => import('../blog/BlogPost'));
+
+// SEO Resource Pages
+const StudentResources = lazy(() => import('../seo/StudentResources'));
+
 // Protected Pages
 const Dashboard = lazy(() => import('../Dashboard'));
 const AnalyzePage = lazy(() => import('../AnalyzePage'));
@@ -117,6 +128,23 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin }) => {
             path={ROUTES.HELP_PRIVACY}
             element={<HelpPage defaultTab="privacy" />}
           />
+
+          {/* Programmatic SEO: Job Role Landing Pages */}
+          <Route
+            path="/resume-for/:roleSlug"
+            element={<JobRoleLandingPage />}
+          />
+
+          {/* Blog Routes */}
+          <Route
+            element={<BlogLayout />}
+          >
+            <Route path="/blog" element={<BlogList />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+          </Route>
+
+          {/* SEO Resource Pages */}
+          <Route path="/resources/for-students" element={<StudentResources />} />
         </Route>
 
         {/* ============================================ */}
