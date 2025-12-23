@@ -220,6 +220,45 @@ export const BLOG_POSTS = [
     category: 'Resume Tips',
     readTime: '6 min read',
     excerpt: 'If you\'re sending out resumes but not getting interviews, these 7 common mistakes might be the reason. Learn how to identify and fix them.',
+    content: `
+      <p>You hit “submit” on dozens of applications and hear nothing back. In most cases it is not your talent—it is how your resume is being read by ATS filters and hiring managers who skim for signals. Fix these seven traps and you will see replies start to land.</p>
+
+      <h2>1) Your summary is vague</h2>
+      <p>Generic openers like “Hard‑working professional seeking challenging role” waste the top of the page. Replace with a headline that proves fit in one line: “Product Manager | 6 yrs in B2B SaaS | Drove 3 launches to $5M ARR.”</p>
+
+      <h2>2) Wrong keywords for the role</h2>
+      <p>ATS filters mirror the job description. If the posting says “customer onboarding” and you write “client activation,” you will miss matches. Build a 10–15 keyword bank straight from the JD and thread those exact phrases into summary, experience bullets, and skills.</p>
+
+      <h2>3) No measurable outcomes</h2>
+      <p>Bullets that start with “Responsible for” read like duties, not impact. Convert each line into a metric: revenue, users, time saved, cost avoided, quality lifted. Example: “Cut onboarding time from 21 to 12 days by redesigning playbooks and QA gates.”</p>
+
+      <h2>4) Formatting breaks ATS</h2>
+      <ul>
+        <li>Avoid tables, text boxes, multi-column layouts, or images.</li>
+        <li>Use standard section labels: Experience, Education, Skills, Certifications.</li>
+        <li>Save as PDF or DOCX with a single-column flow and bullet points.</li>
+      </ul>
+
+      <h2>5) Skills list is either missing or bloated</h2>
+      <p>Under 12 skills looks under-qualified; 40+ looks like keyword stuffing. Aim for 12–18 focused skills that map to the target role, grouped by tools, methods, and domain expertise.</p>
+
+      <h2>6) Job titles don’t match the market</h2>
+      <p>If your internal title is unusual, add a market-aligned alias in parentheses: “Customer Success Guide (CSM)” or “Product Champion (Product Manager).” This preserves honesty while boosting search matches.</p>
+
+      <h2>7) Missing proof of leadership or scope</h2>
+      <p>Hiring managers skim for scope in seconds: team size, budgets, stakeholders, geographies. Add quick scope tags to bullets: “Led 4 engineers,” “Owned $1.2M budget,” “Partnered with Sales, RevOps, and Legal.”</p>
+
+      <h2>Quick rescue checklist</h2>
+      <ul>
+        <li>Rewrite top summary with title, years, domain, and one flagship result.</li>
+        <li>Mirror 10–15 exact phrases from the job description.</li>
+        <li>Convert every bullet to action verb + metric + outcome.</li>
+        <li>Standardize format: single column, no tables, clean fonts.</li>
+        <li>Cap skills at ~15 and make them role-specific.</li>
+      </ul>
+
+      <p>The goal is clarity and evidence, not length. Two pages of quantified impact beats one page of placeholders every time. Once these fixes are in, run an ATS scan (like ResumeAnalyzer AI) to confirm parse rate and keyword coverage before you apply.</p>
+    `,
   },
   {
     slug: 'resume-keywords-project-managers',
@@ -233,6 +272,54 @@ export const BLOG_POSTS = [
     category: 'Industry Guides',
     readTime: '7 min read',
     excerpt: 'Project managers need specific keywords to pass ATS filters. This guide shows you exactly which terms to include in your resume.',
+    content: `
+      <p>Project management resumes fail ATS when the language doesn’t mirror how hiring managers search. Strong PM resumes combine delivery metrics, domain fluency, and the exact tools listed in the job description. Use this keyword map to boost matches without sounding robotic.</p>
+
+      <h2>Core delivery keywords</h2>
+      <ul>
+        <li>Methodologies: Agile, Scrum, Kanban, Waterfall, Hybrid delivery</li>
+        <li>Governance: RAID logs, RACI, stage gates, change control, risk mitigation</li>
+        <li>Planning: roadmaps, backlog prioritization, sprint planning, capacity planning</li>
+        <li>Execution: critical path, dependencies, milestones, burndown, velocity</li>
+        <li>Stakeholders: cross-functional alignment, executive reporting, steering committee</li>
+      </ul>
+
+      <h2>Tooling keywords that ATS looks for</h2>
+      <p>Name the exact platforms you use. If the JD lists them, mirror them verbatim:</p>
+      <ul>
+        <li>Jira, Asana, Trello, Monday.com, Azure DevOps</li>
+        <li>Smartsheet, MS Project, Gantt, Timeline</li>
+        <li>Confluence, Notion, Google Workspace, Miro</li>
+        <li>Data/Reporting: Looker, Tableau, Power BI, SQL (for status dashboards)</li>
+      </ul>
+
+      <h2>Quantify scope and impact</h2>
+      <p>Attach numbers to every project bullet so hiring managers see scale fast:</p>
+      <ul>
+        <li>“Led $1.8M portfolio across 3 workstreams; delivered 92% of milestones on time.”</li>
+        <li>“Increased sprint velocity from 24 to 34 story points in 2 quarters via WIP limits.”</li>
+        <li>“Cut cycle time 28% by implementing automated regression and release gates.”</li>
+        <li>“Coordinated 7 teams (Product, Eng, QA, Security, Legal, Ops, Support) through launch.”</li>
+      </ul>
+
+      <h2>Where to place keywords</h2>
+      <ul>
+        <li>Headline: “Sr. Project Manager | Agile/Scrum | Cloud & Data Platforms.”</li>
+        <li>Experience bullets: tie keywords to measurable outcomes, not just a list.</li>
+        <li>Skills section: 12–18 items grouped by methodology, tools, and domain.</li>
+        <li>Certs: PMP, CSM, SAFe, ITIL—write full names and abbreviations.</li>
+      </ul>
+
+      <h2>Common mistakes that block interviews</h2>
+      <ul>
+        <li>Using generic verbs (“managed projects”) instead of outcomes (“delivered X ahead of schedule”).</li>
+        <li>Listing frameworks without context—always pair with a result.</li>
+        <li>Ignoring the industry. A fintech PM should show “PCI,” “SOC2,” “KYC,” not just “Agile.”</li>
+        <li>Forgetting change management: training, rollout, adoption, comms plans.</li>
+      </ul>
+
+      <p>Make your resume read like a project report: scope, timeline, risk, budget, and delivery metrics. That language is exactly what ATS and hiring managers scan for when shortlisting project managers.</p>
+    `,
   },
   {
     slug: 'software-engineer-resume-hiring-managers',
@@ -246,6 +333,53 @@ export const BLOG_POSTS = [
     category: 'Industry Guides',
     readTime: '9 min read',
     excerpt: 'Tech hiring managers see hundreds of resumes. Learn what makes a software engineer resume stand out and get you the interview.',
+    content: `
+      <p>Tech hiring managers skim fast. They look for signals of impact, code quality, and ownership—not just a list of languages. Use these sections to make your engineering resume pass both ATS filters and the 10-second human scan.</p>
+
+      <h2>Baseline signals (stack + scope)</h2>
+      <ul>
+        <li>Languages and frameworks: name exact versions when relevant (e.g., React 18, Node 20, Python 3.11).</li>
+        <li>Systems: distributed systems, microservices, event-driven, REST/GraphQL.</li>
+        <li>Scale: requests per second, data volume, uptime targets, latency improvements.</li>
+        <li>Teams: “Worked in a squad of 6 engineers with product + design,” “On-call rotation.”</li>
+      </ul>
+
+      <h2>Impact-focused bullets</h2>
+      <p>Every bullet should pair an action with a measurable result:</p>
+      <ul>
+        <li>“Reduced P95 latency from 480ms to 160ms by introducing Redis caching and query tuning.”</li>
+        <li>“Cut CI time 35% by parallelizing tests and adopting incremental builds.”</li>
+        <li>“Increased activation by 12% by shipping guided onboarding (React + Feature Flags).”</li>
+        <li>“Improved reliability to 99.95% by adding health checks, circuit breakers, and SLO alerts.”</li>
+      </ul>
+
+      <h2>Projects that prove ownership</h2>
+      <p>Highlight 2–3 projects that show end-to-end responsibility:</p>
+      <ul>
+        <li>Architecture choices (why microservices vs monolith, data modeling decisions).</li>
+        <li>Trade-offs made (performance vs complexity, build vs buy).</li>
+        <li>Security and privacy steps (authZ/authN, OWASP, secrets management).</li>
+        <li>Testing depth: unit, integration, contract tests, load tests.</li>
+      </ul>
+
+      <h2>ATS-friendly formatting for engineers</h2>
+      <ul>
+        <li>Single column, no tables. Use bullet points, not paragraphs.</li>
+        <li>Group skills by category: Languages, Frameworks, Cloud/Infra, Data/ML, Tooling.</li>
+        <li>Spell out acronyms once: “CI/CD (GitHub Actions, ArgoCD).”</li>
+        <li>Include open-source or portfolio links (GitHub, personal site, npm/PyPI packages).</li>
+      </ul>
+
+      <h2>What hiring managers love to see</h2>
+      <ul>
+        <li>Production incidents you solved and what you changed afterward.</li>
+        <li>Performance work with before/after metrics.</li>
+        <li>Mentorship or leadership: code reviews, pairing, onboarding guides.</li>
+        <li>Data-driven decisions: feature flags, A/B tests, dashboards you built.</li>
+      </ul>
+
+      <p>Think of your resume as a changelog of impact. Pair each technology with a business or reliability outcome, and you will stand out from keyword-only resumes in any hiring manager’s stack.</p>
+    `,
   },
   {
     slug: 'nursing-resume-tips-healthcare',
