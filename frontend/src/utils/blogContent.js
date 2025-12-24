@@ -306,7 +306,7 @@ export const BLOG_POSTS = [
         <CalloutCard
           tone="info"
           title="Title alignment trick"
-          body="If your internal title is odd, add a market alias in parentheses: "Customer Success Guide (CSM)" or "Product Champion (Product Manager)." It stays honest while matching ATS searches."
+          body="If your internal title is odd, add a market alias in parentheses: &quot;Customer Success Guide (CSM)&quot; or &quot;Product Champion (Product Manager).&quot; It stays honest while matching ATS searches."
         />
 
         <Paragraph>
@@ -592,7 +592,7 @@ export const BLOG_POSTS = [
         <CalloutCard
           tone="success"
           title="ATS-friendly formatting for engineers"
-          body="Single column, bullets (not paragraphs), and grouped skills. Spell acronyms once: "CI/CD (GitHub Actions, ArgoCD)." Add links to GitHub, portfolio, or packages."
+          body="Single column, bullets (not paragraphs), and grouped skills. Spell acronyms once: &quot;CI/CD (GitHub Actions, ArgoCD).&quot; Add links to GitHub, portfolio, or packages."
         />
 
         <Checklist
