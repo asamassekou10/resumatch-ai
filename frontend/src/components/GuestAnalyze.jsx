@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileUp, Zap, ArrowRight, AlertCircle, CheckCircle, Loader, Clock } from 'lucide-react';
+import { FileUp, Zap, ArrowRight, AlertCircle, CheckCircle, Loader, Clock, FileText, Download, Sparkles, Mail, Infinity } from 'lucide-react';
 import guestService from '../services/guestService';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
@@ -160,10 +160,6 @@ const GuestAnalyze = () => {
         url="https://resumeanalyzerai.com/guest-analyze"
       />
       <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4">
-        {/* Background atmosphere */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
-        <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
         <AnimatePresence mode="wait">
         {/* Welcome Step */}
         {step === 'welcome' && (
@@ -582,25 +578,128 @@ const GuestAnalyze = () => {
               </motion.div>
             )}
 
-            {/* Upgrade CTA */}
+            {/* Premium Features Section */}
             <motion.div
-              className="bg-gradient-to-r from-purple-600/20 to-cyan-600/20 border border-purple-400/30 rounded-lg p-6 text-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              className="bg-gradient-to-br from-purple-900/30 via-blue-900/30 to-cyan-900/30 border-2 border-purple-500/40 rounded-xl p-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >
-              <p className="text-slate-300 mb-4">
-                Create an account to save your analyses, unlock unlimited analyses, and get advanced features.
-              </p>
-              <motion.button
-                onClick={handleUpgrade}
-                className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white font-semibold rounded-lg inline-flex items-center gap-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Upgrade Now
-                <ArrowRight className="w-4 h-4" />
-              </motion.button>
+              <div className="text-center mb-8">
+                <h3 className="text-3xl font-bold text-white mb-3 font-display">
+                  Unlock Premium Features
+                </h3>
+                <p className="text-slate-300 text-lg">
+                  Sign up to get access to powerful tools that help you land your dream job
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                {/* Feature 1: Optimized Resume */}
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-purple-500/50 transition-colors">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-purple-500/20 rounded-lg">
+                      <FileText className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-white font-semibold text-lg mb-2">AI-Optimized Resume</h4>
+                      <p className="text-slate-300 text-sm">
+                        Get an AI-generated, ATS-optimized version of your resume tailored to each job application
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Feature 2: Cover Letter Generation */}
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-purple-500/50 transition-colors">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-blue-500/20 rounded-lg">
+                      <Mail className="w-6 h-6 text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-white font-semibold text-lg mb-2">Cover Letter Generator</h4>
+                      <p className="text-slate-300 text-sm">
+                        Create personalized, compelling cover letters that match your resume and the job description
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Feature 3: Advanced Feedback */}
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-purple-500/50 transition-colors">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-cyan-500/20 rounded-lg">
+                      <Sparkles className="w-6 h-6 text-cyan-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-white font-semibold text-lg mb-2">Advanced Insights</h4>
+                      <p className="text-slate-300 text-sm">
+                        Access detailed feedback, improvement suggestions, and personalized recommendations
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Feature 4: Download Optimized Resume */}
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-purple-500/50 transition-colors">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-green-500/20 rounded-lg">
+                      <Download className="w-6 h-6 text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-white font-semibold text-lg mb-2">Download & Save</h4>
+                      <p className="text-slate-300 text-sm">
+                        Download your optimized resume in PDF/DOCX format and save all your analyses for future reference
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Feature 5: Unlimited Analyses */}
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-purple-500/50 transition-colors">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-yellow-500/20 rounded-lg">
+                      <Infinity className="w-6 h-6 text-yellow-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-white font-semibold text-lg mb-2">Unlimited Analyses</h4>
+                      <p className="text-slate-300 text-sm">
+                        Analyze as many resumes as you need without any limits - perfect for multiple job applications
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Feature 6: History & Tracking */}
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 hover:border-purple-500/50 transition-colors">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-pink-500/20 rounded-lg">
+                      <CheckCircle className="w-6 h-6 text-pink-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-white font-semibold text-lg mb-2">Analysis History</h4>
+                      <p className="text-slate-300 text-sm">
+                        Keep track of all your resume analyses, compare improvements over time, and monitor your progress
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <motion.button
+                  onClick={handleUpgrade}
+                  className="px-8 py-3 bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-600 hover:from-cyan-600 hover:via-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg inline-flex items-center gap-2 text-lg shadow-lg shadow-purple-500/50"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Sign Up & Get Started
+                  <ArrowRight className="w-5 h-5" />
+                </motion.button>
+                <p className="text-slate-400 text-sm mt-4">
+                  No credit card required • Start your free trial today
+                </p>
+              </div>
             </motion.div>
 
             {/* New Analysis Button */}
