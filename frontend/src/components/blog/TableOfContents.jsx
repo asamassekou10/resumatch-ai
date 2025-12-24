@@ -6,7 +6,7 @@ import { Hash } from 'lucide-react';
  * 
  * Automatically generates a table of contents from h2 headings in the article
  */
-const TableOfContents = ({ content }) => {
+const TableOfContents = ({ content, slug }) => {
   const [headings, setHeadings] = useState([]);
   const [activeId, setActiveId] = useState('');
 
@@ -14,7 +14,7 @@ const TableOfContents = ({ content }) => {
     // Wait for content to be rendered, then find headings in the actual DOM
     const findHeadings = () => {
       // Find the article content container
-      const articleContent = document.querySelector('.prose');
+      const articleContent = document.querySelector('.article-prose');
       if (!articleContent) return;
 
       const h2Elements = Array.from(articleContent.querySelectorAll('h2'));
@@ -59,7 +59,7 @@ const TableOfContents = ({ content }) => {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [content]);
+    }, [content, slug]);
 
   const scrollToHeading = (id) => {
     const element = document.getElementById(id);

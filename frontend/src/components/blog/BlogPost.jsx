@@ -105,7 +105,7 @@ const BlogPost = () => {
               {/* Article Content */}
               <BlogContentRenderer
                 content={content}
-                className="prose prose-invert prose-lg max-w-none text-gray-300 leading-relaxed"
+                className="article-prose prose prose-invert prose-lg max-w-none text-gray-300 leading-relaxed prose-headings:font-display prose-h2:text-3xl prose-h2:scroll-mt-28 prose-h2:mt-12 prose-h2:mb-6 prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4 prose-p:leading-relaxed prose-p:mb-6 prose-li:leading-relaxed prose-ul:my-6 prose-ol:my-6"
                 style={{
                   '--tw-prose-headings': '#ffffff',
                   '--tw-prose-links': '#a78bfa',
@@ -161,7 +161,7 @@ const BlogPost = () => {
           <aside className="lg:col-span-4">
             <div className="sticky top-8 space-y-6">
               {/* Table of Contents */}
-              <TableOfContents content={contentForTOC} />
+              <TableOfContents content={contentForTOC} slug={post.slug} />
 
               {/* Sticky CTA Card */}
               <SpotlightCard className="rounded-xl p-6 bg-gradient-to-br from-purple-600/20 to-blue-600/20 border border-purple-500/30">
