@@ -45,12 +45,15 @@ def run_migration():
     print(f"Database: {database_url.split('@')[1] if '@' in database_url else 'local'}")
     print("=" * 60)
     
-    engine = create_engine(database_url)
+    # Create engine with autocommit mode for DDL statements (CREATE INDEX)
+    engine = create_engine(database_url, isolation_level="AUTOCOMMIT")
     
     try:
         # Use autocommit mode for individual index creation
         # This way if one fails, others can still succeed
         with engine.connect() as conn:
+            # Enable autocommit mode so each statement commits immediately
+            conn = conn.execution_options(autocommit=True)
                 indexes_to_create = [
                     {
                         "name": "idx_analysis_user_created",
@@ -114,9 +117,8 @@ def run_migration():
                             print(f"\n  Creating {idx['name']}...")
                             print(f"    Description: {idx['description']}")
                             print(f"    Table: {idx['table']}")
-                            # Execute with autocommit (each statement commits automatically)
-                            with conn.begin():
-                                conn.execute(text(idx["sql"]))
+                            # Execute directly (autocommit is enabled)
+                            conn.execute(text(idx["sql"]))
                             print(f"    ✅ Successfully created")
                         except Exception as e:
                             print(f"    ⚠️  Warning: {e}")
