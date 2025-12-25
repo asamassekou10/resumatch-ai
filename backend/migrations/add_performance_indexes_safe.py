@@ -53,81 +53,81 @@ def run_migration():
         # This way if one fails, others can still succeed
         with engine.connect() as conn:
             indexes_to_create = [
-                    {
-                        "name": "idx_analysis_user_created",
-                        "table": "analyses",
-                        "sql": "CREATE INDEX IF NOT EXISTS idx_analysis_user_created ON analyses(user_id, created_at DESC);",
-                        "description": "Index for user analysis queries sorted by date"
-                    },
-                    {
-                        "name": "idx_analysis_user_id",
-                        "table": "analyses",
-                        "sql": "CREATE INDEX IF NOT EXISTS idx_analysis_user_id ON analyses(user_id);",
-                        "description": "Index for filtering analyses by user"
-                    },
-                    {
-                        "name": "idx_jobposting_industry_active",
-                        "table": "job_postings",
-                        "sql": "CREATE INDEX IF NOT EXISTS idx_jobposting_industry_active ON job_postings(industry, is_active);",
-                        "description": "Index for job posting queries by industry and status"
-                    },
-                    {
-                        "name": "idx_user_email",
-                        "table": "users",
-                        "sql": 'CREATE INDEX IF NOT EXISTS idx_user_email ON users(email);',
-                        "description": "Index for user login lookups by email"
-                    },
-                    {
-                        "name": "idx_guest_session_created",
-                        "table": "guest_sessions",
-                        "sql": "CREATE INDEX IF NOT EXISTS idx_guest_session_created ON guest_sessions(created_at DESC);",
-                        "description": "Index for guest session queries sorted by date"
-                    },
-                    {
-                        "name": "idx_guest_analysis_session",
-                        "table": "guest_analyses",
-                        "sql": "CREATE INDEX IF NOT EXISTS idx_guest_analysis_session ON guest_analyses(guest_session_id);",
-                        "description": "Index for guest analysis queries by session"
-                    }
-                ]
-                
-                print("\nChecking existing indexes...")
-                existing_count = 0
-                for idx in indexes_to_create:
-                    exists = check_index_exists(conn, idx["name"], idx["table"])
-                    if exists:
-                        print(f"  ✓ {idx['name']} already exists (skipping)")
-                        existing_count += 1
-                    else:
-                        print(f"  - {idx['name']} will be created")
-                
-                if existing_count == len(indexes_to_create):
-                    print("\n✅ All indexes already exist. Nothing to do!")
-                    return
-                
-                print(f"\nCreating {len(indexes_to_create) - existing_count} new index(es)...")
-                
-                # Create indexes
-                for idx in indexes_to_create:
-                    exists = check_index_exists(conn, idx["name"], idx["table"])
-                    if not exists:
-                        try:
-                            print(f"\n  Creating {idx['name']}...")
-                            print(f"    Description: {idx['description']}")
-                            print(f"    Table: {idx['table']}")
-                            # Execute directly (autocommit is enabled)
-                            conn.execute(text(idx["sql"]))
-                            print(f"    ✅ Successfully created")
-                        except Exception as e:
-                            print(f"    ⚠️  Warning: {e}")
-                            # Continue with other indexes even if one fails
-                
-                print("\n" + "=" * 60)
-                print("✅ MIGRATION COMPLETED")
-                print("=" * 60)
-                print("Indexes have been created. Your data is safe and unchanged.")
-                print("Query performance should now be improved.")
-                print("=" * 60)
+                {
+                    "name": "idx_analysis_user_created",
+                    "table": "analyses",
+                    "sql": "CREATE INDEX IF NOT EXISTS idx_analysis_user_created ON analyses(user_id, created_at DESC);",
+                    "description": "Index for user analysis queries sorted by date"
+                },
+                {
+                    "name": "idx_analysis_user_id",
+                    "table": "analyses",
+                    "sql": "CREATE INDEX IF NOT EXISTS idx_analysis_user_id ON analyses(user_id);",
+                    "description": "Index for filtering analyses by user"
+                },
+                {
+                    "name": "idx_jobposting_industry_active",
+                    "table": "job_postings",
+                    "sql": "CREATE INDEX IF NOT EXISTS idx_jobposting_industry_active ON job_postings(industry, is_active);",
+                    "description": "Index for job posting queries by industry and status"
+                },
+                {
+                    "name": "idx_user_email",
+                    "table": "users",
+                    "sql": "CREATE INDEX IF NOT EXISTS idx_user_email ON users(email);",
+                    "description": "Index for user login lookups by email"
+                },
+                {
+                    "name": "idx_guest_session_created",
+                    "table": "guest_sessions",
+                    "sql": "CREATE INDEX IF NOT EXISTS idx_guest_session_created ON guest_sessions(created_at DESC);",
+                    "description": "Index for guest session queries sorted by date"
+                },
+                {
+                    "name": "idx_guest_analysis_session",
+                    "table": "guest_analyses",
+                    "sql": "CREATE INDEX IF NOT EXISTS idx_guest_analysis_session ON guest_analyses(guest_session_id);",
+                    "description": "Index for guest analysis queries by session"
+                }
+            ]
+            
+            print("\nChecking existing indexes...")
+            existing_count = 0
+            for idx in indexes_to_create:
+                exists = check_index_exists(conn, idx["name"], idx["table"])
+                if exists:
+                    print(f"  ✓ {idx['name']} already exists (skipping)")
+                    existing_count += 1
+                else:
+                    print(f"  - {idx['name']} will be created")
+            
+            if existing_count == len(indexes_to_create):
+                print("\n✅ All indexes already exist. Nothing to do!")
+                return
+            
+            print(f"\nCreating {len(indexes_to_create) - existing_count} new index(es)...")
+            
+            # Create indexes
+            for idx in indexes_to_create:
+                exists = check_index_exists(conn, idx["name"], idx["table"])
+                if not exists:
+                    try:
+                        print(f"\n  Creating {idx['name']}...")
+                        print(f"    Description: {idx['description']}")
+                        print(f"    Table: {idx['table']}")
+                        # Execute directly (autocommit is enabled)
+                        conn.execute(text(idx["sql"]))
+                        print(f"    ✅ Successfully created")
+                    except Exception as e:
+                        print(f"    ⚠️  Warning: {e}")
+                        # Continue with other indexes even if one fails
+            
+            print("\n" + "=" * 60)
+            print("✅ MIGRATION COMPLETED")
+            print("=" * 60)
+            print("Indexes have been created. Your data is safe and unchanged.")
+            print("Query performance should now be improved.")
+            print("=" * 60)
                 
     except Exception as e:
         print(f"\n❌ FATAL ERROR: Could not connect to database: {e}")
