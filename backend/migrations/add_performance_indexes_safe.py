@@ -49,45 +49,43 @@ def run_migration():
     
     try:
         with engine.connect() as conn:
-            # Start transaction
-            trans = conn.begin()
-            
-            try:
+            # Use autocommit mode for individual index creation
+            # This way if one fails, others can still succeed
                 indexes_to_create = [
                     {
                         "name": "idx_analysis_user_created",
-                        "table": "analysis",
-                        "sql": "CREATE INDEX IF NOT EXISTS idx_analysis_user_created ON analysis(user_id, created_at DESC);",
+                        "table": "analyses",
+                        "sql": "CREATE INDEX IF NOT EXISTS idx_analysis_user_created ON analyses(user_id, created_at DESC);",
                         "description": "Index for user analysis queries sorted by date"
                     },
                     {
                         "name": "idx_analysis_user_id",
-                        "table": "analysis",
-                        "sql": "CREATE INDEX IF NOT EXISTS idx_analysis_user_id ON analysis(user_id);",
+                        "table": "analyses",
+                        "sql": "CREATE INDEX IF NOT EXISTS idx_analysis_user_id ON analyses(user_id);",
                         "description": "Index for filtering analyses by user"
                     },
                     {
                         "name": "idx_jobposting_industry_active",
-                        "table": "job_posting",
-                        "sql": "CREATE INDEX IF NOT EXISTS idx_jobposting_industry_active ON job_posting(industry, is_active);",
+                        "table": "job_postings",
+                        "sql": "CREATE INDEX IF NOT EXISTS idx_jobposting_industry_active ON job_postings(industry, is_active);",
                         "description": "Index for job posting queries by industry and status"
                     },
                     {
                         "name": "idx_user_email",
                         "table": "users",
-                        "sql": 'CREATE INDEX IF NOT EXISTS idx_user_email ON "users"(email);',
+                        "sql": 'CREATE INDEX IF NOT EXISTS idx_user_email ON users(email);',
                         "description": "Index for user login lookups by email"
                     },
                     {
                         "name": "idx_guest_session_created",
-                        "table": "guest_session",
-                        "sql": "CREATE INDEX IF NOT EXISTS idx_guest_session_created ON guest_session(created_at DESC);",
+                        "table": "guest_sessions",
+                        "sql": "CREATE INDEX IF NOT EXISTS idx_guest_session_created ON guest_sessions(created_at DESC);",
                         "description": "Index for guest session queries sorted by date"
                     },
                     {
                         "name": "idx_guest_analysis_session",
-                        "table": "guest_analysis",
-                        "sql": "CREATE INDEX IF NOT EXISTS idx_guest_analysis_session ON guest_analysis(guest_session_id);",
+                        "table": "guest_analyses",
+                        "sql": "CREATE INDEX IF NOT EXISTS idx_guest_analysis_session ON guest_analyses(guest_session_id);",
                         "description": "Index for guest analysis queries by session"
                     }
                 ]
@@ -116,27 +114,25 @@ def run_migration():
                         try:
                             print(f"\n  Creating {idx['name']}...")
                             print(f"    Description: {idx['description']}")
+                            print(f"    Table: {idx['table']}")
                             conn.execute(text(idx["sql"]))
+                            conn.commit()  # Commit each index individually
                             print(f"    ✅ Successfully created")
                         except Exception as e:
                             print(f"    ⚠️  Warning: {e}")
+                            # Rollback this specific operation and continue
+                            try:
+                                conn.rollback()
+                            except:
+                                pass
                             # Continue with other indexes even if one fails
                 
-                # Commit transaction
-                trans.commit()
-                
                 print("\n" + "=" * 60)
-                print("✅ MIGRATION COMPLETED SUCCESSFULLY")
+                print("✅ MIGRATION COMPLETED")
                 print("=" * 60)
-                print("All indexes have been created. Your data is safe and unchanged.")
+                print("Indexes have been created. Your data is safe and unchanged.")
                 print("Query performance should now be improved.")
                 print("=" * 60)
-                
-            except Exception as e:
-                trans.rollback()
-                print(f"\n❌ ERROR: Migration failed: {e}")
-                print("Transaction rolled back - no changes were made to the database.")
-                raise
                 
     except Exception as e:
         print(f"\n❌ FATAL ERROR: Could not connect to database: {e}")
