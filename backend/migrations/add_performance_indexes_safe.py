@@ -12,7 +12,7 @@ To run on Render:
 This migration can be run multiple times safely (uses IF NOT EXISTS).
 """
 
-from sqlalchemy import create_engine, text, inspect
+from sqlalchemy import create_engine, text
 import os
 import sys
 
@@ -48,9 +48,9 @@ def run_migration():
     engine = create_engine(database_url)
     
     try:
+        # Use autocommit mode for individual index creation
+        # This way if one fails, others can still succeed
         with engine.connect() as conn:
-            # Use autocommit mode for individual index creation
-            # This way if one fails, others can still succeed
                 indexes_to_create = [
                     {
                         "name": "idx_analysis_user_created",
@@ -102,7 +102,6 @@ def run_migration():
                 
                 if existing_count == len(indexes_to_create):
                     print("\n✅ All indexes already exist. Nothing to do!")
-                    trans.rollback()
                     return
                 
                 print(f"\nCreating {len(indexes_to_create) - existing_count} new index(es)...")
@@ -115,16 +114,12 @@ def run_migration():
                             print(f"\n  Creating {idx['name']}...")
                             print(f"    Description: {idx['description']}")
                             print(f"    Table: {idx['table']}")
-                            conn.execute(text(idx["sql"]))
-                            conn.commit()  # Commit each index individually
+                            # Execute with autocommit (each statement commits automatically)
+                            with conn.begin():
+                                conn.execute(text(idx["sql"]))
                             print(f"    ✅ Successfully created")
                         except Exception as e:
                             print(f"    ⚠️  Warning: {e}")
-                            # Rollback this specific operation and continue
-                            try:
-                                conn.rollback()
-                            except:
-                                pass
                             # Continue with other indexes even if one fails
                 
                 print("\n" + "=" * 60)
