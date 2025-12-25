@@ -7,6 +7,7 @@ import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
+import ScoreBreakdown from './ScoreBreakdown';
 
 const GuestAnalyze = () => {
   const navigate = useNavigate();
@@ -427,6 +428,20 @@ const GuestAnalyze = () => {
                 </div>
               </div>
             </motion.div>
+
+            {/* Score Breakdown - Transparent Calculation */}
+            {analysisResults.score_breakdown && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <ScoreBreakdown
+                  scoreBreakdown={analysisResults.score_breakdown}
+                  overallScore={analysisResults.overall_score}
+                />
+              </motion.div>
+            )}
 
             {/* Match Breakdown */}
             {analysisResults.match_analysis && analysisResults.match_analysis.match_breakdown && (

@@ -5,6 +5,7 @@ import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, ArrowLeft, Mail, 
 import { ROUTES } from '../config/routes';
 import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
+import ScoreBreakdown from './ScoreBreakdown';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -427,6 +428,32 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
             </div>
             </motion.div>
           </SpotlightCard>
+
+          {/* Score Breakdown - Transparent Calculation */}
+          {analysisData.ai_feedback && (() => {
+            try {
+              const aiFeedback = typeof analysisData.ai_feedback === 'string' 
+                ? JSON.parse(analysisData.ai_feedback) 
+                : analysisData.ai_feedback;
+              if (aiFeedback.score_breakdown) {
+                return (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <ScoreBreakdown
+                      scoreBreakdown={aiFeedback.score_breakdown}
+                      overallScore={analysisData.match_score}
+                    />
+                  </motion.div>
+                );
+              }
+            } catch (e) {
+              // Ignore parsing errors
+            }
+            return null;
+          })()}
 
           {/* Error Message */}
           {error && (

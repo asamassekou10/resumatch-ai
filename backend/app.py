@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, redirect, url_for, session
+from flask import Flask, request, jsonify, redirect, url_for, session, Response, stream_with_context
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
@@ -1111,6 +1111,187 @@ def analyze_resume():
     except Exception as e:
         logging.error(f"Analysis failed for user {user_id}: {str(e)}")
         return jsonify({'error': 'Analysis failed. Please try again.'}), 500
+
+@app.route('/api/analyze/stream', methods=['POST'])
+@jwt_required()
+@limiter.limit("10 per hour")
+def analyze_resume_stream():
+    """
+    Stream analysis results using Server-Sent Events (SSE).
+    Provides progressive updates as analysis progresses.
+    """
+    try:
+        user_id = int(get_jwt_identity())
+        logging.info(f"Streaming analysis request from user: {user_id}")
+    except Exception as e:
+        logging.error(f"JWT Error: {str(e)}")
+        return jsonify({'error': 'Authentication error'}), 401
+
+    # Check credits and rate limits
+    from abuse_prevention import check_abuse_pattern, check_daily_credit_limit, has_sufficient_credits
+    
+    allowed, msg = check_abuse_pattern(user_id, 'analyze')
+    if not allowed:
+        return jsonify({'error': msg}), 429
+    
+    allowed, msg = check_daily_credit_limit(user_id, 'analyze')
+    if not allowed:
+        return jsonify({'error': msg}), 429
+    
+    has_credits, info = has_sufficient_credits(user_id, 'analyze')
+    if not has_credits:
+        return jsonify(info), 402
+
+    # Accept JSON or form data with resume_text
+    if request.is_json:
+        data = request.get_json()
+        resume_text = data.get('resume_text', '')
+        job_description = data.get('job_description', '')
+        job_title = data.get('job_title', '')
+        company_name = data.get('company_name', '')
+    else:
+        # Try form data
+        resume_text = request.form.get('resume_text', '')
+        job_description = request.form.get('job_description', '')
+        job_title = request.form.get('job_title', '')
+        company_name = request.form.get('company_name', '')
+        
+        # If no resume_text, try file upload
+        if not resume_text and 'resume' in request.files:
+            from ai_processor import extract_text_from_file
+            resume_file = request.files['resume']
+            resume_text = extract_text_from_file(resume_file)
+    
+    if not resume_text or len(resume_text.strip()) < 50:
+        return jsonify({'error': 'Resume text required (minimum 50 characters)'}), 400
+    
+    if not job_description or len(job_description.strip()) < 50:
+        return jsonify({'error': 'Job description required (minimum 50 characters)'}), 400
+
+    def generate_stream():
+        """Generator function for SSE streaming"""
+        try:
+            from intelligent_resume_analyzer import get_analyzer
+            import json
+            
+            analyzer = get_analyzer()
+            
+            # Stage 1: Extracting and parsing (10%)
+            yield f"data: {json.dumps({'stage': 'extracting', 'progress': 10, 'message': 'Extracting resume content...'})}\n\n"
+            
+            # Run batch 1 in parallel (job requirements + resume parsing)
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                job_future = executor.submit(analyzer.extract_job_requirements, job_description)
+                resume_future = executor.submit(analyzer.extract_resume_content, resume_text)
+                
+                job_analysis = job_future.result()
+                resume_parsed = resume_future.result()
+            
+            yield f"data: {json.dumps({'stage': 'parsing', 'progress': 30, 'message': 'Analyzing job requirements...', 'data': {'industry': job_analysis.get('industry', 'Unknown')}})}\n\n"
+            
+            # Stage 2: Match analysis (30-60%)
+            yield f"data: {json.dumps({'stage': 'matching', 'progress': 40, 'message': 'Matching skills and keywords...'})}\n\n"
+            
+            match_analysis = analyzer.intelligent_match_analysis(
+                job_analysis, resume_parsed, job_description, resume_text
+            )
+            
+            # Inject ATS heuristics
+            ats_heuristics = analyzer._check_ats_readability_heuristics(resume_text)
+            if "match_breakdown" not in match_analysis:
+                match_analysis["match_breakdown"] = {}
+            match_analysis["ats_readability_heuristics"] = ats_heuristics
+            
+            # Stage 3: Scoring (60-70%)
+            yield f"data: {json.dumps({'stage': 'scoring', 'progress': 60, 'message': 'Calculating match score...'})}\n\n"
+            
+            score_data = analyzer._calibrate_match_score(match_analysis, job_analysis)
+            score_breakdown = analyzer._generate_score_breakdown(match_analysis, score_data, job_analysis)
+            
+            # Send score immediately
+            yield f"data: {json.dumps({'stage': 'score_ready', 'progress': 70, 'message': 'Score calculated', 'data': {'score': score_data['final_score'], 'score_breakdown': score_breakdown}})}\n\n"
+            
+            # Stage 4: Final analysis (70-100%)
+            yield f"data: {json.dumps({'stage': 'optimizing', 'progress': 80, 'message': 'Generating optimization recommendations...'})}\n\n"
+            
+            # Run batch 2 in parallel
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                ats_future = executor.submit(
+                    analyzer.generate_ats_optimization_recommendations,
+                    job_description, resume_parsed, match_analysis, 'en'
+                )
+                rec_future = executor.submit(
+                    analyzer.generate_intelligent_recommendations,
+                    job_description, resume_parsed, match_analysis,
+                    job_analysis.get("industry", "unknown"), 'en'
+                )
+                
+                ats_optimization = ats_future.result()
+                recommendations = rec_future.result()
+            
+            # Complete result
+            result = {
+                "overall_score": score_data["final_score"],
+                "interpretation": score_data["interpretation"],
+                "match_analysis": match_analysis,
+                "ats_optimization": ats_optimization,
+                "recommendations": recommendations,
+                "job_industry": job_analysis.get("industry", "Unknown"),
+                "job_level": job_analysis.get("experience_level", "Unknown"),
+                "resume_level": resume_parsed.get("experience_level", "Unknown"),
+                "expected_ats_pass_rate": f"{match_analysis.get('ats_pass_likelihood', 50)}%",
+                "detected_language": 'en',
+                "score_breakdown": score_breakdown,
+            }
+            
+            # Save to database
+            try:
+                keywords_found = match_analysis.get('keywords_present', [])
+                keywords_missing = [k['keyword'] if isinstance(k, dict) else k
+                                  for k in match_analysis.get('keywords_missing', [])]
+                
+                analysis = Analysis(
+                    user_id=user_id,
+                    job_title=job_title,
+                    company_name=company_name,
+                    match_score=result['overall_score'],
+                    keywords_found=keywords_found[:20],
+                    keywords_missing=keywords_missing[:20],
+                    suggestions=result['interpretation'],
+                    resume_text=resume_text[:50000],
+                    job_description=job_description,
+                    ai_feedback=json.dumps(result)
+                )
+                
+                db.session.add(analysis)
+                
+                # Deduct credits
+                from abuse_prevention import deduct_credits
+                deduct_credits(user_id, 'analyze')
+                
+                db.session.commit()
+                result['analysis_id'] = analysis.id
+            except Exception as e:
+                logging.error(f"Error saving analysis: {e}")
+                db.session.rollback()
+            
+            # Final result
+            yield f"data: {json.dumps({'stage': 'complete', 'progress': 100, 'message': 'Analysis complete!', 'data': result})}\n\n"
+            
+        except Exception as e:
+            logging.error(f"Streaming analysis error: {e}", exc_info=True)
+            yield f"data: {json.dumps({'stage': 'error', 'progress': 0, 'message': f'Analysis failed: {str(e)}', 'error': str(e)})}\n\n"
+    
+    return Response(
+        stream_with_context(generate_stream()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',  # Disable buffering in nginx
+            'Connection': 'keep-alive'
+        }
+    )
 
 @app.route('/api/analyze-intelligent', methods=['POST'])
 @jwt_required()
