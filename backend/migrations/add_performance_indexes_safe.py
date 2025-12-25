@@ -52,9 +52,7 @@ def run_migration():
         # Use autocommit mode for individual index creation
         # This way if one fails, others can still succeed
         with engine.connect() as conn:
-            # Enable autocommit mode so each statement commits immediately
-            conn = conn.execution_options(autocommit=True)
-                indexes_to_create = [
+            indexes_to_create = [
                     {
                         "name": "idx_analysis_user_created",
                         "table": "analyses",
