@@ -11,8 +11,18 @@ import re
 import hashlib
 from typing import Dict, List, Any, Optional, Callable
 from functools import wraps
+from threading import Semaphore
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import google.generativeai as genai
+import google.api_core.exceptions
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+    retry_if_exception_message,
+    before_sleep_log
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,10 +42,14 @@ MAX_RETRIES = 2
 RETRY_DELAY = 2  # seconds
 
 
+# Global semaphore to limit concurrent Gemini API calls
+# Prevents hitting rate limits: max 10 concurrent calls across all users
+GEMINI_SEMAPHORE = Semaphore(10)
+
 def retry_on_error(max_retries=MAX_RETRIES, delay=RETRY_DELAY):
     """
-    Decorator to retry Gemini API calls on failure
-    Handles rate limits, timeouts, and transient errors
+    Legacy retry decorator - kept for backward compatibility.
+    New code should use _call_gemini_with_rate_limit which includes tenacity retry.
     """
     def decorator(func):
         @wraps(func)
@@ -151,55 +165,70 @@ Response (just the code):"""
         """Get the language instruction for prompts"""
         return self.LANGUAGE_INSTRUCTIONS.get(language, self.LANGUAGE_INSTRUCTIONS['en'])
 
-    @retry_on_error(max_retries=MAX_RETRIES)
-    def _call_gemini_for_job_requirements(self, prompt: str) -> str:
-        """Protected method to call Gemini API with retry logic"""
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=4, max=60),
+        retry=retry_if_exception_type((
+            google.api_core.exceptions.ResourceExhausted,
+            google.api_core.exceptions.ServiceUnavailable,
+            google.api_core.exceptions.DeadlineExceeded
+        )) | retry_if_exception_message(match=r"(?i)(rate limit|quota|429|resource exhausted|deadline exceeded)"),
+        before_sleep=before_sleep_log(logger, logging.WARNING)
+    )
+    def _call_gemini_safe(self, prompt: str, operation_name: str) -> str:
+        """
+        Call Gemini API with tenacity-based retry logic.
+        Handles rate limits, timeouts, and transient errors with exponential backoff.
+        """
         response = self.model.generate_content(
             prompt,
             generation_config=self.generation_config,
             request_options=self.request_options
         )
-        return response.text.strip()
+        if response and response.text:
+            return response.text.strip()
+        else:
+            raise ValueError(f"Empty response from Gemini API for {operation_name}")
+
+    def _call_gemini_with_rate_limit(self, prompt: str, operation_name: str) -> str:
+        """
+        Call Gemini API with semaphore-based rate limiting + tenacity retry.
+        Semaphore ensures max 10 concurrent calls globally to prevent 429 errors.
+        """
+        # Acquire semaphore (blocks if 10 calls already in progress)
+        logger.debug(f"Acquiring semaphore for {operation_name} (available: {GEMINI_SEMAPHORE._value})")
+        with GEMINI_SEMAPHORE:
+            logger.debug(f"Semaphore acquired for {operation_name}")
+            try:
+                return self._call_gemini_safe(prompt, operation_name)
+            finally:
+                logger.debug(f"Semaphore released for {operation_name}")
+
+    @retry_on_error(max_retries=MAX_RETRIES)
+    def _call_gemini_for_job_requirements(self, prompt: str) -> str:
+        """Protected method to call Gemini API with retry logic"""
+        return self._call_gemini_with_rate_limit(prompt, "job_requirements")
 
     @retry_on_error(max_retries=MAX_RETRIES)
     def _call_gemini_for_resume_parsing(self, prompt: str) -> str:
         """Protected method to call Gemini API for resume parsing"""
-        response = self.model.generate_content(
-            prompt,
-            generation_config=self.generation_config,
-            request_options=self.request_options
-        )
-        return response.text.strip()
+        return self._call_gemini_with_rate_limit(prompt, "resume_parsing")
 
     @retry_on_error(max_retries=MAX_RETRIES)
     def _call_gemini_for_matching(self, prompt: str) -> str:
         """Protected method to call Gemini API for matching analysis"""
-        response = self.model.generate_content(
-            prompt,
-            generation_config=self.generation_config,
-            request_options=self.request_options
-        )
-        return response.text.strip()
+        return self._call_gemini_with_rate_limit(prompt, "matching_analysis")
 
     @retry_on_error(max_retries=MAX_RETRIES)
     def _call_gemini_for_ats_optimization(self, prompt: str) -> str:
         """Protected method to call Gemini API for ATS optimization"""
-        response = self.model.generate_content(
-            prompt,
-            generation_config=self.generation_config,
-            request_options=self.request_options
-        )
-        return response.text.strip()
+        return self._call_gemini_with_rate_limit(prompt, "ats_optimization")
 
+    @retry_on_error(max_retries=MAX_RETRIES)
     @retry_on_error(max_retries=MAX_RETRIES)
     def _call_gemini_for_recommendations(self, prompt: str) -> str:
         """Protected method to call Gemini API for recommendations"""
-        response = self.model.generate_content(
-            prompt,
-            generation_config=self.generation_config,
-            request_options=self.request_options
-        )
-        return response.text.strip()
+        return self._call_gemini_with_rate_limit(prompt, "recommendations")
 
     def extract_job_requirements(self, job_description: str) -> Dict[str, Any]:
         """

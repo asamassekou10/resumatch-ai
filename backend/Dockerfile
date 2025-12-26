@@ -27,4 +27,4 @@ ENV FLASK_APP=app.py
 ENV PYTHONUNBUFFERED=1
 
 # Run the application with increased timeout for AI processing
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--timeout", "600", "app:app"]
+CMD ["gunicorn", "--config", "gunicorn_config.py", "app:app"]

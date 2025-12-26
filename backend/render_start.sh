@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
-gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 300 app:app
+# Use gunicorn_config.py for optimized thread + worker configuration
+gunicorn --config gunicorn_config.py app:app

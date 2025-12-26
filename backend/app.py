@@ -1179,43 +1179,75 @@ def analyze_resume_stream():
             # Stage 1: Extracting and parsing (10%)
             yield f"data: {json.dumps({'stage': 'extracting', 'progress': 10, 'message': 'Extracting resume content...'})}\n\n"
             
-            # Run batch 1 in parallel (job requirements + resume parsing)
-            from concurrent.futures import ThreadPoolExecutor
+            # Batch 1: Run job + resume extraction in parallel, stream as each completes
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+            job_analysis = None
+            resume_parsed = None
+            
             with ThreadPoolExecutor(max_workers=2) as executor:
                 job_future = executor.submit(analyzer.extract_job_requirements, job_description)
                 resume_future = executor.submit(analyzer.extract_resume_content, resume_text)
                 
-                job_analysis = job_future.result()
-                resume_parsed = resume_future.result()
+                # Stream results as they complete (using as_completed)
+                futures_map = {job_future: 'job', resume_future: 'resume'}
+                for future in as_completed([job_future, resume_future]):
+                    try:
+                        result = future.result()
+                        if futures_map[future] == 'job':
+                            job_analysis = result
+                            yield f"data: {json.dumps({'stage': 'job_parsed', 'progress': 20, 'message': 'Job requirements extracted', 'data': {'industry': job_analysis.get('industry', 'Unknown')}})}\n\n"
+                        else:
+                            resume_parsed = result
+                            yield f"data: {json.dumps({'stage': 'resume_parsed', 'progress': 25, 'message': 'Resume content extracted'})}\n\n"
+                    except Exception as e:
+                        logging.error(f"Error in batch 1 task: {e}")
+                        yield f"data: {json.dumps({'stage': 'error', 'progress': 0, 'message': f'Error: {str(e)}', 'error': str(e)})}\n\n"
             
-            yield f"data: {json.dumps({'stage': 'parsing', 'progress': 30, 'message': 'Analyzing job requirements...', 'data': {'industry': job_analysis.get('industry', 'Unknown')}})}\n\n"
+            # Ensure we have both results before proceeding
+            if not job_analysis or not resume_parsed:
+                yield f"data: {json.dumps({'stage': 'error', 'progress': 0, 'message': 'Failed to extract job or resume data', 'error': 'Extraction failed'})}\n\n"
+                return
             
-            # Stage 2: Match analysis (30-60%)
-            yield f"data: {json.dumps({'stage': 'matching', 'progress': 40, 'message': 'Matching skills and keywords...'})}\n\n"
+            # Stage 2: Match analysis (must complete before batch 2)
+            yield f"data: {json.dumps({'stage': 'matching', 'progress': 30, 'message': 'Matching skills and keywords...'})}\n\n"
             
-            match_analysis = analyzer.intelligent_match_analysis(
-                job_analysis, resume_parsed, job_description, resume_text
-            )
+            try:
+                match_analysis = analyzer.intelligent_match_analysis(
+                    job_analysis, resume_parsed, job_description, resume_text
+                )
+                
+                # Inject ATS heuristics (instant, Python-based)
+                ats_heuristics = analyzer._check_ats_readability_heuristics(resume_text)
+                if "match_breakdown" not in match_analysis:
+                    match_analysis["match_breakdown"] = {}
+                match_analysis["ats_readability_heuristics"] = ats_heuristics
+                
+                yield f"data: {json.dumps({'stage': 'match_complete', 'progress': 50, 'message': 'Match analysis complete'})}\n\n"
+            except Exception as e:
+                logging.error(f"Error in match analysis: {e}")
+                yield f"data: {json.dumps({'stage': 'error', 'progress': 0, 'message': f'Match analysis failed: {str(e)}', 'error': str(e)})}\n\n"
+                return
             
-            # Inject ATS heuristics
-            ats_heuristics = analyzer._check_ats_readability_heuristics(resume_text)
-            if "match_breakdown" not in match_analysis:
-                match_analysis["match_breakdown"] = {}
-            match_analysis["ats_readability_heuristics"] = ats_heuristics
-            
-            # Stage 3: Scoring (60-70%)
+            # Stage 3: Scoring (instant, Python-based)
             yield f"data: {json.dumps({'stage': 'scoring', 'progress': 60, 'message': 'Calculating match score...'})}\n\n"
             
-            score_data = analyzer._calibrate_match_score(match_analysis, job_analysis)
-            score_breakdown = analyzer._generate_score_breakdown(match_analysis, score_data, job_analysis)
+            try:
+                score_data = analyzer._calibrate_match_score(match_analysis, job_analysis)
+                score_breakdown = analyzer._generate_score_breakdown(match_analysis, score_data, job_analysis)
+                
+                # Send score immediately
+                yield f"data: {json.dumps({'stage': 'score_ready', 'progress': 70, 'message': 'Score calculated', 'data': {'score': score_data['final_score'], 'score_breakdown': score_breakdown}})}\n\n"
+            except Exception as e:
+                logging.error(f"Error in scoring: {e}")
+                yield f"data: {json.dumps({'stage': 'error', 'progress': 0, 'message': f'Scoring failed: {str(e)}', 'error': str(e)})}\n\n"
+                return
             
-            # Send score immediately
-            yield f"data: {json.dumps({'stage': 'score_ready', 'progress': 70, 'message': 'Score calculated', 'data': {'score': score_data['final_score'], 'score_breakdown': score_breakdown}})}\n\n"
+            # Stage 4: Final analysis - stream ATS and recommendations as they complete
+            yield f"data: {json.dumps({'stage': 'optimizing', 'progress': 75, 'message': 'Generating optimization recommendations...'})}\n\n"
             
-            # Stage 4: Final analysis (70-100%)
-            yield f"data: {json.dumps({'stage': 'optimizing', 'progress': 80, 'message': 'Generating optimization recommendations...'})}\n\n"
+            ats_optimization = None
+            recommendations = None
             
-            # Run batch 2 in parallel
             with ThreadPoolExecutor(max_workers=2) as executor:
                 ats_future = executor.submit(
                     analyzer.generate_ats_optimization_recommendations,
@@ -1227,8 +1259,31 @@ def analyze_resume_stream():
                     job_analysis.get("industry", "unknown"), 'en'
                 )
                 
-                ats_optimization = ats_future.result()
-                recommendations = rec_future.result()
+                # Stream results as they complete
+                futures_map = {ats_future: 'ats', rec_future: 'recommendations'}
+                for future in as_completed([ats_future, rec_future]):
+                    try:
+                        result = future.result()
+                        if futures_map[future] == 'ats':
+                            ats_optimization = result
+                            yield f"data: {json.dumps({'stage': 'ats_ready', 'progress': 85, 'message': 'ATS optimization ready', 'data': {'ats_optimization': ats_optimization}})}\n\n"
+                        else:
+                            recommendations = result
+                            yield f"data: {json.dumps({'stage': 'recommendations_ready', 'progress': 90, 'message': 'Recommendations ready', 'data': {'recommendations': recommendations}})}\n\n"
+                    except Exception as e:
+                        logging.error(f"Error in batch 2 task: {e}")
+                        # Continue with other task even if one fails
+                        if futures_map[future] == 'ats':
+                            ats_optimization = {"keyword_optimization": [], "natural_integration_tips": []}
+                        else:
+                            recommendations = {"priority_improvements": [], "quick_wins": []}
+                        yield f"data: {json.dumps({'stage': 'warning', 'progress': 0, 'message': f'Partial failure: {futures_map[future]} generation failed, continuing...', 'error': str(e)})}\n\n"
+            
+            # Use fallback values if generation failed
+            if not ats_optimization:
+                ats_optimization = {"keyword_optimization": [], "natural_integration_tips": []}
+            if not recommendations:
+                recommendations = {"priority_improvements": [], "quick_wins": []}
             
             # Complete result
             result = {

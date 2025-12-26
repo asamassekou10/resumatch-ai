@@ -297,29 +297,99 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
       if (jobTitle) formData.append('job_title', jobTitle);
       if (companyName) formData.append('company_name', companyName);
 
-      const response = await fetch(`${API_URL}/analyze`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
+      // Try streaming endpoint first, fallback to regular if not available
+      const useStreaming = true; // Enable streaming by default
+      
+      if (useStreaming) {
+        // Use SSE streaming for progressive updates
+        const streamResponse = await fetch(`${API_URL}/analyze/stream`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
 
-      const data = await response.json();
+        if (!streamResponse.ok) {
+          const errorData = await streamResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Analysis failed');
+        }
 
-      clearInterval(progressInterval);
-      clearInterval(messageInterval);
-      setLoadingProgress(100);
-      setLoadingMessage('Complete!');
+        // Read SSE stream
+        const reader = streamResponse.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let finalResult = null;
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Analysis failed');
+        clearInterval(progressInterval);
+        clearInterval(messageInterval);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                
+                if (data.stage) {
+                  setLoadingProgress(data.progress || 0);
+                  setLoadingMessage(data.message || 'Processing...');
+                  
+                  if (data.stage === 'score_ready' && data.data) {
+                    // Score is ready - could show it in UI
+                  } else if (data.stage === 'complete') {
+                    finalResult = data.data;
+                  } else if (data.stage === 'error') {
+                    throw new Error(data.message || data.error || 'Analysis failed');
+                  }
+                }
+              } catch (e) {
+                console.error('Error parsing SSE data:', e, line);
+              }
+            }
+          }
+        }
+
+        if (finalResult && finalResult.analysis_id) {
+          setLoadingProgress(100);
+          setLoadingMessage('Complete!');
+          setTimeout(() => {
+            navigate(`/result/${finalResult.analysis_id}`);
+          }, 500);
+        } else {
+          throw new Error('Analysis completed but no result received');
+        }
+      } else {
+        // Fallback to regular endpoint
+        const response = await fetch(`${API_URL}/analyze`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        const data = await response.json();
+
+        clearInterval(progressInterval);
+        clearInterval(messageInterval);
+        setLoadingProgress(100);
+        setLoadingMessage('Complete!');
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Analysis failed');
+        }
+
+        setTimeout(() => {
+          navigate(`/result/${data.analysis_id || data.id}`);
+        }, 500);
       }
-
-      // Delay to show 100% completion, then navigate to result
-      setTimeout(() => {
-        navigate(`/result/${data.analysis_id || data.id}`);
-      }, 500);
     } catch (err) {
       clearInterval(progressInterval);
       clearInterval(messageInterval);
