@@ -115,9 +115,9 @@ def get_skill_market_demand(skill_id):
         if not keyword:
             return jsonify({'error': 'Skill not found'}), 404
 
-        # Get demand data
+        # Get demand data (use default 90 days for consistency)
         analyzer = get_market_intelligence_analyzer(db)
-        all_demand = analyzer.get_skill_market_demand()
+        all_demand = analyzer.get_skill_market_demand(limit_days=90)
 
         if skill_id not in all_demand:
             return jsonify({
