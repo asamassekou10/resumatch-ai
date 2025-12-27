@@ -1475,6 +1475,8 @@ def get_analysis(analysis_id):
         'keywords_missing': analysis.keywords_missing,
         'suggestions': analysis.suggestions,
         'resume_filename': analysis.resume_filename,
+        'ai_feedback': analysis.ai_feedback,
+        'detected_industry': analysis.detected_industry,
         'created_at': analysis.created_at.isoformat()
     }), 200
 
