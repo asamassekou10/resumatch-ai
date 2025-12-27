@@ -32,7 +32,7 @@ const PublicLayout = ({ userProfile, token, handleLogout, handleLogin }) => {
       />
 
       {/* Main Content Area - Child routes render here */}
-      <main className="w-full">
+      <main className="w-full relative" style={{ zIndex: 1 }}>
         <Outlet context={{ userProfile, token, handleLogin }} />
       </main>
     </div>

@@ -90,7 +90,31 @@ const GuestAnalyze = () => {
   useEffect(() => {
     const initGuestSession = async () => {
       try {
-        // Add timeout to prevent infinite loading
+        // First, check if we have a valid existing session
+        if (guestService.isGuestSessionValid()) {
+          const existingToken = guestService.getGuestToken();
+
+          // Verify the session is still valid on the server
+          try {
+            const sessionInfo = await guestService.getSessionInfo(existingToken);
+            if (sessionInfo && sessionInfo.session) {
+              setGuestToken(existingToken);
+              setGuestCredits(sessionInfo.session.credits_remaining);
+              setSessionInfo({
+                expires_at: sessionInfo.session.expires_at,
+                session_id: sessionInfo.session.id,
+              });
+              setStep('analyze');
+              return; // Session is valid, no need to create a new one
+            }
+          } catch (sessionErr) {
+            // Session expired or invalid on server, clear it and create new
+            console.log('Existing session invalid, creating new one');
+            guestService.clearGuestSession();
+          }
+        }
+
+        // No valid session exists, create a new one
         const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Connection timeout. Please check your internet connection.')), 10000)
         );
@@ -112,6 +136,9 @@ const GuestAnalyze = () => {
         console.error('Guest session error:', err);
         // Handle specific error cases
         const errorMessage = err.message || 'Failed to start guest session. Please try again.';
+
+        // Clear any stale session data on errors
+        guestService.clearGuestSession();
 
         if (errorMessage.includes('Too many guest sessions') || errorMessage.includes('RATE_LIMIT_EXCEEDED')) {
           setError('Too many sessions created. Please try again in 24 hours or create an account.');
@@ -234,6 +261,11 @@ const GuestAnalyze = () => {
         structuredData={[faqSchema]}
       />
       <div className="min-h-screen bg-black relative overflow-hidden pt-24 pb-12 px-4">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 z-0 pointer-events-none" />
+        <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+
         <AnimatePresence mode="wait">
         {/* Welcome Step */}
         {step === 'welcome' && (

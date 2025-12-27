@@ -99,8 +99,9 @@ def create_guest_session():
             GuestSession.status == 'active'
         ).count()
 
-        # Allow max 3 active sessions per IP per day to prevent abuse
-        if recent_sessions_count >= 3:
+        # Allow max 10 active sessions per IP per day to prevent abuse
+        # (Frontend now reuses sessions, so this limit should rarely be hit)
+        if recent_sessions_count >= 10:
             logger.warning(f"Rate limit exceeded for IP {ip_address}: {recent_sessions_count} sessions in 24h")
             return jsonify({
                 'error': 'Too many guest sessions from this IP. Please try again later or create an account.',
