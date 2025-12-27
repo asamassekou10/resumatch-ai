@@ -366,19 +366,14 @@ const GuestAnalyze = () => {
             </motion.div>
 
             {/* Main Hero Section */}
-            <motion.div
-              className="text-center mb-10"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
+            <div className="text-center mb-10">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 font-display">
                 Free AI Resume Scanner
               </h1>
               <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
                 See exactly what the ATS sees. Get your detailed score and keyword gaps in <span className="text-cyan-400 font-semibold">10 seconds</span>.
               </p>
-            </motion.div>
+            </div>
 
             {/* Error Message */}
             {error && (
@@ -395,12 +390,7 @@ const GuestAnalyze = () => {
             {/* Two Column Layout: Form + What You Get */}
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 relative z-10">
               {/* Left Column: Upload Form (3/5 width) */}
-              <motion.div
-                className="lg:col-span-3 space-y-6"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-              >
+              <div className="lg:col-span-3 space-y-6">
                 <SpotlightCard className="rounded-xl p-6 md:p-8">
                   <div className="space-y-6">
                     {/* Resume Upload */}
@@ -528,15 +518,10 @@ const GuestAnalyze = () => {
                     </div>
                   </div>
                 </SpotlightCard>
-              </motion.div>
+              </div>
 
               {/* Right Column: What You Get (2/5 width) */}
-              <motion.div
-                className="lg:col-span-2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-              >
+              <div className="lg:col-span-2">
                 <div className="sticky top-8 space-y-6">
                   {/* Sneak Peek Card */}
                   <SpotlightCard className="rounded-xl p-6">
@@ -619,16 +604,11 @@ const GuestAnalyze = () => {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
 
             {/* FAQ Section */}
-            <motion.div
-              className="mt-16 max-w-3xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
+            <div className="mt-16 max-w-3xl mx-auto">
               <h2 className="text-2xl font-bold text-white mb-6 text-center font-display">
                 Frequently Asked Questions
               </h2>
@@ -643,7 +623,7 @@ const GuestAnalyze = () => {
                   />
                 ))}
               </SpotlightCard>
-            </motion.div>
+            </div>
           </motion.div>
         )}
 
@@ -657,21 +637,13 @@ const GuestAnalyze = () => {
             className="max-w-5xl mx-auto space-y-6 relative z-10"
           >
             {/* Results Header */}
-            <motion.div
-              className="text-center"
-              initial={{ opacity: 1 }}
-              animate={{ opacity: 1 }}
-            >
+            <div className="text-center">
               <h1 className="text-4xl font-bold text-white mb-2">AI-Powered Analysis Complete</h1>
               <p className="text-slate-400">Comprehensive resume evaluation & ATS optimization</p>
-            </motion.div>
+            </div>
 
             {/* Overall Score Card */}
-            <motion.div
-              className="bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-600 rounded-lg p-4 sm:p-6 md:p-8"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-            >
+            <div className="bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-600 rounded-lg p-4 sm:p-6 md:p-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="text-center">
                   <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
@@ -691,30 +663,21 @@ const GuestAnalyze = () => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Score Breakdown - Transparent Calculation */}
             {analysisResults.score_breakdown && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
+              <div>
                 <ScoreBreakdown
                   scoreBreakdown={analysisResults.score_breakdown}
                   overallScore={analysisResults.overall_score}
                 />
-              </motion.div>
+              </div>
             )}
 
             {/* Match Breakdown */}
             {analysisResults.match_analysis && analysisResults.match_analysis.match_breakdown && (
-              <motion.div
-                className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
                 <h3 className="text-white font-semibold mb-4">Match Breakdown</h3>
                 <div className="grid grid-cols-2 gap-4">
                   {Object.entries(analysisResults.match_analysis.match_breakdown || {}).map(([key, value]) => (
@@ -734,17 +697,12 @@ const GuestAnalyze = () => {
                     </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             )}
 
             {/* Keywords Present */}
             {analysisResults.match_analysis?.keywords_present && (
-              <motion.div
-                className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
                 <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-400" />
                   Keywords Found ({analysisResults.match_analysis.keywords_present?.length || 0})
@@ -759,17 +717,12 @@ const GuestAnalyze = () => {
                     </span>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             )}
 
             {/* Keywords Missing */}
             {analysisResults.match_analysis?.keywords_missing && analysisResults.match_analysis.keywords_missing.length > 0 && (
-              <motion.div
-                className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-              >
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
                 <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
                   <AlertCircle className="w-5 h-5 text-amber-400" />
                   Keywords to Add ({analysisResults.match_analysis.keywords_missing?.length || 0})
@@ -790,17 +743,12 @@ const GuestAnalyze = () => {
                     );
                   })}
                 </div>
-              </motion.div>
+              </div>
             )}
 
             {/* Gaps & Recommendations - Show 3 cards, blur the last one for guests */}
             {analysisResults.recommendations && analysisResults.recommendations.priority_improvements && (
-              <motion.div
-                className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
                 <h3 className="text-white font-semibold mb-4">Priority Improvements</h3>
                 <div className="space-y-3">
                   {analysisResults.recommendations.priority_improvements?.slice(0, 3).map((improvement, i) => (
@@ -834,17 +782,12 @@ const GuestAnalyze = () => {
                     </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             )}
 
             {/* ATS Optimization Tips */}
             {analysisResults.ats_optimization?.natural_integration_tips && (
-              <motion.div
-                className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
                 <h3 className="text-white font-semibold mb-3">ATS Optimization Tips</h3>
                 <ul className="space-y-2">
                   {analysisResults.ats_optimization.natural_integration_tips?.slice(0, 3).map((tip, i) => (
@@ -854,16 +797,11 @@ const GuestAnalyze = () => {
                     </li>
                   ))}
                 </ul>
-              </motion.div>
+              </div>
             )}
 
             {/* Premium Features Section */}
-            <motion.div
-              className="bg-gradient-to-br from-purple-900/30 via-blue-900/30 to-cyan-900/30 border-2 border-purple-500/40 rounded-xl p-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
+            <div className="bg-gradient-to-br from-purple-900/30 via-blue-900/30 to-cyan-900/30 border-2 border-purple-500/40 rounded-xl p-8">
               <div className="text-center mb-8">
                 <h3 className="text-3xl font-bold text-white mb-3 font-display">
                   Unlock Premium Features
@@ -966,23 +904,21 @@ const GuestAnalyze = () => {
               </div>
 
               <div className="text-center">
-                <motion.button
+                <button
                   onClick={handleUpgrade}
-                  className="px-8 py-3 bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-600 hover:from-cyan-600 hover:via-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg inline-flex items-center gap-2 text-lg shadow-lg shadow-purple-500/50"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  className="px-8 py-3 bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-600 hover:from-cyan-600 hover:via-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg inline-flex items-center gap-2 text-lg shadow-lg shadow-purple-500/50 transition-transform hover:scale-105 active:scale-95"
                 >
                   Sign Up & Get Started
                   <ArrowRight className="w-5 h-5" />
-                </motion.button>
+                </button>
                 <p className="text-slate-400 text-sm mt-4">
                   No credit card required • Start your free trial today
                 </p>
               </div>
-            </motion.div>
+            </div>
 
             {/* New Analysis Button */}
-            <motion.button
+            <button
               onClick={() => {
                 setStep('analyze');
                 setResumeFile(null);
@@ -991,12 +927,10 @@ const GuestAnalyze = () => {
                 setCompanyName('');
                 setError('');
               }}
-              className="w-full px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              className="w-full px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors hover:scale-[1.02] active:scale-[0.98]"
             >
               Run Another Analysis
-            </motion.button>
+            </button>
           </motion.div>
         )}
         </div>
