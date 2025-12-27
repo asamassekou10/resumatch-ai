@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, Star, Quote, TrendingUp } from 'lucide-react';
+import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, Star, Quote, TrendingUp, BookOpen } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import ShimmerButton from './ui/ShimmerButton';
@@ -9,6 +9,7 @@ import EntranceOverlay from './ui/EntranceOverlay';
 import Footer from './ui/Footer';
 import SpotlightCard from './ui/SpotlightCard';
 import { generateFAQSchema } from '../utils/structuredData';
+import BLOG_POSTS from '../utils/blogContent';
 
 
 
@@ -662,6 +663,79 @@ const LandingPageV2 = ({ token }) => {
               </motion.div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Resume Tips Blog Section - Internal Links for SEO */}
+      <div className="py-16 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-white/10">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            className="text-center mb-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            custom={0}
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 mb-4">
+              <BookOpen className="w-4 h-4 text-purple-400" />
+              <span className="text-sm font-medium text-purple-300">Resume Tips & Guides</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 font-display">
+              Expert Resume Advice by Industry
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              Get industry-specific tips to optimize your resume and land more interviews
+            </p>
+          </motion.div>
+
+          {/* Blog Posts Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {BLOG_POSTS.slice(0, 9).map((post, index) => (
+              <motion.div
+                key={post.slug}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <Link to={`/blog/${post.slug}`}>
+                  <SpotlightCard className="rounded-xl p-5 h-full hover:border-purple-500/50 transition-all group">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:from-purple-500/30 group-hover:to-blue-500/30 transition-all">
+                        <FileText className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div className="flex-grow min-w-0">
+                        <h3 className="text-white font-semibold text-sm mb-1 group-hover:text-purple-300 transition-colors line-clamp-2">
+                          {post.title.replace(' | Free ATS Checker', '').replace(' | ResumeAnalyzer AI', '')}
+                        </h3>
+                        <p className="text-gray-500 text-xs line-clamp-2">{post.excerpt}</p>
+                        <span className="text-purple-400 text-xs mt-2 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                          Read more <ArrowRight className="w-3 h-3" />
+                        </span>
+                      </div>
+                    </div>
+                  </SpotlightCard>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* View All Link */}
+          <motion.div
+            className="text-center mt-8"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            <Link
+              to="/blog"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white font-medium hover:bg-white/10 hover:border-purple-500/50 transition-all group"
+            >
+              View All {BLOG_POSTS.length} Articles
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
         </div>
       </div>
 

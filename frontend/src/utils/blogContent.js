@@ -1948,6 +1948,348 @@ export const BLOG_POSTS = [
       </>
     ),
   },
+  // === TECH INDUSTRY - Post 2 ===
+  {
+    slug: 'data-scientist-resume-keywords',
+    title: 'Data Scientist Resume Keywords That Get You Hired in 2026',
+    description: 'Essential keywords and skills for data scientist resumes. Learn what hiring managers and ATS systems look for in data science candidates.',
+    keywords: 'data scientist resume, data science keywords, machine learning resume, Python resume, data analyst vs data scientist, AI resume keywords',
+    author: 'ResumeAnalyzer AI Team',
+    datePublished: '2026-01-05',
+    dateModified: '2026-01-05',
+    image: 'https://resumeanalyzerai.com/og-image.png',
+    category: 'Tech Careers',
+    readTime: '10 min read',
+    excerpt: 'Data science is one of the hottest fields in tech. Learn the exact keywords and skills that get data scientist resumes past ATS systems and into interviews.',
+    faqData: [
+      {
+        question: "What keywords should a data scientist resume have?",
+        answer: "Essential keywords include: Python, R, SQL, Machine Learning, TensorFlow, PyTorch, Data Visualization, Statistical Analysis, Big Data, Hadoop, Spark, Deep Learning, NLP, and A/B Testing."
+      },
+      {
+        question: "Should I list every tool I know on my data science resume?",
+        answer: "Focus on tools mentioned in the job description plus industry-standard ones. List 10-15 key skills rather than 50 obscure tools. Quality over quantity shows expertise."
+      },
+      {
+        question: "How do I show impact on a data scientist resume?",
+        answer: "Use metrics like: 'Improved model accuracy by 15%', 'Reduced processing time by 40%', 'Generated $2M in revenue through predictive analytics', or 'Automated 20 hours of weekly manual analysis'."
+      }
+    ],
+    content: () => (
+      <>
+        <p>Data science continues to be one of the most sought-after careers in 2026. With <strong>companies receiving 200+ applications per data scientist role</strong>, your resume needs to stand out both to ATS systems and human reviewers. Here's how to optimize your data scientist resume with the right keywords.</p>
+
+        <FreeScannerWidget
+          headline="Is your data science resume ATS-ready?"
+          subtext="Get your ATS score and missing technical keywords in 10 seconds."
+        />
+
+        <h2>Must-Have Technical Keywords</h2>
+
+        <div className="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-8">
+          <h3 className="font-bold text-white text-lg mb-4">Programming & Tools</h3>
+          <ul className="space-y-2 text-gray-300">
+            <li><strong>Languages:</strong> Python, R, SQL, Scala, Julia</li>
+            <li><strong>ML Frameworks:</strong> TensorFlow, PyTorch, Scikit-learn, Keras, XGBoost</li>
+            <li><strong>Big Data:</strong> Hadoop, Spark, Hive, Kafka, Databricks</li>
+            <li><strong>Visualization:</strong> Tableau, Power BI, Matplotlib, Seaborn, Plotly</li>
+            <li><strong>Cloud:</strong> AWS (SageMaker, Redshift), GCP (BigQuery), Azure ML</li>
+          </ul>
+        </div>
+
+        <h2>High-Impact Resume Bullets</h2>
+
+        <ResumeSnippet
+          type="bad"
+          content="Worked on machine learning models for the company."
+        />
+
+        <ResumeSnippet
+          type="good"
+          content="Developed gradient boosting model using XGBoost that improved customer churn prediction accuracy from 72% to 89%, saving $1.2M annually in retention costs."
+        />
+
+        <InsiderTip title="Data Science Resume Secret">
+          Include both the full term AND abbreviation for technical skills. Write "Natural Language Processing (NLP)" so your resume matches searches for either term. Same for "Machine Learning (ML)" and "Artificial Intelligence (AI)".
+        </InsiderTip>
+
+        <h2>Soft Skills That Matter</h2>
+        <p>Technical skills alone won't land you the job. Include these soft skills that hiring managers look for:</p>
+        <ul className="space-y-2 my-4 text-gray-300">
+          <li>• <strong>Stakeholder Communication</strong> - Translating technical findings for business audiences</li>
+          <li>• <strong>Cross-functional Collaboration</strong> - Working with engineering, product, and business teams</li>
+          <li>• <strong>Problem Framing</strong> - Defining the right questions before diving into data</li>
+          <li>• <strong>Experimentation Design</strong> - A/B testing and statistical rigor</li>
+        </ul>
+
+        <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 border border-purple-500/50 rounded-xl p-8 my-8 text-center">
+          <h3 className="text-2xl font-bold text-white mb-3 font-display">Check Your Data Science Resume</h3>
+          <p className="text-gray-300 mb-6">See which keywords you're missing. Free analysis in 10 seconds.</p>
+          <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-bold rounded-full transition-all">
+            Scan My Resume Free
+          </a>
+        </div>
+      </>
+    ),
+  },
+  // === HEALTHCARE INDUSTRY - Post 2 ===
+  {
+    slug: 'medical-assistant-resume-keywords',
+    title: 'Medical Assistant Resume: Keywords & Skills for 2026',
+    description: 'Build an ATS-optimized medical assistant resume with the right clinical and administrative keywords. Get more interviews in healthcare.',
+    keywords: 'medical assistant resume, healthcare resume keywords, clinical skills resume, EHR resume, medical office resume, CMA resume',
+    author: 'ResumeAnalyzer AI Team',
+    datePublished: '2026-01-05',
+    dateModified: '2026-01-05',
+    image: 'https://resumeanalyzerai.com/og-image.png',
+    category: 'Healthcare Careers',
+    readTime: '9 min read',
+    excerpt: 'Medical assistants are in high demand. Learn the clinical and administrative keywords that get your resume past healthcare ATS systems.',
+    faqData: [
+      {
+        question: "What certifications should be on a medical assistant resume?",
+        answer: "Include CMA (Certified Medical Assistant), RMA (Registered Medical Assistant), CCMA, CPR/BLS certification, and any specialty certifications like phlebotomy or EKG technician."
+      },
+      {
+        question: "How do I list EHR experience on my resume?",
+        answer: "Be specific about which systems you know: Epic, Cerner, Meditech, eClinicalWorks, Athenahealth. Include years of experience with each and any super-user or training roles."
+      },
+      {
+        question: "Should I include both clinical and administrative skills?",
+        answer: "Yes! Medical assistants need both. Clinical: vital signs, injections, phlebotomy, specimen collection. Administrative: scheduling, insurance verification, medical coding, patient intake."
+      }
+    ],
+    content: () => (
+      <>
+        <p>The healthcare industry is projected to add <strong>over 100,000 medical assistant jobs by 2026</strong>. With hospitals and clinics using ATS systems to screen candidates, your resume needs the right mix of clinical and administrative keywords.</p>
+
+        <FreeScannerWidget
+          headline="Is your healthcare resume ATS-ready?"
+          subtext="Get your compatibility score and missing clinical keywords in 10 seconds."
+        />
+
+        <h2>Essential Clinical Keywords</h2>
+
+        <div className="bg-green-50/10 border-l-4 border-green-500 rounded-r-lg p-6 my-8">
+          <h3 className="font-bold text-white text-lg mb-4">Clinical Skills to Include</h3>
+          <ul className="space-y-2 text-gray-300">
+            <li>• Vital signs measurement (blood pressure, pulse, temperature, respiration)</li>
+            <li>• Phlebotomy and venipuncture</li>
+            <li>• Injection administration (IM, SubQ, intradermal)</li>
+            <li>• EKG/ECG administration</li>
+            <li>• Specimen collection and processing</li>
+            <li>• Patient preparation for examinations</li>
+            <li>• Wound care and dressing changes</li>
+            <li>• Medication administration</li>
+          </ul>
+        </div>
+
+        <h2>Administrative Keywords</h2>
+
+        <div className="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-8">
+          <h3 className="font-bold text-white text-lg mb-4">Front Office Skills</h3>
+          <ul className="space-y-2 text-gray-300">
+            <li>• <strong>EHR Systems:</strong> Epic, Cerner, Meditech, eClinicalWorks, Athenahealth</li>
+            <li>• Insurance verification and prior authorization</li>
+            <li>• Medical coding (ICD-10, CPT)</li>
+            <li>• Patient scheduling and appointment management</li>
+            <li>• HIPAA compliance</li>
+            <li>• Medical terminology</li>
+            <li>• Billing and claims processing</li>
+          </ul>
+        </div>
+
+        <ResumeSnippet
+          type="bad"
+          content="Helped doctors with patients and did office work."
+        />
+
+        <ResumeSnippet
+          type="good"
+          content="Assisted physicians with 40+ daily patient examinations, performed phlebotomy and EKG procedures, and managed patient records in Epic EHR while maintaining 100% HIPAA compliance."
+        />
+
+        <InsiderTip title="Healthcare Resume Tip">
+          Always include your certifications with the full name AND abbreviation: "Certified Medical Assistant (CMA)" or "Basic Life Support (BLS)". ATS systems may search for either format.
+        </InsiderTip>
+
+        <div className="bg-gradient-to-r from-green-600/30 to-teal-600/30 border border-green-500/50 rounded-xl p-8 my-8 text-center">
+          <h3 className="text-2xl font-bold text-white mb-3 font-display">Optimize Your Healthcare Resume</h3>
+          <p className="text-gray-300 mb-6">Find missing clinical keywords. Free scan in 10 seconds.</p>
+          <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-bold rounded-full transition-all">
+            Scan My Resume Free
+          </a>
+        </div>
+      </>
+    ),
+  },
+  // === FINANCE INDUSTRY - Post 2 ===
+  {
+    slug: 'accountant-resume-keywords-cpa',
+    title: 'Accountant Resume Keywords: CPA & Staff Accountant Guide 2026',
+    description: 'Essential keywords for accountant resumes including CPA, staff accountant, and senior accountant roles. Get past accounting firm ATS systems.',
+    keywords: 'accountant resume, CPA resume, staff accountant resume, accounting keywords, GAAP resume, QuickBooks resume, Big 4 resume',
+    author: 'ResumeAnalyzer AI Team',
+    datePublished: '2026-01-05',
+    dateModified: '2026-01-05',
+    image: 'https://resumeanalyzerai.com/og-image.png',
+    category: 'Finance Careers',
+    readTime: '10 min read',
+    excerpt: 'Whether you are targeting Big 4 firms or corporate accounting roles, learn the keywords that get accountant resumes past ATS systems.',
+    faqData: [
+      {
+        question: "What keywords do Big 4 accounting firms look for?",
+        answer: "Big 4 firms prioritize: CPA (or CPA-eligible), GAAP, IFRS, SOX compliance, audit, assurance, tax provision, financial reporting, and specific software like SAP, Oracle, or Workday."
+      },
+      {
+        question: "How do I show accounting software skills?",
+        answer: "List specific software: QuickBooks, Sage, NetSuite, SAP, Oracle Financials, Workday, BlackLine, Hyperion. Include your proficiency level and years of experience with each."
+      },
+      {
+        question: "Should I include my CPA exam status if I haven't passed all sections?",
+        answer: "Yes, list it as 'CPA Candidate' or 'CPA (2 of 4 sections passed)'. This shows you're actively pursuing the credential and are committed to the profession."
+      }
+    ],
+    content: () => (
+      <>
+        <p>Accounting remains one of the most stable career paths, but competition is fierce. <strong>Big 4 firms receive thousands of applications per position</strong>, and corporate accounting roles are equally competitive. Your resume needs the right keywords to get through their ATS systems.</p>
+
+        <FreeScannerWidget
+          headline="Is your accounting resume ATS-optimized?"
+          subtext="Check your keyword match and ATS score in 10 seconds."
+        />
+
+        <h2>Must-Have Technical Keywords</h2>
+
+        <div className="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-8">
+          <h3 className="font-bold text-white text-lg mb-4">Accounting Standards & Compliance</h3>
+          <ul className="space-y-2 text-gray-300">
+            <li>• <strong>Standards:</strong> GAAP, IFRS, ASC 606, ASC 842</li>
+            <li>• <strong>Compliance:</strong> SOX (Sarbanes-Oxley), internal controls, audit</li>
+            <li>• <strong>Reporting:</strong> Financial statements, 10-K, 10-Q, monthly close</li>
+            <li>• <strong>Tax:</strong> Tax provision, tax compliance, ASC 740, R&D credits</li>
+            <li>• <strong>Analysis:</strong> Variance analysis, reconciliation, forecasting</li>
+          </ul>
+        </div>
+
+        <div className="bg-purple-50/10 border-l-4 border-purple-500 rounded-r-lg p-6 my-8">
+          <h3 className="font-bold text-white text-lg mb-4">Accounting Software</h3>
+          <ul className="space-y-2 text-gray-300">
+            <li>• <strong>ERP:</strong> SAP, Oracle Financials, NetSuite, Workday, Microsoft Dynamics</li>
+            <li>• <strong>SMB:</strong> QuickBooks, Sage, Xero, FreshBooks</li>
+            <li>• <strong>Specialized:</strong> BlackLine, Hyperion, Alteryx, Anaplan</li>
+            <li>• <strong>Tax:</strong> CCH, Thomson Reuters, Avalara</li>
+            <li>• <strong>Audit:</strong> CaseWare, TeamMate, ACL</li>
+          </ul>
+        </div>
+
+        <ResumeSnippet
+          type="bad"
+          content="Did month-end closing and prepared financial reports."
+        />
+
+        <ResumeSnippet
+          type="good"
+          content="Led month-end close process for $50M revenue entity, reducing close time from 10 to 6 days while ensuring GAAP compliance and SOX control documentation for quarterly audits."
+        />
+
+        <InsiderTip title="CPA Resume Strategy">
+          If you have your CPA, put it right after your name: "Jane Smith, CPA". This immediately signals credibility. If you're a candidate, list "CPA Candidate (Exam Date: Q2 2026)" in your certifications section.
+        </InsiderTip>
+
+        <div className="bg-gradient-to-r from-blue-600/30 to-indigo-600/30 border border-blue-500/50 rounded-xl p-8 my-8 text-center">
+          <h3 className="text-2xl font-bold text-white mb-3 font-display">Check Your Accounting Resume</h3>
+          <p className="text-gray-300 mb-6">See which financial keywords you're missing. Free in 10 seconds.</p>
+          <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold rounded-full transition-all">
+            Scan My Resume Free
+          </a>
+        </div>
+      </>
+    ),
+  },
+  // === SALES INDUSTRY - Post 2 ===
+  {
+    slug: 'account-executive-resume-saas',
+    title: 'Account Executive Resume: SaaS Sales Keywords for 2026',
+    description: 'Build an ATS-optimized account executive resume for SaaS and B2B sales roles. Learn the keywords that sales hiring managers look for.',
+    keywords: 'account executive resume, SaaS sales resume, B2B sales resume, sales keywords, Salesforce resume, quota attainment resume',
+    author: 'ResumeAnalyzer AI Team',
+    datePublished: '2026-01-05',
+    dateModified: '2026-01-05',
+    image: 'https://resumeanalyzerai.com/og-image.png',
+    category: 'Sales Careers',
+    readTime: '9 min read',
+    excerpt: 'SaaS sales is highly competitive. Learn the exact keywords and metrics that get account executive resumes past ATS and onto hiring manager desks.',
+    faqData: [
+      {
+        question: "What metrics should be on a sales resume?",
+        answer: "Include: quota attainment percentage, deal sizes (ACV/ARR), pipeline generated, win rate, sales cycle length, YoY growth, and any rankings (e.g., '#1 AE in region Q3 2025')."
+      },
+      {
+        question: "How do I list Salesforce experience?",
+        answer: "Be specific: 'Managed full sales cycle in Salesforce, including opportunity tracking, pipeline management, and forecast reporting. Created custom dashboards for territory analysis.'"
+      },
+      {
+        question: "Should I include my sales methodology training?",
+        answer: "Absolutely! List methodologies like MEDDIC, SPIN Selling, Challenger Sale, Sandler, or BANT. These are keywords hiring managers actively search for."
+      }
+    ],
+    content: () => (
+      <>
+        <p>Account Executive roles at top SaaS companies can receive <strong>500+ applications per position</strong>. With base salaries plus OTE often exceeding $200K, competition is intense. Your resume needs to prove you can hit quota—starting with the right keywords.</p>
+
+        <FreeScannerWidget
+          headline="Is your sales resume hitting the mark?"
+          subtext="Get your ATS score and missing sales keywords in 10 seconds."
+        />
+
+        <h2>Essential Sales Keywords</h2>
+
+        <div className="bg-green-50/10 border-l-4 border-green-500 rounded-r-lg p-6 my-8">
+          <h3 className="font-bold text-white text-lg mb-4">Metrics That Matter</h3>
+          <ul className="space-y-2 text-gray-300">
+            <li>• <strong>Quota:</strong> "Exceeded quota by 125%" or "115% quota attainment"</li>
+            <li>• <strong>Revenue:</strong> ACV, ARR, MRR, deal size, pipeline value</li>
+            <li>• <strong>Rankings:</strong> "Top 10% of sales org" or "#2 AE globally"</li>
+            <li>• <strong>Growth:</strong> YoY growth, territory expansion, new logo acquisition</li>
+            <li>• <strong>Efficiency:</strong> Win rate, sales cycle length, close rate</li>
+          </ul>
+        </div>
+
+        <div className="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-8">
+          <h3 className="font-bold text-white text-lg mb-4">Sales Tools & Methodologies</h3>
+          <ul className="space-y-2 text-gray-300">
+            <li>• <strong>CRM:</strong> Salesforce, HubSpot, Pipedrive, Outreach, Gong</li>
+            <li>• <strong>Methodologies:</strong> MEDDIC, SPIN Selling, Challenger, Sandler, BANT</li>
+            <li>• <strong>Processes:</strong> Full-cycle sales, enterprise sales, solution selling</li>
+            <li>• <strong>Skills:</strong> Prospecting, discovery, demo, negotiation, closing</li>
+          </ul>
+        </div>
+
+        <ResumeSnippet
+          type="bad"
+          content="Responsible for selling software to enterprise clients."
+        />
+
+        <ResumeSnippet
+          type="good"
+          content="Closed $2.8M in new ARR (140% of quota) selling enterprise SaaS to Fortune 500 accounts. Managed 60+ opportunities in Salesforce using MEDDIC methodology with 35% win rate."
+        />
+
+        <InsiderTip title="Sales Resume Secret">
+          Put your quota attainment in your resume summary AND next to each role. Sales managers scan for numbers first. "Account Executive | 125% Quota | $3.2M ARR" immediately grabs attention.
+        </InsiderTip>
+
+        <div className="bg-gradient-to-r from-green-600/30 to-emerald-600/30 border border-green-500/50 rounded-xl p-8 my-8 text-center">
+          <h3 className="text-2xl font-bold text-white mb-3 font-display">Optimize Your Sales Resume</h3>
+          <p className="text-gray-300 mb-6">Find missing keywords that sales hiring managers search for. Free.</p>
+          <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-full transition-all">
+            Scan My Resume Free
+          </a>
+        </div>
+      </>
+    ),
+  },
 ];
 
 /**
