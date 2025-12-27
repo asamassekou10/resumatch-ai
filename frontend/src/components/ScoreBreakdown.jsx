@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronUp, Info } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 /**
  * ScoreBreakdown Component
@@ -158,14 +157,8 @@ const ScoreBreakdown = ({ scoreBreakdown, overallScore }) => {
       </div>
 
       {/* Detailed Breakdown */}
-      <AnimatePresence>
-        {showFullBreakdown && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="space-y-4"
-          >
+      {showFullBreakdown && (
+        <div className="space-y-4">
             {factors.map((factor) => (
               <div
                 key={factor.key}
@@ -186,14 +179,8 @@ const ScoreBreakdown = ({ scoreBreakdown, overallScore }) => {
                   )}
                 </div>
 
-                <AnimatePresence>
-                  {expandedFactors[factor.key] && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="mt-4 space-y-4"
-                    >
+                {expandedFactors[factor.key] && (
+                  <div className="mt-4 space-y-4">
                       {/* Matches */}
                       {factor.data?.matches && factor.data.matches.length > 0 && (
                         <div>
@@ -258,9 +245,8 @@ const ScoreBreakdown = ({ scoreBreakdown, overallScore }) => {
                           </div>
                         </div>
                       )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                  </div>
+                )}
               </div>
             ))}
 
@@ -298,9 +284,8 @@ const ScoreBreakdown = ({ scoreBreakdown, overallScore }) => {
                 </div>
               </div>
             )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 };
