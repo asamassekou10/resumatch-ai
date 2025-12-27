@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+// Framer Motion removed to fix animation compatibility issues
 import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, Clock, FileText, Download, Sparkles, Mail, Infinity, Shield, Lock, ChevronDown, ChevronUp, Target, Search } from 'lucide-react';
 import guestService from '../services/guestService';
 import { ROUTES } from '../config/routes';
@@ -10,12 +10,9 @@ import ShimmerButton from './ui/ShimmerButton';
 import ScoreBreakdown from './ScoreBreakdown';
 import { generateFAQSchema } from '../utils/structuredData';
 
-// FAQ Accordion Component
+// FAQ Accordion Component - Using CSS transitions instead of Framer Motion
 const FAQItem = ({ question, answer, isOpen, onClick }) => (
-  <motion.div
-    className="border-b border-white/10 last:border-b-0"
-    initial={false}
-  >
+  <div className="border-b border-white/10 last:border-b-0">
     <button
       onClick={onClick}
       className="w-full py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors px-4 rounded-lg"
@@ -27,20 +24,12 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => (
         <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
       )}
     </button>
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="overflow-hidden"
-        >
-          <p className="px-4 pb-4 text-gray-400 text-sm leading-relaxed">{answer}</p>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  </motion.div>
+    {isOpen && (
+      <div className="overflow-hidden">
+        <p className="px-4 pb-4 text-gray-400 text-sm leading-relaxed">{answer}</p>
+      </div>
+    )}
+  </div>
 );
 
 const GuestAnalyze = () => {
@@ -270,13 +259,7 @@ const GuestAnalyze = () => {
         <div className="relative z-10">
         {/* Welcome Step */}
         {step === 'welcome' && (
-          <motion.div
-            key="welcome"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="max-w-2xl mx-auto relative z-10"
-          >
+          <div className="max-w-2xl mx-auto relative z-10">
             <div className="text-center">
               <h1 className="text-4xl font-bold text-white mb-4 font-display">Guest Access</h1>
               <p className="text-gray-300 text-lg mb-8">
@@ -309,24 +292,14 @@ const GuestAnalyze = () => {
                 )}
               </SpotlightCard>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* Analyze Step - Redesigned for Trust & Conversion */}
         {step === 'analyze' && (
-          <motion.div
-            key="analyze"
-            initial={{ opacity: 1, y: 0 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="max-w-6xl mx-auto relative z-10"
-          >
+          <div className="max-w-6xl mx-auto relative z-10">
             {/* Welcome Banner - Gift-style messaging */}
-            <motion.div
-              className="bg-gradient-to-r from-emerald-600/90 to-teal-600/90 backdrop-blur-sm border border-emerald-400/50 rounded-xl p-4 md:p-5 mb-8"
-              initial={{ opacity: 1, y: 0 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
+            <div className="bg-gradient-to-r from-emerald-600/90 to-teal-600/90 backdrop-blur-sm border border-emerald-400/50 rounded-xl p-4 md:p-5 mb-8">
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="flex items-center gap-3">
                   <div className="animate-pulse">
@@ -352,7 +325,7 @@ const GuestAnalyze = () => {
                   </button>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Main Hero Section */}
             <div className="text-center mb-10">
@@ -366,14 +339,10 @@ const GuestAnalyze = () => {
 
             {/* Error Message */}
             {error && (
-              <motion.div
-                className="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-6 flex items-start gap-3 relative z-10 max-w-4xl mx-auto"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
+              <div className="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-6 flex items-start gap-3 relative z-10 max-w-4xl mx-auto">
                 <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                 <p className="text-red-400 text-sm relative z-10">{error}</p>
-              </motion.div>
+              </div>
             )}
 
             {/* Two Column Layout: Form + What You Get */}
@@ -445,34 +414,25 @@ const GuestAnalyze = () => {
 
                     {/* Progress Section */}
                     {loading && (
-                      <motion.div
-                        className="space-y-4"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                      >
+                      <div className="space-y-4">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <span className="text-white font-semibold flex items-center gap-2">
-                              <motion.div
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                              >
+                              <div className="animate-spin" style={{ animationDuration: '2s' }}>
                                 <Loader className="w-5 h-5 text-purple-400" />
-                              </motion.div>
+                              </div>
                               {loadingMessage}
                             </span>
                             <span className="text-gray-400 text-sm">{Math.round(loadingProgress)}%</span>
                           </div>
                           <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
-                            <motion.div
-                              className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500"
-                              initial={{ width: '0%' }}
-                              animate={{ width: `${loadingProgress}%` }}
-                              transition={{ ease: 'easeOut', duration: 0.3 }}
+                            <div
+                              className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 transition-all duration-300"
+                              style={{ width: `${loadingProgress}%` }}
                             />
                           </div>
                         </div>
-                      </motion.div>
+                      </div>
                     )}
 
                     {/* Analyze Button */}
@@ -525,13 +485,9 @@ const GuestAnalyze = () => {
                       <div className="relative flex items-center justify-between">
                         <div>
                           <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Resume Score</p>
-                          <motion.p
-                            className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 font-display"
-                            animate={{ opacity: [0.7, 1, 0.7] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                          >
+                          <p className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 font-display animate-pulse">
                             85/100
-                          </motion.p>
+                          </p>
                         </div>
                         <div className="w-16 h-16 rounded-full border-4 border-cyan-400/50 flex items-center justify-center">
                           <Target className="w-8 h-8 text-cyan-400" />
@@ -613,18 +569,12 @@ const GuestAnalyze = () => {
                 ))}
               </SpotlightCard>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* Results Step - Intelligent Analysis */}
         {step === 'results' && analysisResults && (
-          <motion.div
-            key="results"
-            initial={{ opacity: 1, y: 0 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="max-w-5xl mx-auto space-y-6 relative z-10"
-          >
+          <div className="max-w-5xl mx-auto space-y-6 relative z-10">
             {/* Results Header */}
             <div className="text-center">
               <h1 className="text-4xl font-bold text-white mb-2">AI-Powered Analysis Complete</h1>
@@ -924,7 +874,7 @@ const GuestAnalyze = () => {
             >
               Run Another Analysis
             </button>
-          </motion.div>
+          </div>
         )}
         </div>
       </div>
