@@ -90,7 +90,16 @@ const GuestAnalyze = () => {
   useEffect(() => {
     const initGuestSession = async () => {
       try {
-        const response = await guestService.createSession();
+        // Add timeout to prevent infinite loading
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Connection timeout. Please check your internet connection.')), 10000)
+        );
+
+        const response = await Promise.race([
+          guestService.createSession(),
+          timeoutPromise
+        ]);
+
         setGuestToken(response.guest_token);
         setGuestCredits(response.credits);
         setSessionInfo({
@@ -108,6 +117,8 @@ const GuestAnalyze = () => {
           setError('Too many sessions created. Please try again in 24 hours or create an account.');
         } else if (errorMessage.includes('Daily guest analysis limit') || errorMessage.includes('DAILY_LIMIT_EXCEEDED')) {
           setError('Daily guest limit reached. Create an account for unlimited access!');
+        } else if (errorMessage.includes('timeout') || errorMessage.includes('Failed to fetch')) {
+          setError('Unable to connect to server. Please try again later.');
         } else {
           setError(errorMessage);
         }
@@ -222,7 +233,7 @@ const GuestAnalyze = () => {
         url="https://resumeanalyzerai.com/guest-analyze"
         structuredData={[faqSchema]}
       />
-      <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4">
+      <div className="min-h-screen bg-black relative overflow-hidden pt-24 pb-12 px-4">
         <AnimatePresence mode="wait">
         {/* Welcome Step */}
         {step === 'welcome' && (
