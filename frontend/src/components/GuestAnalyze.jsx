@@ -266,6 +266,8 @@ const GuestAnalyze = () => {
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 z-0 pointer-events-none" />
         <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
 
+        {/* Content container - must be above background */}
+        <div className="relative z-10">
         <AnimatePresence mode="wait">
         {/* Welcome Step */}
         {step === 'welcome' && (
@@ -999,6 +1001,7 @@ const GuestAnalyze = () => {
           </motion.div>
         )}
         </AnimatePresence>
+        </div>
       </div>
     </>
   );
