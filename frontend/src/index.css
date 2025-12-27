@@ -32,7 +32,7 @@ body::before {
   background-image: url('https://grainy-gradients.vercel.app/noise.svg');
   opacity: 0.03;
   pointer-events: none;
-  z-index: 1;
+  z-index: -1;
 }
 
 /* Display Font Class */
