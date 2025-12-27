@@ -268,7 +268,6 @@ const GuestAnalyze = () => {
 
         {/* Content container - must be above background */}
         <div className="relative z-10">
-        <AnimatePresence mode="wait">
         {/* Welcome Step */}
         {step === 'welcome' && (
           <motion.div
@@ -1000,7 +999,6 @@ const GuestAnalyze = () => {
             </motion.button>
           </motion.div>
         )}
-        </AnimatePresence>
         </div>
       </div>
     </>
