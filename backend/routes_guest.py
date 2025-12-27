@@ -307,6 +307,7 @@ def analyze_resume_guest():
             'match_analysis': analysis_result.get('match_analysis'),
             'ats_optimization': analysis_result.get('ats_optimization'),
             'recommendations': analysis_result.get('recommendations'),
+            'score_breakdown': analysis_result.get('score_breakdown'),
             'job_industry': analysis_result.get('job_industry'),
             'job_level': analysis_result.get('job_level'),
             'resume_level': analysis_result.get('resume_level'),

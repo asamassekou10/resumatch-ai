@@ -34,7 +34,7 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => (
 
 const GuestAnalyze = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState('welcome'); // welcome, analyze, results
+  const [step, setStep] = useState('welcome'); // welcome, analyze, analyzing, complete, results
   const [guestToken, setGuestToken] = useState(null);
   const [guestCredits, setGuestCredits] = useState(2);
   const [loading, setLoading] = useState(false);
@@ -48,6 +48,7 @@ const GuestAnalyze = () => {
   const [analysisResults, setAnalysisResults] = useState(null);
   const [, setSessionInfo] = useState(null);
   const [openFAQ, setOpenFAQ] = useState(null);
+  const [showComplete, setShowComplete] = useState(false);
 
   // FAQ data for the page
   const faqData = [
@@ -201,15 +202,20 @@ const GuestAnalyze = () => {
       clearInterval(progressInterval);
       clearInterval(messageInterval);
       setLoadingProgress(100);
-      setLoadingMessage('Complete!');
+      setLoadingMessage('Analysis Complete!');
 
       setAnalysisResults(result);
       setGuestCredits(result.credits_remaining);
 
-      // Delay to show 100% completion
+      // Show completion state with checkmark animation
+      setShowComplete(true);
+
+      // Delay to show completion animation before transitioning to results
       setTimeout(() => {
+        setLoading(false);
+        setShowComplete(false);
         setStep('results');
-      }, 500);
+      }, 1500);
     } catch (err) {
       clearInterval(progressInterval);
       clearInterval(messageInterval);
@@ -415,23 +421,42 @@ const GuestAnalyze = () => {
                     {/* Progress Section */}
                     {loading && (
                       <div className="space-y-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-white font-semibold flex items-center gap-2">
-                              <div className="animate-spin" style={{ animationDuration: '2s' }}>
-                                <Loader className="w-5 h-5 text-purple-400" />
-                              </div>
-                              {loadingMessage}
-                            </span>
-                            <span className="text-gray-400 text-sm">{Math.round(loadingProgress)}%</span>
+                        {showComplete ? (
+                          // Completion state with checkmark animation
+                          <div className="text-center py-6">
+                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 mb-4">
+                              <CheckCircle className="w-10 h-10 text-white" />
+                            </div>
+                            <p className="text-white font-bold text-xl mb-2">Analysis Complete!</p>
+                            <p className="text-gray-400 text-sm">Preparing your results...</p>
                           </div>
-                          <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
-                            <div
-                              className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 transition-all duration-300"
-                              style={{ width: `${loadingProgress}%` }}
-                            />
+                        ) : (
+                          // Loading state with progress bar
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-white font-semibold flex items-center gap-2">
+                                <div className="animate-spin" style={{ animationDuration: '2s' }}>
+                                  <Loader className="w-5 h-5 text-purple-400" />
+                                </div>
+                                {loadingMessage}
+                              </span>
+                              <span className="text-gray-400 text-sm">{Math.round(loadingProgress)}%</span>
+                            </div>
+                            <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 transition-all duration-300"
+                                style={{ width: `${loadingProgress}%` }}
+                              />
+                            </div>
+                            {/* Loading step indicators */}
+                            <div className="flex justify-between text-xs text-gray-500 pt-2">
+                              <span className={loadingProgress >= 20 ? 'text-purple-400' : ''}>Parsing</span>
+                              <span className={loadingProgress >= 40 ? 'text-blue-400' : ''}>Analyzing</span>
+                              <span className={loadingProgress >= 60 ? 'text-cyan-400' : ''}>Matching</span>
+                              <span className={loadingProgress >= 80 ? 'text-green-400' : ''}>Scoring</span>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     )}
 
@@ -616,21 +641,21 @@ const GuestAnalyze = () => {
 
             {/* Match Breakdown */}
             {analysisResults.match_analysis && analysisResults.match_analysis.match_breakdown && (
-              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 sm:p-6">
                 <h3 className="text-white font-semibold mb-4">Match Breakdown</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {Object.entries(analysisResults.match_analysis.match_breakdown || {}).map(([key, rawValue]) => {
                     // Extract numeric value - handle objects with score property
                     const value = typeof rawValue === 'object' && rawValue !== null
                       ? (rawValue.score || rawValue.value || 0)
                       : (typeof rawValue === 'number' ? rawValue : 0);
                     return (
-                      <div key={key}>
+                      <div key={key} className="bg-slate-700/30 rounded-lg p-3">
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-slate-400 text-sm capitalize">{key.replace('_', ' ')}</span>
+                          <span className="text-slate-300 text-sm capitalize font-medium">{key.replace(/_/g, ' ')}</span>
                           <span className="text-cyan-400 font-semibold">{value}%</span>
                         </div>
-                        <div className="w-full bg-slate-700 rounded-full h-2">
+                        <div className="w-full bg-slate-600 rounded-full h-2.5">
                           <div
                             className="h-full bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full transition-all duration-1000"
                             style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
