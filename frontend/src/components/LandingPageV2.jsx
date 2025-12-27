@@ -148,9 +148,9 @@ const LandingPageV2 = ({ token }) => {
   return (
     <>
       <SEO
-        title="AI-Powered Resume Analysis & Job Matching"
-        description="Optimize your resume with AI-powered analysis, ATS scoring, skill gap analysis, and personalized job matching. Get hired faster with ResumeAnalyzer AI."
-        keywords="resume analyzer, AI resume, ATS score, job matching, career tools, resume optimization"
+        title="ResumeAnalyzer AI | Free ATS Resume Scanner & Optimizer"
+        description="Optimize your resume with AI-powered analysis, ATS scoring, skill gap analysis, and personalized job matching. Get hired faster with ResumeAnalyzer AI. 2 free scans daily."
+        keywords="resume analyzer, AI resume, ATS score, job matching, career tools, resume optimization, free resume scanner, ATS checker"
         url="https://resumeanalyzerai.com/"
         structuredData={[faqSchema]}
       />
@@ -223,9 +223,9 @@ const LandingPageV2 = ({ token }) => {
               variants={fadeInUp}
               custom={1}
             >
-              Resume perfection <br />
+              ResumeAnalyzer AI <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 animate-gradient-x">
-                powered by intelligence.
+                Free ATS Resume Scanner & Optimizer
               </span>
             </motion.h1>
 

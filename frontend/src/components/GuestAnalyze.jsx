@@ -1,13 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileUp, Zap, ArrowRight, AlertCircle, CheckCircle, Loader, Clock, FileText, Download, Sparkles, Mail, Infinity } from 'lucide-react';
+import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, Clock, FileText, Download, Sparkles, Mail, Infinity, Shield, Lock, ChevronDown, ChevronUp, Target, Search } from 'lucide-react';
 import guestService from '../services/guestService';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
 import ScoreBreakdown from './ScoreBreakdown';
+import { generateFAQSchema } from '../utils/structuredData';
+
+// FAQ Accordion Component
+const FAQItem = ({ question, answer, isOpen, onClick }) => (
+  <motion.div
+    className="border-b border-white/10 last:border-b-0"
+    initial={false}
+  >
+    <button
+      onClick={onClick}
+      className="w-full py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors px-4 rounded-lg"
+    >
+      <span className="text-white font-medium text-sm md:text-base">{question}</span>
+      {isOpen ? (
+        <ChevronUp className="w-5 h-5 text-gray-400 flex-shrink-0" />
+      ) : (
+        <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+      )}
+    </button>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="overflow-hidden"
+        >
+          <p className="px-4 pb-4 text-gray-400 text-sm leading-relaxed">{answer}</p>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </motion.div>
+);
 
 const GuestAnalyze = () => {
   const navigate = useNavigate();
@@ -24,6 +58,33 @@ const GuestAnalyze = () => {
   const [companyName, setCompanyName] = useState('');
   const [analysisResults, setAnalysisResults] = useState(null);
   const [, setSessionInfo] = useState(null);
+  const [openFAQ, setOpenFAQ] = useState(null);
+
+  // FAQ data for the page
+  const faqData = [
+    {
+      question: "Is this really free?",
+      answer: "Yes! You get 2 free resume scans every 24 hours without creating an account. For unlimited scans and premium features like AI-optimized resumes and cover letter generation, you can upgrade to a paid plan."
+    },
+    {
+      question: "Do you sell my data or resume?",
+      answer: "Absolutely not. Your privacy is our priority. We do not sell, share, or use your resume data for any purpose other than providing you with analysis results. Your resume is processed securely and never stored permanently in guest mode."
+    },
+    {
+      question: "How accurate is the ATS analysis?",
+      answer: "Our AI is trained on data from real Applicant Tracking Systems used by Fortune 500 companies. We achieve 95%+ accuracy in keyword matching and ATS compatibility predictions. However, we recommend using this as a guide alongside your own judgment."
+    },
+    {
+      question: "What file formats are supported?",
+      answer: "We support PDF (.pdf), Microsoft Word (.docx), and plain text (.txt) files. For best results, we recommend uploading your resume as a PDF to preserve formatting."
+    },
+    {
+      question: "Why do I need to provide a job description?",
+      answer: "The job description allows us to analyze how well your resume matches the specific role you're applying for. We extract keywords, required skills, and qualifications to give you a tailored compatibility score and actionable recommendations."
+    }
+  ];
+
+  const faqSchema = generateFAQSchema(faqData);
 
   // Initialize guest session on mount
   useEffect(() => {
@@ -155,10 +216,11 @@ const GuestAnalyze = () => {
   return (
     <>
       <SEO
-        title="Free Resume Analysis"
-        description="Try ResumeAnalyzer AI for free! Get instant AI-powered resume analysis, ATS scoring, and personalized improvement suggestions without signing up."
-        keywords="free resume analysis, AI resume checker, ATS score free, resume feedback"
+        title="Free AI Resume Scanner | ATS Score & Missing Keywords in 10 Seconds"
+        description="Scan your resume for free. Get your ATS compatibility score, missing keywords report, and executive summary suggestions in 10 seconds. No signup required. 2 free scans daily."
+        keywords="free resume scanner, free ATS checker, resume keyword analyzer, ATS score free, resume analysis free, AI resume checker"
         url="https://resumeanalyzerai.com/guest-analyze"
+        structuredData={[faqSchema]}
       />
       <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4">
         <AnimatePresence mode="wait">
@@ -210,27 +272,32 @@ const GuestAnalyze = () => {
           </motion.div>
         )}
 
-        {/* Analyze Step */}
+        {/* Analyze Step - Redesigned for Trust & Conversion */}
         {step === 'analyze' && (
           <motion.div
             key="analyze"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="max-w-4xl mx-auto relative z-10"
+            className="max-w-6xl mx-auto relative z-10"
           >
-            {/* Guest Mode Banner */}
+            {/* Welcome Banner - Gift-style messaging */}
             <motion.div
-              className="bg-gradient-to-r from-purple-600/90 to-blue-600/90 backdrop-blur-sm border border-purple-400/50 rounded-lg p-4 mb-6 relative z-10"
+              className="bg-gradient-to-r from-emerald-600/90 to-teal-600/90 backdrop-blur-sm border border-emerald-400/50 rounded-xl p-4 md:p-5 mb-8 relative z-10"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
             >
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="flex items-center gap-3">
-                  <Zap className="w-5 h-5 text-yellow-300" />
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <Sparkles className="w-6 h-6 text-yellow-300" />
+                  </motion.div>
                   <div>
-                    <p className="text-white font-semibold text-sm">Guest Mode Active</p>
-                    <p className="text-white/80 text-xs">{guestCredits} credits available • 24 hours access</p>
+                    <p className="text-white font-bold text-base md:text-lg">Welcome! You have {guestCredits} Free Credits active today.</p>
+                    <p className="text-white/80 text-sm">No account needed. Your resume stays private.</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -244,20 +311,35 @@ const GuestAnalyze = () => {
                   </motion.button>
                   <motion.button
                     onClick={handleUpgrade}
-                    className="px-4 py-2 rounded-lg bg-white text-purple-600 hover:bg-purple-50 font-semibold text-sm transition-colors"
+                    className="px-4 py-2 rounded-lg bg-white text-emerald-600 hover:bg-emerald-50 font-semibold text-sm transition-colors"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    Upgrade
+                    Get Unlimited
                   </motion.button>
                 </div>
               </div>
             </motion.div>
 
+            {/* Main Hero Section */}
+            <motion.div
+              className="text-center mb-10"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 font-display">
+                Free AI Resume Scanner
+              </h1>
+              <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
+                See exactly what the ATS sees. Get your detailed score and keyword gaps in <span className="text-cyan-400 font-semibold">10 seconds</span>.
+              </p>
+            </motion.div>
+
             {/* Error Message */}
             {error && (
               <motion.div
-                className="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-6 flex items-start gap-3 relative z-10"
+                className="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-6 flex items-start gap-3 relative z-10 max-w-4xl mx-auto"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
@@ -266,120 +348,258 @@ const GuestAnalyze = () => {
               </motion.div>
             )}
 
-            {/* Form */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
-              {/* Resume Upload */}
+            {/* Two Column Layout: Form + What You Get */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 relative z-10">
+              {/* Left Column: Upload Form (3/5 width) */}
               <motion.div
+                className="lg:col-span-3 space-y-6"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
               >
-                <label className="block text-white font-semibold mb-3">Resume File</label>
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept=".pdf,.docx,.txt"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    id="resume-upload"
-                  />
-                  <label
-                    htmlFor="resume-upload"
-                    className="flex items-center justify-center w-full px-4 py-8 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-purple-500 transition-colors bg-white/5 backdrop-blur-sm relative z-10"
-                  >
-                    {resumeFile ? (
-                      <div className="text-center">
-                        <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                        <p className="text-white font-semibold text-sm">{resumeFile.name}</p>
-                        <p className="text-slate-400 text-xs mt-1">Click to change</p>
+                <SpotlightCard className="rounded-xl p-6 md:p-8">
+                  <div className="space-y-6">
+                    {/* Resume Upload */}
+                    <div>
+                      <label className="block text-white font-semibold mb-3 text-lg">1. Upload Your Resume</label>
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept=".pdf,.docx,.txt"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                          id="resume-upload"
+                        />
+                        <label
+                          htmlFor="resume-upload"
+                          className="flex items-center justify-center w-full px-4 py-10 border-2 border-dashed border-white/20 rounded-xl cursor-pointer hover:border-purple-500 hover:bg-purple-500/5 transition-all bg-white/5 backdrop-blur-sm relative z-10"
+                        >
+                          {resumeFile ? (
+                            <div className="text-center">
+                              <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
+                              <p className="text-white font-semibold">{resumeFile.name}</p>
+                              <p className="text-slate-400 text-sm mt-1">Click to change file</p>
+                            </div>
+                          ) : (
+                            <div className="text-center">
+                              <FileUp className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                              <p className="text-white font-semibold text-lg">Drop your resume here</p>
+                              <p className="text-slate-400 text-sm mt-1">or click to browse</p>
+                            </div>
+                          )}
+                        </label>
                       </div>
-                    ) : (
-                      <div className="text-center">
-                        <FileUp className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                        <p className="text-white font-semibold text-sm">Upload Your Resume</p>
-                        <p className="text-slate-400 text-xs mt-1">PDF, DOCX, or TXT</p>
+                    </div>
+
+                    {/* Job Details */}
+                    <div>
+                      <label className="block text-white font-semibold mb-3 text-lg">2. Add Job Details</label>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <input
+                            type="text"
+                            placeholder="Company (optional)"
+                            value={companyName}
+                            onChange={(e) => setCompanyName(e.target.value)}
+                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Job Title (optional)"
+                            value={jobTitle}
+                            onChange={(e) => setJobTitle(e.target.value)}
+                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
+                          />
+                        </div>
+                        <textarea
+                          placeholder="Paste the job description here (required)"
+                          value={jobDescription}
+                          onChange={(e) => setJobDescription(e.target.value)}
+                          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none h-36 resize-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Progress Section */}
+                    {loading && (
+                      <motion.div
+                        className="space-y-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-white font-semibold flex items-center gap-2">
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                              >
+                                <Loader className="w-5 h-5 text-purple-400" />
+                              </motion.div>
+                              {loadingMessage}
+                            </span>
+                            <span className="text-gray-400 text-sm">{Math.round(loadingProgress)}%</span>
+                          </div>
+                          <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                            <motion.div
+                              className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500"
+                              initial={{ width: '0%' }}
+                              animate={{ width: `${loadingProgress}%` }}
+                              transition={{ ease: 'easeOut', duration: 0.3 }}
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Analyze Button */}
+                    {!loading && (
+                      <div className="pt-2">
+                        <ShimmerButton
+                          onClick={handleAnalyze}
+                          disabled={loading || !resumeFile || !jobDescription}
+                          className="w-full h-14 text-lg"
+                        >
+                          <Search className="w-5 h-5" />
+                          Scan My Resume
+                          <ArrowRight className="w-5 h-5" />
+                        </ShimmerButton>
                       </div>
                     )}
-                  </label>
-                </div>
+
+                    {/* Trust Badges */}
+                    <div className="flex flex-wrap justify-center gap-4 md:gap-6 pt-4 border-t border-white/10">
+                      <div className="flex items-center gap-2 text-gray-400 text-sm">
+                        <Lock className="w-4 h-4 text-green-400" />
+                        <span>Private & Secure</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-400 text-sm">
+                        <Shield className="w-4 h-4 text-blue-400" />
+                        <span>No Sign-up Required</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-400 text-sm">
+                        <FileText className="w-4 h-4 text-purple-400" />
+                        <span>PDF or DOCX</span>
+                      </div>
+                    </div>
+                  </div>
+                </SpotlightCard>
               </motion.div>
 
-              {/* Job Details */}
+              {/* Right Column: What You Get (2/5 width) */}
               <motion.div
+                className="lg:col-span-2"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
               >
-                <label className="block text-white font-semibold mb-3">Job Details</label>
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Company (optional)"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none relative z-10"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Job Title (optional)"
-                    value={jobTitle}
-                    onChange={(e) => setJobTitle(e.target.value)}
-                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none relative z-10"
-                  />
-                  <textarea
-                    placeholder="Paste job description here (required)"
-                    value={jobDescription}
-                    onChange={(e) => setJobDescription(e.target.value)}
-                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none h-32 resize-none relative z-10"
-                  />
+                <div className="sticky top-8 space-y-6">
+                  {/* Sneak Peek Card */}
+                  <SpotlightCard className="rounded-xl p-6">
+                    <h3 className="text-white font-bold text-lg mb-4 font-display">What You Get</h3>
+
+                    {/* Mock Score Preview */}
+                    <div className="relative mb-6 p-4 rounded-xl bg-gradient-to-br from-slate-800/80 to-slate-700/80 border border-white/10 overflow-hidden">
+                      {/* Decorative blur */}
+                      <div className="absolute -top-4 -right-4 w-20 h-20 bg-cyan-500/30 rounded-full blur-xl" />
+                      <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-purple-500/30 rounded-full blur-xl" />
+
+                      <div className="relative flex items-center justify-between">
+                        <div>
+                          <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Resume Score</p>
+                          <motion.p
+                            className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 font-display"
+                            animate={{ opacity: [0.7, 1, 0.7] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          >
+                            85/100
+                          </motion.p>
+                        </div>
+                        <div className="w-16 h-16 rounded-full border-4 border-cyan-400/50 flex items-center justify-center">
+                          <Target className="w-8 h-8 text-cyan-400" />
+                        </div>
+                      </div>
+                      <p className="text-gray-500 text-xs mt-3 italic">Example preview</p>
+                    </div>
+
+                    {/* Feature List */}
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-white font-medium">ATS Parsability Check</p>
+                          <p className="text-gray-400 text-sm">See if your resume format works with ATS systems</p>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-white font-medium">Missing Keyword Report</p>
+                          <p className="text-gray-400 text-sm">Find keywords you're missing from the job description</p>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-white font-medium">Executive Summary Suggestions</p>
+                          <p className="text-gray-400 text-sm">Get AI-powered tips to improve your resume</p>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-white font-medium">Match Score Breakdown</p>
+                          <p className="text-gray-400 text-sm">Detailed analysis of how well you match the role</p>
+                        </div>
+                      </li>
+                    </ul>
+                  </SpotlightCard>
+
+                  {/* Social Proof Mini */}
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                    <div className="flex items-center justify-between text-center">
+                      <div>
+                        <p className="text-white font-bold text-lg font-display">10,000+</p>
+                        <p className="text-gray-400 text-xs">Resumes Scanned</p>
+                      </div>
+                      <div className="w-px h-10 bg-white/10" />
+                      <div>
+                        <p className="text-white font-bold text-lg font-display">92%</p>
+                        <p className="text-gray-400 text-xs">Success Rate</p>
+                      </div>
+                      <div className="w-px h-10 bg-white/10" />
+                      <div>
+                        <p className="text-white font-bold text-lg font-display">4.8/5</p>
+                        <p className="text-gray-400 text-xs">User Rating</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             </div>
 
-            {/* Progress Section */}
-            {loading && (
-              <motion.div
-                className="mt-6 space-y-4 relative z-10"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                {/* Progress Bar */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between relative z-10">
-                    <span className="text-white font-semibold flex items-center gap-2 relative z-10">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                      >
-                        <Loader className="w-4 h-4 text-purple-400" />
-                      </motion.div>
-                      {loadingMessage}
-                    </span>
-                    <span className="text-gray-400 text-sm relative z-10">{Math.round(loadingProgress)}%</span>
-                  </div>
-                  <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden relative z-10">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-purple-500 to-blue-600"
-                      initial={{ width: '0%' }}
-                      animate={{ width: `${loadingProgress}%` }}
-                      transition={{ ease: 'easeOut', duration: 0.3 }}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Analyze Button */}
-            {!loading && (
-              <div className="w-full mt-6 relative z-10">
-                <ShimmerButton
-                  onClick={handleAnalyze}
-                  disabled={loading || !resumeFile || !jobDescription}
-                  className="w-full"
-                >
-                  Start Analysis
-                  <ArrowRight className="w-5 h-5" />
-                </ShimmerButton>
-              </div>
-            )}
+            {/* FAQ Section */}
+            <motion.div
+              className="mt-16 max-w-3xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <h2 className="text-2xl font-bold text-white mb-6 text-center font-display">
+                Frequently Asked Questions
+              </h2>
+              <SpotlightCard className="rounded-xl overflow-hidden">
+                {faqData.map((faq, index) => (
+                  <FAQItem
+                    key={index}
+                    question={faq.question}
+                    answer={faq.answer}
+                    isOpen={openFAQ === index}
+                    onClick={() => setOpenFAQ(openFAQ === index ? null : index)}
+                  />
+                ))}
+              </SpotlightCard>
+            </motion.div>
           </motion.div>
         )}
 
