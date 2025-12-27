@@ -1196,10 +1196,10 @@ Remember: {lang_instruction}"""
         # Check missing required skills
         skill_alignment_data = components.get("skill_alignment", {})
         if isinstance(skill_alignment_data, dict):
-            missing_required = skill_alignment_data.get("missing_required_skills", [])
-            total_required = skill_alignment_data.get("total_required", 0)
-            
-            if total_required > 0 and len(missing_required) > total_required * 0.5:  # Missing >50% of required
+            missing_required = skill_alignment_data.get("missing_required_skills") or []
+            total_required = skill_alignment_data.get("total_required") or 0
+
+            if total_required and total_required > 0 and len(missing_required) > total_required * 0.5:  # Missing >50% of required
                 hard_filter_multiplier = min(hard_filter_multiplier, 0.6)
                 hard_filter_applied = True
                 logger.info(f"Hard filter applied: Missing {len(missing_required)}/{total_required} required skills")
@@ -1298,18 +1298,18 @@ Remember: {lang_instruction}"""
         # Experience breakdown
         exp_data = components.get("experience_fit", {})
         if isinstance(exp_data, dict):
-            required_years = exp_data.get("required_years", 0)
-            resume_years = exp_data.get("resume_years", 0)
-            gap = exp_data.get("gap", 0)
-            level_match = exp_data.get("level_match", "unknown")
+            required_years = exp_data.get("required_years") or 0
+            resume_years = exp_data.get("resume_years") or 0
+            gap = exp_data.get("gap") or 0
+            level_match = exp_data.get("level_match") or "unknown"
         else:
             required_years = 0
             resume_years = 0
             gap = 0
             level_match = "unknown"
-        
+
         experience_explanation = f"Required: {required_years} years, Resume: {resume_years} years"
-        if gap > 0:
+        if gap and gap > 0:
             experience_explanation += f" (Gap: {gap} years)"
         experience_explanation += f". Level: {level_match}"
         
@@ -1394,12 +1394,14 @@ Remember: {lang_instruction}"""
                 })
             
             exp_data = components.get("experience_fit", {})
-            if isinstance(exp_data, dict) and exp_data.get("gap", 0) > 2:
+            exp_gap = exp_data.get("gap") if isinstance(exp_data, dict) else 0
+            exp_gap = exp_gap or 0  # Handle None
+            if exp_gap > 2:
                 hard_filter_details.append({
                     "type": "experience_gap",
-                    "gap": exp_data.get("gap", 0),
+                    "gap": exp_gap,
                     "multiplier": score_calculation.get("hard_filter_multiplier", 1.0),
-                    "explanation": f"Experience gap of {exp_data.get('gap', 0)} years exceeds threshold"
+                    "explanation": f"Experience gap of {exp_gap} years exceeds threshold"
                 })
         
         # Penalties and bonuses
