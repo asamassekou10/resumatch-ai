@@ -301,13 +301,9 @@ const GuestAnalyze = () => {
                   </>
                 ) : (
                   <>
-                    <motion.div
-                      className="inline-block mb-4 relative z-10"
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                    >
+                    <div className="inline-block mb-4 relative z-10 animate-spin" style={{ animationDuration: '2s' }}>
                       <Clock className="w-16 h-16 text-purple-400" />
-                    </motion.div>
+                    </div>
                     <p className="text-gray-300 relative z-10">Initializing your guest session...</p>
                   </>
                 )}
@@ -333,34 +329,27 @@ const GuestAnalyze = () => {
             >
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="flex items-center gap-3">
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
+                  <div className="animate-pulse">
                     <Sparkles className="w-6 h-6 text-yellow-300" />
-                  </motion.div>
+                  </div>
                   <div>
                     <p className="text-white font-bold text-base md:text-lg">Welcome! You have {guestCredits} Free Credits active today.</p>
                     <p className="text-white/80 text-sm">No account needed. Your resume stays private.</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <motion.button
+                  <button
                     onClick={handleSignIn}
-                    className="px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white font-semibold text-sm transition-colors"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    className="px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white font-semibold text-sm transition-all hover:scale-105 active:scale-95"
                   >
                     Sign In
-                  </motion.button>
-                  <motion.button
+                  </button>
+                  <button
                     onClick={handleUpgrade}
-                    className="px-4 py-2 rounded-lg bg-white text-emerald-600 hover:bg-emerald-50 font-semibold text-sm transition-colors"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    className="px-4 py-2 rounded-lg bg-white text-emerald-600 hover:bg-emerald-50 font-semibold text-sm transition-all hover:scale-105 active:scale-95"
                   >
                     Get Unlimited
-                  </motion.button>
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -680,22 +669,26 @@ const GuestAnalyze = () => {
               <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
                 <h3 className="text-white font-semibold mb-4">Match Breakdown</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  {Object.entries(analysisResults.match_analysis.match_breakdown || {}).map(([key, value]) => (
-                    <div key={key}>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-slate-400 text-sm capitalize">{key.replace('_', ' ')}</span>
-                        <span className="text-cyan-400 font-semibold">{value}%</span>
+                  {Object.entries(analysisResults.match_analysis.match_breakdown || {}).map(([key, rawValue]) => {
+                    // Extract numeric value - handle objects with score property
+                    const value = typeof rawValue === 'object' && rawValue !== null
+                      ? (rawValue.score || rawValue.value || 0)
+                      : (typeof rawValue === 'number' ? rawValue : 0);
+                    return (
+                      <div key={key}>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-slate-400 text-sm capitalize">{key.replace('_', ' ')}</span>
+                          <span className="text-cyan-400 font-semibold">{value}%</span>
+                        </div>
+                        <div className="w-full bg-slate-700 rounded-full h-2">
+                          <div
+                            className="h-full bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full transition-all duration-1000"
+                            style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="w-full bg-slate-700 rounded-full h-2">
-                        <motion.div
-                          className="h-full bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full"
-                          initial={{ width: '0%' }}
-                          animate={{ width: `${value}%` }}
-                          transition={{ delay: 0.2, duration: 1 }}
-                        />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
