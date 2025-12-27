@@ -273,14 +273,14 @@ const GuestAnalyze = () => {
         {step === 'welcome' && (
           <motion.div
             key="welcome"
-            initial={{ opacity: 0 }}
+            initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="max-w-2xl mx-auto"
+            className="max-w-2xl mx-auto relative z-10"
           >
-            <div className="text-center relative z-10">
-              <h1 className="text-4xl font-bold text-white mb-4 font-display relative z-10">Guest Access</h1>
-              <p className="text-gray-300 text-lg mb-8 relative z-10">
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-white mb-4 font-display">Guest Access</h1>
+              <p className="text-gray-300 text-lg mb-8">
                 Get started with 2 free analyses instantly. No sign-up required.
               </p>
               <SpotlightCard className="rounded-lg p-8">
@@ -321,15 +321,15 @@ const GuestAnalyze = () => {
         {step === 'analyze' && (
           <motion.div
             key="analyze"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             className="max-w-6xl mx-auto relative z-10"
           >
             {/* Welcome Banner - Gift-style messaging */}
             <motion.div
-              className="bg-gradient-to-r from-emerald-600/90 to-teal-600/90 backdrop-blur-sm border border-emerald-400/50 rounded-xl p-4 md:p-5 mb-8 relative z-10"
-              initial={{ opacity: 0, y: -20 }}
+              className="bg-gradient-to-r from-emerald-600/90 to-teal-600/90 backdrop-blur-sm border border-emerald-400/50 rounded-xl p-4 md:p-5 mb-8"
+              initial={{ opacity: 1, y: 0 }}
               animate={{ opacity: 1, y: 0 }}
             >
               <div className="flex items-center justify-between flex-wrap gap-4">
@@ -652,15 +652,15 @@ const GuestAnalyze = () => {
         {step === 'results' && analysisResults && (
           <motion.div
             key="results"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="max-w-5xl mx-auto space-y-6"
+            className="max-w-5xl mx-auto space-y-6 relative z-10"
           >
             {/* Results Header */}
             <motion.div
               className="text-center"
-              initial={{ opacity: 0 }}
+              initial={{ opacity: 1 }}
               animate={{ opacity: 1 }}
             >
               <h1 className="text-4xl font-bold text-white mb-2">AI-Powered Analysis Complete</h1>
