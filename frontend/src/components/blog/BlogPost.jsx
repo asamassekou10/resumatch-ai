@@ -5,7 +5,7 @@ import SEO from '../common/SEO';
 import SpotlightCard from '../ui/SpotlightCard';
 import ShimmerButton from '../ui/ShimmerButton';
 import { getBlogPostBySlug, getRecentBlogPosts } from '../../utils/blogContent';
-import { generateArticleSchema } from '../../utils/structuredData';
+import { generateArticleSchema, generateFAQSchema } from '../../utils/structuredData';
 import { ROUTES } from '../../config/routes';
 import TableOfContents from './TableOfContents';
 import BlogContentRenderer from '../../utils/blogContentRenderer';
@@ -37,6 +37,12 @@ const BlogPost = () => {
     image: post.image,
   });
 
+  // Generate FAQ schema if post has FAQ data
+  const faqSchema = post.faqData ? generateFAQSchema(post.faqData) : null;
+
+  // Combine all structured data
+  const structuredData = faqSchema ? [articleSchema, faqSchema] : [articleSchema];
+
   // Use full content if available, otherwise use placeholder
   const content = post.content || (() => (
     <>
@@ -57,7 +63,7 @@ const BlogPost = () => {
         description={post.description}
         keywords={post.keywords}
         url={`https://resumeanalyzerai.com/blog/${post.slug}`}
-        structuredData={[articleSchema]}
+        structuredData={structuredData}
       />
       
       {/* Premium Hero Header */}

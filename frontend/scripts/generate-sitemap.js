@@ -49,7 +49,7 @@ try {
       const slug = match[1];
       BLOG_POSTS.push({
         path: `/blog/${slug}`,
-        priority: '0.7',
+        priority: '0.6',  // Lower priority than tool pages
         changefreq: 'monthly',
         lastmod: new Date().toISOString().split('T')[0]
       });
@@ -69,15 +69,15 @@ const ROUTE_CONFIG = [
     lastmod: new Date().toISOString().split('T')[0]
   },
   {
-    path: '/pricing',
-    priority: '0.9',
+    path: '/guest-analyze',
+    priority: '1.0',  // Main tool - highest priority
     changefreq: 'weekly',
     lastmod: new Date().toISOString().split('T')[0]
   },
   {
-    path: '/guest-analyze',
+    path: '/pricing',
     priority: '0.9',
-    changefreq: 'monthly',
+    changefreq: 'weekly',
     lastmod: new Date().toISOString().split('T')[0]
   },
   {
