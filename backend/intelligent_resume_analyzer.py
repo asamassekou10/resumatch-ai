@@ -1120,42 +1120,47 @@ Remember: {lang_instruction}"""
         components = analysis.get("match_breakdown", {})
 
         # Extract raw scores from LLM analysis (structured format)
+        # Use helper to handle None values from JSON null
+        def safe_get(data, key, default):
+            val = data.get(key, default) if isinstance(data, dict) else default
+            return val if val is not None else default
+
         skill_alignment_data = components.get("skill_alignment", {})
         if isinstance(skill_alignment_data, dict):
-            keyword_score = skill_alignment_data.get("score", 50)
+            keyword_score = safe_get(skill_alignment_data, "score", 50)
         else:
             keyword_score = skill_alignment_data if isinstance(skill_alignment_data, (int, float)) else 50
-        
+
         experience_data = components.get("experience_fit", {})
         if isinstance(experience_data, dict):
-            experience_score = experience_data.get("score", 50)
-            experience_gap = experience_data.get("gap", 0)
+            experience_score = safe_get(experience_data, "score", 50)
+            experience_gap = safe_get(experience_data, "gap", 0)
         else:
             experience_score = experience_data if isinstance(experience_data, (int, float)) else 50
             experience_gap = 0
-        
+
         content_quality_data = components.get("content_quality", {})
         if isinstance(content_quality_data, dict):
-            content_quality_score = content_quality_data.get("score", 50)
+            content_quality_score = safe_get(content_quality_data, "score", 50)
         else:
             content_quality_score = content_quality_data if isinstance(content_quality_data, (int, float)) else 50
-        
+
         job_match_data = components.get("job_specific_match", {})
         if isinstance(job_match_data, dict):
-            job_match_score = job_match_data.get("score", 50)
+            job_match_score = safe_get(job_match_data, "score", 50)
         else:
             job_match_score = job_match_data if isinstance(job_match_data, (int, float)) else 50
-        
+
         # ATS Readability: Combine LLM assessment with Python heuristics
         ats_llm_data = components.get("ats_readability", {})
         if isinstance(ats_llm_data, dict):
-            ats_llm_score = ats_llm_data.get("score", 50)
+            ats_llm_score = safe_get(ats_llm_data, "score", 50)
         else:
             ats_llm_score = ats_llm_data if isinstance(ats_llm_data, (int, float)) else 50
-        
+
         # Get Python heuristics score (if available)
         ats_heuristics = analysis.get("ats_readability_heuristics", {})
-        ats_heuristic_score = ats_heuristics.get("score", 100) if ats_heuristics else 100
+        ats_heuristic_score = safe_get(ats_heuristics, "score", 100) if ats_heuristics else 100
         
         # Combine LLM and heuristic scores (weighted: 60% LLM, 40% heuristics)
         ats_readability_score = (ats_llm_score * 0.6) + (ats_heuristic_score * 0.4)
