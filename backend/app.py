@@ -38,6 +38,7 @@ from routes_job_matches import job_matches_bp
 from routes_interview_prep import interview_prep_bp
 from routes_company_intel import company_intel_bp
 from routes_career_path import career_path_bp
+from routes_analytics import analytics_bp
 from routes.health import health_bp
 from routes.auth import auth_bp
 from routes.analysis import analysis_bp
@@ -2471,6 +2472,7 @@ app.register_blueprint(job_matches_bp)
 app.register_blueprint(interview_prep_bp)
 app.register_blueprint(company_intel_bp)
 app.register_blueprint(career_path_bp)
+app.register_blueprint(analytics_bp)
 app.register_blueprint(admin_diag_bp)
 
 # Exempt health check endpoints from rate limiting
