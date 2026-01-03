@@ -12,7 +12,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-analytics_bp = Blueprint('analytics', __name__)
+analytics_bp = Blueprint('analytics', __name__, url_prefix='/api')
 
 def is_admin():
     """Check if current user is admin"""
