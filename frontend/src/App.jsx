@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import AppRoutes from './components/routing/AppRoutes';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import PaymentSuccessModal from './components/PaymentSuccessModal';
@@ -224,7 +225,7 @@ function App() {
           handleLogin={handleLogin}
           handleLogout={handleLogout}
         />
-        
+
         {/* Payment Success Modal */}
         <PaymentSuccessModal
           isOpen={showPaymentModal}
@@ -232,6 +233,9 @@ function App() {
           tier={paymentTier}
           userCredits={userProfile?.credits}
         />
+
+        {/* Vercel Analytics */}
+        <Analytics />
       </BrowserRouter>
     </ErrorBoundary>
   );
