@@ -76,10 +76,12 @@ if not JWT_SECRET or not SESSION_SECRET:
 
 # CORS - Allow frontend origins
 frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+vercel_url = os.getenv('VERCEL_URL', '')  # Add your Vercel URL here
 allowed_origins = [
     "http://localhost:3000",
     frontend_url,
-    "https://resumatch-frontend.onrender.com",
+    vercel_url,
+    "https://resumatch-frontend.onrender.com",  # Old Render frontend (can remove after migration)
     "https://resumeanalyzerai.com",
     "https://www.resumeanalyzerai.com"
 ]
