@@ -45,6 +45,11 @@
       "react-app/jest"
     ]
   },
+  "jest": {
+    "moduleNameMapper": {
+      "^@vercel/analytics/react$": "<rootDir>/src/__mocks__/@vercel/analytics/react.js"
+    }
+  },
   "browserslist": {
     "production": [
       ">0.2%",
