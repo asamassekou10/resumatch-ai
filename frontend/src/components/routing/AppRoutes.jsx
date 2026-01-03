@@ -48,6 +48,7 @@ const CareerPath = lazy(() => import('../CareerPath'));
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('../AdminDashboard'));
+const AdminAnalytics = lazy(() => import('../AdminAnalytics'));
 
 /**
  * AppRoutes Component
@@ -337,10 +338,7 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin }) => {
           path={ROUTES.ADMIN_ANALYTICS}
           element={
             <ProtectedRoute requireAdmin={true}>
-              {/* TODO: Create AdminAnalytics component */}
-              <div className="min-h-screen flex items-center justify-center bg-slate-900">
-                <div className="text-white">Admin Analytics - Coming Soon</div>
-              </div>
+              <AdminAnalytics />
             </ProtectedRoute>
           }
         />
