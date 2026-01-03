@@ -1,6 +1,11 @@
 import { render } from '@testing-library/react';
 import App from './App';
 
+// Mock @vercel/analytics to avoid import issues in Jest
+jest.mock('@vercel/analytics/react', () => ({
+  Analytics: () => null
+}));
+
 // Mock axios to avoid ESM import issues in Jest
 jest.mock('axios', () => ({
   create: jest.fn(() => ({
