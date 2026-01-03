@@ -132,7 +132,7 @@ def create_guest_session():
         guest_session = GuestSession(
             id=session_id,
             session_token=session_token,
-            credits_remaining=10,  # CHANGED: Increased to 10 analyses for presentation
+            credits_remaining=2,  # Strictly limit to 2 analyses per 24 hours
             credits_used=0,
             ip_address=ip_address,
             user_agent=user_agent,
@@ -148,7 +148,7 @@ def create_guest_session():
 
         return jsonify({
             'guest_token': session_token,
-            'credits': 2,  # CHANGED: Show 2 credits instead of 5
+            'credits': 2,  # Show 2 credits
             'expires_at': expires_at.isoformat(),
             'session_id': session_id,
             'message': 'Guest session created - 2 free analyses available'
@@ -201,7 +201,7 @@ def analyze_resume_guest():
             GuestSession.created_at >= datetime.utcnow() - timedelta(hours=24)
         ).count()
 
-        if total_analyses_from_ip >= 5:
+        if total_analyses_from_ip >= 2:
             logger.warning(f"Analysis attempt from IP {ip_address} that exceeded daily limit")
             return jsonify({
                 'error': 'Daily guest analysis limit reached for your network.',

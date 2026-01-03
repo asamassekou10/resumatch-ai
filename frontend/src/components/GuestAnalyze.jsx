@@ -224,12 +224,12 @@ const GuestAnalyze = () => {
       const errorMessage = err.message || 'Analysis failed. Please try again.';
 
       if (errorMessage.includes('No guest credits remaining') || errorMessage.includes('INSUFFICIENT_CREDITS')) {
-        setError('You\'ve used all 2 free analyses. Create an account for unlimited access!');
+        setError('🎯 You\'ve used all 2 free analyses! Ready to level up? Get unlimited analyses, AI-powered insights, and exclusive features with a 7-day FREE trial. No credit card required!');
         setGuestCredits(0);
       } else if (errorMessage.includes('Daily guest analysis limit reached') || errorMessage.includes('DAILY_LIMIT_EXCEEDED')) {
-        setError('Daily guest limit reached. Create an account for unlimited analyses!');
+        setError('📊 You\'ve reached your 2 free analyses for today! Want more? Start your 7-day FREE trial now and get unlimited analyses, AI optimization, cover letter generation, and premium features. No credit card required!');
       } else if (errorMessage.includes('Too many guest sessions') || errorMessage.includes('RATE_LIMIT_EXCEEDED')) {
-        setError('Too many sessions created. Please try again in 24 hours or create an account.');
+        setError('⏰ Too many sessions created. Try again in 24 hours, or start your 7-day FREE trial for unlimited access and premium features!');
       } else {
         setError(errorMessage);
       }
@@ -274,17 +274,17 @@ const GuestAnalyze = () => {
               <SpotlightCard className="rounded-lg p-8">
                 {error ? (
                   <>
-                    <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-                    <p className="text-red-400 mb-4">{error}</p>
-                    <div className="flex gap-3 justify-center relative z-10">
-                      <ShimmerButton onClick={handleSignIn}>
-                        Sign In
+                    <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+                    <p className="text-gray-300 mb-6 text-lg leading-relaxed">{error}</p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center relative z-10">
+                      <ShimmerButton onClick={() => navigate(ROUTES.REGISTER)}>
+                        Start 7-Day Free Trial <ArrowRight className="ml-1" size={16} />
                       </ShimmerButton>
                       <button
-                        onClick={() => navigate(ROUTES.PRICING)}
+                        onClick={handleSignIn}
                         className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold rounded-lg transition-colors relative z-10"
                       >
-                        View Pricing
+                        Sign In
                       </button>
                     </div>
                   </>

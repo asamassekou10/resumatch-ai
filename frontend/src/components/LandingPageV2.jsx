@@ -8,6 +8,7 @@ import ShimmerButton from './ui/ShimmerButton';
 import EntranceOverlay from './ui/EntranceOverlay';
 import Footer from './ui/Footer';
 import SpotlightCard from './ui/SpotlightCard';
+import FreeTrialBanner from './ui/FreeTrialBanner';
 import { generateFAQSchema } from '../utils/structuredData';
 import BLOG_POSTS from '../utils/blogContent';
 
@@ -160,6 +161,9 @@ const LandingPageV2 = ({ token }) => {
       </AnimatePresence>
       {!showEntrance && (
       <div className="min-h-screen bg-black relative overflow-hidden">
+        {/* Free Trial Banner */}
+        <FreeTrialBanner />
+
         {/* Background atmosphere - Reduced opacity */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-black to-black z-0 pointer-events-none" />
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 z-0 pointer-events-none" />
@@ -169,31 +173,18 @@ const LandingPageV2 = ({ token }) => {
 
         {/* Hero Section */}
       <div className="relative pt-20 pb-16 px-4 sm:px-6 lg:px-8">
-        {/* Premium Moon/Arc Effect - Animated Breathing */}
-        <motion.div
+        {/* Premium Moon/Arc Effect */}
+        <div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[180vw] h-[180vw] sm:w-[120vw] sm:h-[120vw] -translate-y-[75%] sm:-translate-y-[80%] rounded-full border border-white/5 bg-white/[0.01] shadow-[0_0_120px_rgba(59,130,246,0.1)] z-0 pointer-events-none"
-          animate={{
-            scale: [1, 1.02, 1],
-            opacity: [0.8, 1, 0.8]
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
         />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150vw] h-[150vw] sm:w-[90vw] sm:h-[90vw] -translate-y-[70%] sm:-translate-y-[75%] rounded-full border border-white/[0.08] z-0 pointer-events-none opacity-50" />
 
-        {/* Animated background elements */}
-        <motion.div
+        {/* Background blur elements */}
+        <div
           className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-[100px] opacity-30 z-0 pointer-events-none"
-          animate={{ y: [0, 30, 0] }}
-          transition={{ duration: 8, repeat: Infinity }}
         />
-        <motion.div
+        <div
           className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] opacity-30 z-0 pointer-events-none"
-          animate={{ y: [0, -30, 0] }}
-          transition={{ duration: 8, repeat: Infinity, delay: 1 }}
         />
 
         <div className="relative max-w-7xl mx-auto">
@@ -274,10 +265,9 @@ const LandingPageV2 = ({ token }) => {
           {/* Dashboard Preview Mockup */}
           <motion.div
             className="mt-20 mx-auto max-w-5xl rounded-xl border border-white/10 bg-gray-900/50 backdrop-blur-sm shadow-2xl overflow-hidden relative z-10"
-            initial={{ opacity: 0, y: 100, rotateX: 20 }}
-            animate={{ opacity: 1, y: 0, rotateX: 0 }}
-            transition={{ delay: 0.8, duration: 1.2, type: "spring", bounce: 0.2 }}
-            style={{ transformPerspective: '1000px' }}
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.8 }}
           >
             <div className="flex items-center gap-2 px-4 py-3 bg-white/5 border-b border-white/10">
               <div className="w-3 h-3 rounded-full bg-red-500/50" />
@@ -580,21 +570,15 @@ const LandingPageV2 = ({ token }) => {
           <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
           <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
 
-          <motion.div
+          <div
             className="flex gap-16 whitespace-nowrap"
-            animate={{ x: [0, "-50%"] }}
-            transition={{
-              duration: 30,
-              ease: "linear",
-              repeat: Infinity
-            }}
           >
             {["TECHCORP", "INNOVATE", "FUTURELABS", "GLOBALAI", "NEXTGEN", "DATASYSTEMS", "ORBITAL", "SYNTHWAVE", "TECHCORP", "INNOVATE", "FUTURELABS", "GLOBALAI", "NEXTGEN", "DATASYSTEMS", "ORBITAL", "SYNTHWAVE"].map((company, index) => (
               <span key={index} className="text-xl md:text-2xl font-bold text-white/30 hover:text-white transition-colors cursor-default select-none font-display">
                 {company}
               </span>
             ))}
-          </motion.div>
+          </div>
         </div>
       </div>
 

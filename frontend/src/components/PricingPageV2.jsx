@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, Zap, Crown, Sparkles, ArrowRight } from 'lucide-react';
+import { CheckCircle, Zap, Crown, Sparkles, ArrowRight, FileText, BookOpen } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import ShimmerButton from './ui/ShimmerButton';
@@ -164,6 +164,43 @@ const PricingPageV2 = ({ token, userProfile }) => {
       icon: Sparkles
     },
     {
+      name: 'Basic',
+      description: 'Essential tools for job seekers',
+      monthlyPrice: 5.99,
+      yearlyPrice: 59.99,
+      credits: 20,
+      features: [
+        '20 credits/month',
+        'Resume analysis',
+        'Keyword matching',
+        'AI feedback generation',
+        'Email support'
+      ],
+      notIncluded: ['Cover letter generation', 'Priority support', 'Advanced analytics'],
+      highlighted: false,
+      icon: FileText
+    },
+    {
+      name: 'Student',
+      description: 'Exclusively for students',
+      monthlyPrice: 4.99,
+      yearlyPrice: 49.99,
+      credits: 30,
+      features: [
+        '30 credits/month',
+        'Resume analysis',
+        'Keyword matching',
+        'AI feedback generation',
+        'Career path guidance',
+        'Student-focused templates',
+        'Requires .edu email'
+      ],
+      notIncluded: ['Cover letter generation', 'Priority support'],
+      highlighted: false,
+      icon: BookOpen,
+      badge: 'Students Only'
+    },
+    {
       name: 'Pro',
       description: 'For active job seekers',
       monthlyPrice: 9.99,
@@ -284,7 +321,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
         </motion.div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-12 relative z-10">
           {plans.map((plan, i) => {
             const IconComponent = plan.icon;
             const price = calculatePrice(plan);
@@ -326,6 +363,18 @@ const PricingPageV2 = ({ token, userProfile }) => {
                       >
                         <span className="bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
                           POPULAR
+                        </span>
+                      </motion.div>
+                    )}
+                    {plan.badge && (
+                      <motion.div
+                        className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20"
+                        initial={{ y: -20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                      >
+                        <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+                          {plan.badge}
                         </span>
                       </motion.div>
                     )}
