@@ -6,7 +6,7 @@ import SpotlightCard from '../ui/SpotlightCard';
 import { getRecentBlogPosts } from '../../utils/blogContent';
 
 const BlogList = () => {
-  const blogPosts = getRecentBlogPosts();
+  const blogPosts = getRecentBlogPosts(100); // Show all blog posts
 
   return (
     <>

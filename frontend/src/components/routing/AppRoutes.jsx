@@ -77,7 +77,7 @@ const AdminDashboard = lazy(() => import('../AdminDashboard'));
  */
 const AppRoutes = ({ userProfile, token, handleLogout, handleLogin }) => {
   return (
-    <Suspense fallback={<LoadingSpinner message="Loading page..." />}>
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
       <RouteTracker />
       <Routes>
         {/* ============================================ */}

@@ -21,6 +21,12 @@ const Footer = () => {
             <span className="text-xl font-bold text-white font-display">ResumeAnalyzer AI</span>
           </div>
           <div className="flex gap-8 text-sm text-gray-400">
+            <Link to="/blog" className="hover:text-white transition-colors">
+              Blog
+            </Link>
+            <Link to={ROUTES.PRICING} className="hover:text-white transition-colors">
+              Pricing
+            </Link>
             <Link to={ROUTES.HELP_PRIVACY} className="hover:text-white transition-colors">
               Privacy Policy
             </Link>

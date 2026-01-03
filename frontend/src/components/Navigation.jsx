@@ -159,6 +159,12 @@ const Navigation = ({ token, onLogout, user }) => {
                     </Link>
                   )}
                   <Link
+                    to="/blog"
+                    className="text-gray-300 hover:text-white transition font-medium"
+                  >
+                    Blog
+                  </Link>
+                  <Link
                     to={ROUTES.PRICING}
                     className="text-gray-300 hover:text-white transition font-medium"
                   >

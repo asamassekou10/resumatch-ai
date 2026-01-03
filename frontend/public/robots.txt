@@ -22,6 +22,10 @@ Allow: /help/terms
 Allow: /help/privacy
 Allow: /login
 Allow: /register
+Allow: /blog
+Allow: /blog/*
+Allow: /resume-for/*
+Allow: /resources/*
 
 # Allow static assets
 Allow: /static/

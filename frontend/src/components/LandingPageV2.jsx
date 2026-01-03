@@ -739,6 +739,78 @@ const LandingPageV2 = ({ token }) => {
         </div>
       </div>
 
+      {/* Resume Guides by Job Role Section */}
+      <div className="py-12 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
+              <FileText className="w-4 h-4 text-blue-400" />
+              <span className="text-sm font-medium text-blue-300">Role-Specific Guides</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 font-display">
+              Resume Examples by Job Role
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              Get tailored resume tips, keywords, and examples for your specific role
+            </p>
+          </motion.div>
+
+          {/* Job Roles Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[
+              { slug: 'software-engineer', label: 'Software Engineer', icon: '💻' },
+              { slug: 'nursing-student', label: 'Nursing Student', icon: '🩺' },
+              { slug: 'marketing-manager', label: 'Marketing Manager', icon: '📊' },
+              { slug: 'data-analyst', label: 'Data Analyst', icon: '📈' },
+              { slug: 'project-manager', label: 'Project Manager', icon: '📋' },
+              { slug: 'accountant', label: 'Accountant', icon: '💰' },
+              { slug: 'teacher', label: 'Teacher', icon: '📚' },
+              { slug: 'sales-representative', label: 'Sales Rep', icon: '🤝' },
+              { slug: 'graphic-designer', label: 'Graphic Designer', icon: '🎨' },
+              { slug: 'registered-nurse', label: 'Registered Nurse', icon: '👨‍⚕️' },
+              { slug: 'web-developer', label: 'Web Developer', icon: '🌐' },
+              { slug: 'financial-analyst', label: 'Financial Analyst', icon: '💹' }
+            ].map((role, index) => (
+              <motion.div
+                key={role.slug}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.03 }}
+              >
+                <Link to={`/resume-for/${role.slug}`}>
+                  <SpotlightCard className="rounded-lg p-4 h-full hover:border-blue-500/50 transition-all group">
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">{role.icon}</div>
+                      <div className="text-sm font-medium text-white group-hover:text-blue-300 transition-colors">
+                        {role.label}
+                      </div>
+                    </div>
+                  </SpotlightCard>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* View All Link */}
+          <motion.div
+            className="text-center mt-8"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            <p className="text-gray-500 text-sm">
+              ...and 9 more specialized roles
+            </p>
+          </motion.div>
+        </div>
+      </div>
+
       <Footer />
       </div>
       )}
