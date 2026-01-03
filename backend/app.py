@@ -131,8 +131,14 @@ STRIPE_API_KEY = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
 
 # Price IDs for subscriptions
+STRIPE_BASIC_PRICE_ID = os.getenv('STRIPE_BASIC_PRICE_ID')
+STRIPE_STUDENT_PRICE_ID = os.getenv('STRIPE_STUDENT_PRICE_ID')
 STRIPE_PRO_PRICE_ID = os.getenv('STRIPE_PRO_PRICE_ID')
 STRIPE_ELITE_PRICE_ID = os.getenv('STRIPE_ELITE_PRICE_ID')
+
+# Product IDs for tier identification
+STRIPE_BASIC_PRODUCT_ID = os.getenv('STRIPE_BASIC_PRODUCT_ID', 'prod_TisCdJIRaSgZTT')
+STRIPE_STUDENT_PRODUCT_ID = os.getenv('STRIPE_STUDENT_PRODUCT_ID', 'prod_TirrjGd5KK5QTx')
 
 if STRIPE_API_KEY:
     stripe.api_key = STRIPE_API_KEY
@@ -140,6 +146,8 @@ if STRIPE_API_KEY:
         app.logger.warning("STRIPE_WEBHOOK_SECRET not configured - webhook validation will not work")
     if not STRIPE_PRO_PRICE_ID or not STRIPE_ELITE_PRICE_ID:
         app.logger.warning("Stripe Price IDs not configured - subscriptions won't work")
+    if not STRIPE_BASIC_PRICE_ID or not STRIPE_STUDENT_PRICE_ID:
+        app.logger.warning("Stripe Basic/Student Price IDs not configured - new tiers won't work")
 else:
     app.logger.warning("STRIPE_SECRET_KEY not configured - payment features disabled")
 
@@ -2009,16 +2017,26 @@ def create_checkout_session():
             return jsonify({'error': 'User not found'}), 404
         
         # Determine which tier to upgrade to
-        tier_param = request.args.get('tier', 'pro')
-        
+        tier_param = request.args.get('tier', 'pro').lower()
+
         # Get Price ID from environment variables
-        if tier_param == 'elite':
+        if tier_param == 'basic':
+            price_id = STRIPE_BASIC_PRICE_ID
+        elif tier_param == 'student':
+            price_id = STRIPE_STUDENT_PRICE_ID
+            # Verify .edu email for student plan
+            if not user.email.lower().endswith('.edu'):
+                return jsonify({
+                    'error': 'Student plan requires a valid .edu email address',
+                    'details': 'Please sign up with your educational email to access the Student plan'
+                }), 403
+        elif tier_param == 'elite':
             price_id = STRIPE_ELITE_PRICE_ID
         else:
             price_id = STRIPE_PRO_PRICE_ID
-        
+
         if not price_id:
-            logging.error(f"Missing Stripe Price ID for tier: {tier_param}. PRO_ID: {bool(STRIPE_PRO_PRICE_ID)}, ELITE_ID: {bool(STRIPE_ELITE_PRICE_ID)}")
+            logging.error(f"Missing Stripe Price ID for tier: {tier_param}. BASIC_ID: {bool(STRIPE_BASIC_PRICE_ID)}, STUDENT_ID: {bool(STRIPE_STUDENT_PRICE_ID)}, PRO_ID: {bool(STRIPE_PRO_PRICE_ID)}, ELITE_ID: {bool(STRIPE_ELITE_PRICE_ID)}")
             return jsonify({
                 'error': 'Payment configuration error. Please contact support.',
                 'details': f'Price ID missing for {tier_param} tier'

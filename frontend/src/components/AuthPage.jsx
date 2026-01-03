@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Shield, Lock, CheckCircle2 } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
@@ -27,11 +28,12 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
   const location = useLocation();
   const isLogin = mode === 'login';
 
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ email: '', password: '', confirmPassword: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   // Password validation function
   const validatePassword = (password) => {
@@ -62,6 +64,20 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
       const validationError = validatePassword(formData.password);
       if (validationError) {
         setError(validationError);
+        setLoading(false);
+        return;
+      }
+
+      // Check password confirmation
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match');
+        setLoading(false);
+        return;
+      }
+
+      // Check terms acceptance
+      if (!termsAccepted) {
+        setError('You must accept the Terms of Service and Privacy Policy');
         setLoading(false);
         return;
       }
@@ -186,9 +202,25 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
               <h1 className="text-3xl font-bold text-white mb-2 font-display relative z-10">
                 {isLogin ? 'Welcome Back' : 'Create Account'}
               </h1>
-              <p className="text-gray-400 relative z-10">
-                {isLogin ? 'Sign in to continue' : 'Join us to get started'}
+              <p className="text-gray-400 relative z-10 mb-4">
+                {isLogin ? 'Sign in to continue' : 'Start your 7-day free trial - No credit card required'}
               </p>
+
+              {/* Security Badges */}
+              <div className="flex items-center justify-center gap-4 text-xs text-gray-400 mt-4 relative z-10">
+                <div className="flex items-center gap-1">
+                  <Shield className="w-4 h-4 text-green-400" />
+                  <span>Secure</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Lock className="w-4 h-4 text-green-400" />
+                  <span>Encrypted</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CheckCircle2 className="w-4 h-4 text-green-400" />
+                  <span>GDPR Compliant</span>
+                </div>
+              </div>
             </div>
 
             {error && (
@@ -305,6 +337,58 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
                   </div>
                 )}
               </div>
+
+              {/* Confirm Password - Only show on register */}
+              {!isLogin && (
+                <div>
+                  <input
+                    type="password"
+                    placeholder="Confirm Password"
+                    className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 transition relative z-10 ${
+                      formData.confirmPassword && formData.password !== formData.confirmPassword
+                        ? 'border-red-500'
+                        : 'border-white/10'
+                    }`}
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAuth()}
+                  />
+                  {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                    <p className="text-red-400 text-sm mt-2 relative z-10">Passwords do not match</p>
+                  )}
+                  {formData.confirmPassword && formData.password === formData.confirmPassword && formData.password.length > 0 && (
+                    <p className="text-green-400 text-sm mt-2 relative z-10 flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                      </svg>
+                      Passwords match
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Terms and Conditions - Only show on register */}
+              {!isLogin && (
+                <div className="flex items-start gap-3 p-4 bg-white/5 rounded-lg border border-white/10 relative z-10">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded border-white/20 bg-white/10 text-purple-600 focus:ring-2 focus:ring-purple-500 cursor-pointer"
+                  />
+                  <label htmlFor="terms" className="text-sm text-gray-300 cursor-pointer">
+                    I agree to the{' '}
+                    <a href="/terms" target="_blank" className="text-purple-400 hover:text-purple-300 underline">
+                      Terms of Service
+                    </a>
+                    {' '}and{' '}
+                    <a href="/privacy" target="_blank" className="text-purple-400 hover:text-purple-300 underline">
+                      Privacy Policy
+                    </a>
+                  </label>
+                </div>
+              )}
 
               <ShimmerButton
                 onClick={handleAuth}

@@ -29,8 +29,8 @@ const PricingPageV2 = ({ token, userProfile }) => {
     })
   };
 
-  // Handle upgrade to Pro
-  const handleUpgradeToPro = async () => {
+  // Generic handler for all tier upgrades
+  const handleUpgrade = async (tier) => {
     if (!token) {
       navigate(ROUTES.LOGIN);
       return;
@@ -39,7 +39,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
     setLoading(true);
     try {
       const response = await axios.post(
-        `${API_URL}/payments/create-checkout-session?tier=pro`,
+        `${API_URL}/payments/create-checkout-session?tier=${tier}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -58,36 +58,18 @@ const PricingPageV2 = ({ token, userProfile }) => {
       setLoading(false);
     }
   };
+
+  // Handle upgrade to Basic
+  const handleUpgradeToBasic = () => handleUpgrade('basic');
+
+  // Handle upgrade to Student
+  const handleUpgradeToStudent = () => handleUpgrade('student');
+
+  // Handle upgrade to Pro
+  const handleUpgradeToPro = () => handleUpgrade('pro');
 
   // Handle upgrade to Elite
-  const handleUpgradeToElite = async () => {
-    if (!token) {
-      navigate(ROUTES.LOGIN);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await axios.post(
-        `${API_URL}/payments/create-checkout-session?tier=elite`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-
-      // Redirect to Stripe checkout
-      if (response.data.checkout_url) {
-        window.location.href = response.data.checkout_url;
-      }
-    } catch (error) {
-      console.error('Error creating checkout session:', error);
-      const errorMessage = error.response?.data?.error || error.message || 'Failed to start checkout. Please try again.';
-      const details = error.response?.data?.details;
-      alert(`${errorMessage}${details ? `\n\nDetails: ${details}` : ''}\n\nIf this problem persists, please contact support@resumeanalyzerai.com`);
-      setLoading(false);
-    }
-  };
+  const handleUpgradeToElite = () => handleUpgrade('elite');
 
   // Normalize subscription tier
   const normalizedTier = userProfile?.subscription_tier === 'premium'
@@ -126,6 +108,24 @@ const PricingPageV2 = ({ token, userProfile }) => {
     }
 
     // Upgrade buttons
+    if (lowerPlan === 'basic') {
+      return {
+        text: 'Choose Basic',
+        action: handleUpgradeToBasic,
+        variant: 'secondary',
+        disabled: loading
+      };
+    }
+
+    if (lowerPlan === 'student') {
+      return {
+        text: 'Choose Student',
+        action: handleUpgradeToStudent,
+        variant: 'secondary',
+        disabled: loading
+      };
+    }
+
     if (lowerPlan === 'pro') {
       return {
         text: normalizedTier === 'elite' ? 'Downgrade to Pro' : 'Choose Pro',
