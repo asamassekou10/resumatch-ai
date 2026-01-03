@@ -36,10 +36,5 @@
         }
       ]
     }
-  ],
-  "env": {
-    "REACT_APP_API_URL": "@react_app_api_url",
-    "REACT_APP_GOOGLE_ANALYTICS_ID": "@react_app_google_analytics_id",
-    "REACT_APP_ENABLE_ANALYTICS": "@react_app_enable_analytics"
-  }
+  ]
 }

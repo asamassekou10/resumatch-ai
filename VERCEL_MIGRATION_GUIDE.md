@@ -75,15 +75,27 @@ npm install
 
 ### **Step 4: Add Environment Variables**
 
-Click **"Environment Variables"** and add:
+In the deployment configuration screen, scroll down to **"Environment Variables"** section and click **"Add"** for each variable:
 
-| Variable Name | Value |
-|--------------|-------|
-| `REACT_APP_API_URL` | `https://resumatch-backend-7qdb.onrender.com/api` |
-| `REACT_APP_GOOGLE_ANALYTICS_ID` | `G-VVW8KL5QG9` |
-| `REACT_APP_ENABLE_ANALYTICS` | `true` |
+**Variable 1:**
+- Key: `REACT_APP_API_URL`
+- Value: `https://resumatch-backend-7qdb.onrender.com/api`
+- Environment: Select **"Production"**, **"Preview"**, and **"Development"**
 
-**Important:** Select **"Production"** for all variables.
+**Variable 2:**
+- Key: `REACT_APP_GOOGLE_ANALYTICS_ID`
+- Value: `G-VVW8KL5QG9`
+- Environment: Select **"Production"**, **"Preview"**, and **"Development"**
+
+**Variable 3:**
+- Key: `REACT_APP_ENABLE_ANALYTICS`
+- Value: `true`
+- Environment: Select **"Production"**, **"Preview"**, and **"Development"**
+
+**Important Notes:**
+- DO NOT use the `@secret` syntax - add the actual values directly
+- Make sure to select all three environments (Production, Preview, Development) for each variable
+- Double-check there are no trailing slashes in the API URL
 
 ---
 
