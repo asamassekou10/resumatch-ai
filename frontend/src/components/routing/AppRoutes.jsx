@@ -4,7 +4,6 @@ import ProtectedRoute from './ProtectedRoute';
 import PublicLayout from '../layouts/PublicLayout';
 import MainLayout from '../layouts/MainLayout';
 import MarketLayout from '../layouts/MarketLayout';
-import LoadingSpinner from '../common/LoadingSpinner';
 import RouteTracker from './RouteTracker';
 import { ROUTES } from '../../config/routes';
 
