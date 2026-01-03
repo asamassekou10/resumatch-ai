@@ -4,6 +4,7 @@ import { Calendar, Clock, ArrowLeft, ArrowRight, FileText } from 'lucide-react';
 import SEO from '../common/SEO';
 import SpotlightCard from '../ui/SpotlightCard';
 import ShimmerButton from '../ui/ShimmerButton';
+import PromotionBanner from '../ui/PromotionBanner';
 import { getBlogPostBySlug, getRecentBlogPosts } from '../../utils/blogContent';
 import { generateArticleSchema, generateFAQSchema } from '../../utils/structuredData';
 import { ROUTES } from '../../config/routes';
@@ -121,6 +122,10 @@ const BlogPost = () => {
                   '--tw-prose-pre-bg': '#1a1a1a',
                 }}
               />
+
+              {/* Promotion Banners - Alternate between trial and student */}
+              <PromotionBanner variant="trial" />
+              <PromotionBanner variant="student" className="mt-8" />
 
               {/* Bottom CTA Section */}
               <SpotlightCard className="rounded-xl p-8 bg-gradient-to-r from-purple-500/10 to-blue-600/10 border border-purple-500/20 mt-12">

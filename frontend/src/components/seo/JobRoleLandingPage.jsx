@@ -5,6 +5,7 @@ import { CheckCircle, ArrowRight, FileText, TrendingUp, AlertCircle } from 'luci
 import SEO from '../common/SEO';
 import ShimmerButton from '../ui/ShimmerButton';
 import SpotlightCard from '../ui/SpotlightCard';
+import PromotionBanner from '../ui/PromotionBanner';
 import { getJobRoleBySlug } from '../../utils/jobRoles';
 import { ROUTES } from '../../config/routes';
 import { generateJobPostingSchema } from '../../utils/structuredData';
@@ -156,6 +157,10 @@ const JobRoleLandingPage = () => {
               ))}
             </ul>
           </SpotlightCard>
+
+          {/* Promotion Banners */}
+          <PromotionBanner variant="trial" />
+          <PromotionBanner variant="student" className="mt-8" />
 
           {/* CTA Section */}
           <SpotlightCard className="rounded-xl p-8 bg-gradient-to-r from-purple-500/10 to-blue-600/10 border border-purple-500/20">
