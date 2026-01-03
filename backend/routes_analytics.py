@@ -4,19 +4,27 @@ Provides endpoints for tracking user signups, activity, and engagement metrics
 """
 
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import func, extract
 from datetime import datetime, timedelta
 from models import db, User, Analysis, GuestSession, GuestAnalysis
-from middleware import require_auth, admin_required
 import logging
 
 logger = logging.getLogger(__name__)
 
 analytics_bp = Blueprint('analytics', __name__)
 
+def is_admin():
+    """Check if current user is admin"""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+        return user and user.is_admin
+    except:
+        return False
+
 @analytics_bp.route('/analytics/overview', methods=['GET'])
-@require_auth
-@admin_required
+@jwt_required()
 def get_analytics_overview():
     """
     Get high-level analytics overview
@@ -24,6 +32,9 @@ def get_analytics_overview():
 
     Only accessible by admin users
     """
+    if not is_admin():
+        return jsonify({'error': 'Admin access required'}), 403
+
     try:
         # Get time ranges
         now = datetime.utcnow()
@@ -112,8 +123,7 @@ def get_analytics_overview():
 
 
 @analytics_bp.route('/analytics/signups/timeline', methods=['GET'])
-@require_auth
-@admin_required
+@jwt_required()
 def get_signup_timeline():
     """
     Get user signup timeline (daily signups for last 30 days)
@@ -121,6 +131,9 @@ def get_signup_timeline():
     Query params:
     - days: number of days to include (default: 30, max: 365)
     """
+    if not is_admin():
+        return jsonify({'error': 'Admin access required'}), 403
+
     try:
         days = int(request.args.get('days', 30))
         days = min(days, 365)  # Cap at 1 year
@@ -161,8 +174,7 @@ def get_signup_timeline():
 
 
 @analytics_bp.route('/analytics/recent-users', methods=['GET'])
-@require_auth
-@admin_required
+@jwt_required()
 def get_recent_users():
     """
     Get list of recently registered users
@@ -170,6 +182,9 @@ def get_recent_users():
     Query params:
     - limit: number of users to return (default: 20, max: 100)
     """
+    if not is_admin():
+        return jsonify({'error': 'Admin access required'}), 403
+
     try:
         limit = int(request.args.get('limit', 20))
         limit = min(limit, 100)  # Cap at 100
@@ -204,12 +219,14 @@ def get_recent_users():
 
 
 @analytics_bp.route('/analytics/user/<int:user_id>/activity', methods=['GET'])
-@require_auth
-@admin_required
+@jwt_required()
 def get_user_activity(user_id):
     """
     Get detailed activity for a specific user
     """
+    if not is_admin():
+        return jsonify({'error': 'Admin access required'}), 403
+
     try:
         user = User.query.get_or_404(user_id)
 
