@@ -156,22 +156,34 @@ in Google to see all indexed pages.
 
 ## Quick Wins for Faster Indexing
 
-1. **Submit to IndexNow** (Bing, Yandex fast indexing):
-   - https://www.indexnow.org/
-   - Submit your sitemap there too
+1. **Resubmit Sitemap in Google Search Console**:
+   - Go to https://search.google.com/search-console
+   - Navigate to "Sitemaps" in the left menu
+   - Click on your sitemap URL
+   - Click the refresh icon or "Resubmit"
+   - This tells Google to recrawl your sitemap immediately
+   - Note: Google deprecated the old ping endpoint in 2023
 
-2. **Ping Your Sitemap**:
-   - http://www.google.com/ping?sitemap=https://resumeanalyzerai.com/sitemap.xml
-   - Do this once per day max
+2. **Submit to Bing Webmaster Tools**:
+   - Go to https://www.bing.com/webmasters
+   - Add your site if not already added (verify ownership)
+   - Go to "Sitemaps" section
+   - Submit: https://resumeanalyzerai.com/sitemap.xml
+   - Bing shares data with Yahoo, DuckDuckGo, and others
 
-3. **Add Google Analytics**: If not already added, this helps Google discover pages
+3. **Submit to IndexNow** (Instant indexing for Bing/Yandex):
+   - Go to https://www.indexnow.org/
+   - Submit individual URLs or use their API
+   - This provides near-instant indexing for Microsoft/Yandex search engines
 
-4. **Create a Blog RSS Feed**: Helps with discovery and distribution
+4. **Add Google Analytics**: If not already added, this helps Google discover pages
 
-5. **Submit to Web Directories**:
-   - Bing Webmaster Tools
-   - Yandex Webmaster
+5. **Create a Blog RSS Feed**: Helps with discovery and distribution
+
+6. **Submit to Web Directories**:
+   - Yandex Webmaster Tools
    - Resume-specific directories
+   - Career resource directories
 
 ---
 
