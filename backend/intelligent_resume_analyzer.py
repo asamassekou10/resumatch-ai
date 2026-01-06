@@ -1174,76 +1174,154 @@ Remember: {lang_instruction}"""
             job_match_score * 0.15          # Job-Specific Match (15%)
         )
         
-        # Apply hard filter multipliers (knockout questions)
+        # Get skill alignment data for hard filter calculations
+        skill_alignment_data = components.get("skill_alignment", {})
+        if isinstance(skill_alignment_data, dict):
+            missing_required = skill_alignment_data.get("missing_required_skills") or []
+            matched_required = skill_alignment_data.get("matched_required_skills") or []
+            total_required = skill_alignment_data.get("total_required") or 0
+            matched_preferred = skill_alignment_data.get("matched_preferred_skills") or []
+            total_preferred = skill_alignment_data.get("total_preferred") or 0
+        else:
+            missing_required = []
+            matched_required = []
+            total_required = 0
+            matched_preferred = []
+            total_preferred = 0
+        
+        # Calculate match ratio for minimum score floor
+        match_ratio = 0
+        if total_required > 0:
+            match_ratio = len(matched_required) / total_required
+        
+        # Apply hard filter multipliers (less punitive, more realistic)
         hard_filters = analysis.get("hard_filter_violations", [])
         critical_violations = [v for v in hard_filters if v.get("severity") == "critical"]
         
         hard_filter_multiplier = 1.0
         hard_filter_applied = False
         
-        # Hard Filter 1: Missing >3 critical keywords
-        if len(critical_violations) > 3:
-            hard_filter_multiplier = 0.6
+        # Hard Filter 1: Missing required skills (graduated penalties)
+        if total_required > 0:
+            missing_ratio = len(missing_required) / total_required
+            if missing_ratio > 0.80:  # Missing >80% - severe
+                hard_filter_multiplier = 0.6
+                hard_filter_applied = True
+                logger.info(f"Hard filter applied: Missing {len(missing_required)}/{total_required} required skills (>80%)")
+            elif missing_ratio > 0.70:  # Missing >70% - significant
+                hard_filter_multiplier = 0.75
+                hard_filter_applied = True
+                logger.info(f"Hard filter applied: Missing {len(missing_required)}/{total_required} required skills (>70%)")
+            elif missing_ratio > 0.50:  # Missing >50% - moderate
+                hard_filter_multiplier = 0.85
+                hard_filter_applied = True
+                logger.info(f"Hard filter applied: Missing {len(missing_required)}/{total_required} required skills (>50%)")
+        
+        # Hard Filter 2: Critical violations (require more severe gaps)
+        if len(critical_violations) > 5:  # More than 5 critical violations
+            hard_filter_multiplier = min(hard_filter_multiplier, 0.6)
+            hard_filter_applied = True
+            logger.info(f"Hard filter applied: {len(critical_violations)} critical violations")
+        elif len(critical_violations) > 3:  # More than 3 critical violations
+            hard_filter_multiplier = min(hard_filter_multiplier, 0.75)
             hard_filter_applied = True
             logger.info(f"Hard filter applied: {len(critical_violations)} critical violations")
         
-        # Hard Filter 2: Experience gap >2 years
-        if experience_gap > 2:
-            hard_filter_multiplier = min(hard_filter_multiplier, 0.6)
+        # Hard Filter 3: Experience gap (more lenient)
+        if experience_gap > 3:  # Gap >3 years - severe
+            hard_filter_multiplier = min(hard_filter_multiplier, 0.7)
+            hard_filter_applied = True
+            logger.info(f"Hard filter applied: Experience gap of {experience_gap} years")
+        elif experience_gap > 2:  # Gap >2 years - moderate
+            hard_filter_multiplier = min(hard_filter_multiplier, 0.85)
             hard_filter_applied = True
             logger.info(f"Hard filter applied: Experience gap of {experience_gap} years")
         
-        # Check missing required skills
-        skill_alignment_data = components.get("skill_alignment", {})
-        if isinstance(skill_alignment_data, dict):
-            missing_required = skill_alignment_data.get("missing_required_skills") or []
-            total_required = skill_alignment_data.get("total_required") or 0
-
-            if total_required and total_required > 0 and len(missing_required) > total_required * 0.5:  # Missing >50% of required
-                hard_filter_multiplier = min(hard_filter_multiplier, 0.6)
-                hard_filter_applied = True
-                logger.info(f"Hard filter applied: Missing {len(missing_required)}/{total_required} required skills")
+        # Store base weighted score before penalties and filters
+        base_weighted_score = weighted_score
         
-        weighted_score *= hard_filter_multiplier
-        
-        # Apply keyword penalties
+        # Apply keyword penalties as PROPORTIONAL (percentage-based) instead of absolute
+        # This prevents scores from going to 0 when there are matches
+        penalty_percentage = 0
         missing_keywords = analysis.get("keywords_missing", [])
         for keyword in missing_keywords:
             if isinstance(keyword, dict):
                 importance = keyword.get("importance", "unknown")
-                penalty = keyword.get("penalty", 0)
                 
                 if importance == "required":
-                    weighted_score -= penalty
+                    penalty_percentage += 0.02  # 2% per required keyword (proportional)
                 elif importance == "preferred":
-                    weighted_score -= penalty * 0.2  # Lighter penalty for preferred
+                    penalty_percentage += 0.005  # 0.5% per preferred keyword
             elif isinstance(keyword, str):
-                # Default penalty for string keywords
-                weighted_score -= 5
+                # Default penalty for string keywords (lighter)
+                penalty_percentage += 0.01  # 1% per string keyword
         
-        # Apply bonuses
+        # Cap total penalty at 30% of base score (never eliminate completely)
+        penalty_percentage = min(0.30, penalty_percentage)
+        
+        # Apply penalties as multiplier (proportional to base score)
+        weighted_score *= (1 - penalty_percentage)
+        
+        # Apply bonuses (absolute points, but smaller impact)
+        total_bonus = 0
         bonuses = analysis.get("bonuses", [])
         for bonus in bonuses:
             if isinstance(bonus, dict):
                 points = bonus.get("points", 0)
-                weighted_score += points
+                total_bonus += points
             elif isinstance(bonus, (int, float)):
-                weighted_score += bonus
+                total_bonus += bonus
+        
+        # Apply bonuses (as percentage boost, capped at 10%)
+        bonus_percentage = min(0.10, total_bonus / max(1, base_weighted_score))
+        weighted_score *= (1 + bonus_percentage)
+        
+        # Ensure score doesn't go negative
+        weighted_score = max(0, weighted_score)
+        
+        # Apply hard filter multiplier AFTER penalties/bonuses
+        weighted_score *= hard_filter_multiplier
         
         # Cap and normalize final score
         final_score = max(0, min(100, round(weighted_score, 1)))
         
-        # Generate interpretation with better tiers
+        # Implement realistic minimum score floor based on actual matches
+        # This ensures scores reflect what's present, not just what's missing
+        if match_ratio > 0:
+            # Calculate minimum score based on match ratio
+            # If matched 20% of skills, minimum should be ~15-20%
+            # If matched 40% of skills, minimum should be ~25-30%
+            min_score = max(10, match_ratio * 50)  # At least 10%, up to 50% based on matches
+            
+            # Also consider preferred skills matches
+            if total_preferred > 0:
+                preferred_ratio = len(matched_preferred) / total_preferred
+                preferred_boost = preferred_ratio * 10  # Up to 10% boost from preferred skills
+                min_score = min(100, min_score + preferred_boost)
+            
+            # Apply minimum floor (only if we have matches)
+            if len(matched_required) > 0 or len(matched_preferred) > 0:
+                final_score = max(min_score, final_score)
+                logger.info(f"Applied minimum score floor: {min_score:.1f}% (match_ratio: {match_ratio:.2f})")
+        
+        # Generate interpretation with better tiers and context
+        # Include information about what's working vs what needs improvement
         if final_score >= 90:
-            interpretation = "Excellent - Top-tier candidate, strong interview likelihood"
+            interpretation = "Excellent Match - Top-tier candidate with strong qualifications"
         elif final_score >= 75:
-            interpretation = "Good - Competitive candidate, good interview chances"
+            interpretation = "Good Match - Competitive candidate with solid qualifications"
         elif final_score >= 60:
-            interpretation = "Average - Room for improvement to be competitive"
+            interpretation = "Fair Match - Good foundation but needs improvement in key areas"
         elif final_score >= 40:
-            interpretation = "Below Average - Significant gaps, needs major improvements"
+            interpretation = "Partial Match - Some required skills present but significant gaps remain"
+        elif final_score >= 20:
+            interpretation = "Weak Match - Limited alignment with job requirements, consider different roles"
         else:
-            interpretation = "Poor Match - Consider different roles or major resume overhaul"
+            # For very low scores, provide more context
+            if match_ratio > 0.1:  # At least 10% match
+                interpretation = f"Poor Match ({final_score:.0f}%) - You have some relevant skills but missing most critical requirements"
+            else:
+                interpretation = "Poor Match - Very limited alignment, consider different roles or major resume overhaul"
 
         return {
             "final_score": final_score,
@@ -1257,9 +1335,14 @@ Remember: {lang_instruction}"""
                 "content_quality": content_quality_score,
                 "job_match": job_match_score
             },
-            "weighted_base_score": round(weighted_score / hard_filter_multiplier if hard_filter_multiplier > 0 else weighted_score, 1),
+            "weighted_base_score": round(base_weighted_score, 1),
+            "penalty_percentage": round(penalty_percentage * 100, 1),  # Show as percentage
+            "bonus_percentage": round(bonus_percentage * 100, 1),  # Show as percentage
+            "total_penalties": round(penalty_percentage * base_weighted_score, 1),  # Actual points deducted
+            "total_bonuses": round(bonus_percentage * base_weighted_score, 1),  # Actual points added
             "penalties_applied": len(missing_keywords),
-            "bonuses_applied": len(bonuses)
+            "bonuses_applied": len(bonuses),
+            "match_ratio": round(match_ratio, 2)  # For transparency
         }
 
     def _generate_score_breakdown(
@@ -1423,23 +1506,35 @@ Remember: {lang_instruction}"""
                     "category": bonus.get("category", "general")
                 })
         
-        # Calculate formula string
+        # Calculate formula string - show the calculation clearly with proportional penalties
         raw_components = score_calculation.get("raw_components", {})
         base_score = score_calculation.get("weighted_base_score", 0)
+        penalty_percentage = score_calculation.get("penalty_percentage", 0)
+        bonus_percentage = score_calculation.get("bonus_percentage", 0)
+        total_penalties = score_calculation.get("total_penalties", 0)
+        total_bonuses = score_calculation.get("total_bonuses", 0)
         multiplier = score_calculation.get("hard_filter_multiplier", 1.0)
         final_score = score_calculation.get("final_score", 0)
+        match_ratio = score_calculation.get("match_ratio", 0)
+        
+        # Calculate intermediate scores for clarity
+        score_after_penalties = base_score * (1 - penalty_percentage / 100) if penalty_percentage > 0 else base_score
+        score_after_bonuses = score_after_penalties * (1 + bonus_percentage / 100) if bonus_percentage > 0 else score_after_penalties
+        score_after_filter = score_after_bonuses * multiplier
         
         formula_parts = [
-            f"Base weighted score: {base_score:.1f}%",
+            f"Base weighted score: {max(0, base_score):.1f}%",
         ]
+        if penalty_percentage > 0:
+            formula_parts.append(f"Penalties: -{penalty_percentage:.1f}% ({total_penalties:.1f} points)")
+        if bonus_percentage > 0:
+            formula_parts.append(f"Bonuses: +{bonus_percentage:.1f}% ({total_bonuses:.1f} points)")
+        if penalty_percentage > 0 or bonus_percentage > 0:
+            formula_parts.append(f"After adjustments: {score_after_bonuses:.1f}%")
         if multiplier < 1.0:
             formula_parts.append(f"Hard filter: {multiplier:.1f}x")
-        if penalties_list:
-            total_penalties = sum(p.get("points", 0) for p in penalties_list)
-            formula_parts.append(f"Penalties: {total_penalties:.1f}")
-        if bonuses_list:
-            total_bonuses = sum(b.get("points", 0) for b in bonuses_list)
-            formula_parts.append(f"Bonuses: +{total_bonuses:.1f}")
+        if match_ratio > 0:
+            formula_parts.append(f"Match ratio: {match_ratio * 100:.0f}%")
         formula_parts.append(f"Final: {final_score:.1f}%")
         
         formula_string = " | ".join(formula_parts)

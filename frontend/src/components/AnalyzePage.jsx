@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, ArrowLeft, Mail, Sparkles, FileText } from 'lucide-react';
+import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, ArrowLeft, Mail, Sparkles, FileText, Search, Target, Lock, Shield } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
@@ -61,7 +61,25 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
       const data = await response.json();
       setAnalysisData(data);
       // Load existing AI content if available
-      if (data.ai_feedback) setAiFeedback(data.ai_feedback);
+      // ai_feedback might be a JSON string or object, parse it properly
+      if (data.ai_feedback) {
+        try {
+          const parsed = typeof data.ai_feedback === 'string' 
+            ? JSON.parse(data.ai_feedback) 
+            : data.ai_feedback;
+          // Only set if it's actually feedback text, not just metadata
+          if (typeof parsed === 'string' && parsed.length > 0) {
+            setAiFeedback(parsed);
+          } else if (parsed && parsed.feedback && typeof parsed.feedback === 'string') {
+            setAiFeedback(parsed.feedback);
+          }
+        } catch (e) {
+          // If parsing fails, treat as plain string
+          if (typeof data.ai_feedback === 'string' && data.ai_feedback.length > 0) {
+            setAiFeedback(data.ai_feedback);
+          }
+        }
+      }
     } catch (err) {
       setError(err.message || 'Failed to load analysis results');
     } finally {
@@ -430,11 +448,18 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
 
     // Display analysis results - matching guest-analyze design
     return (
-      <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4">
-        {/* Background atmosphere */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
-        <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black relative overflow-hidden py-12 px-4">
+        {/* Background atmosphere (subtle, matches site theme) */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800/30 via-slate-950 to-black z-0 pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-15 z-0 pointer-events-none" />
+        <div
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px)",
+            backgroundSize: "50px 50px"
+          }}
+        />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -592,7 +617,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
           </AnimatePresence>
 
           {/* AI Feedback Display */}
-          {aiFeedback && (
+          {aiFeedback && aiFeedback.length > 0 && (
             <motion.div
               className="bg-gradient-to-br from-purple-900/20 to-cyan-900/20 border border-purple-700/50 rounded-lg p-6"
               initial={{ opacity: 0, y: 10 }}
@@ -603,7 +628,9 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 <h3 className="text-white font-semibold">AI-Generated Feedback</h3>
               </div>
               <div className="prose prose-invert max-w-none">
-                <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{aiFeedback}</div>
+                <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">
+                  {typeof aiFeedback === 'string' ? aiFeedback : JSON.stringify(aiFeedback, null, 2)}
+                </div>
               </div>
             </motion.div>
           )}
@@ -766,14 +793,32 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 Adding these keywords could improve your match score
               </p>
               <div className="flex flex-wrap gap-2">
-                {analysisData.keywords_missing.map((keyword, idx) => (
-                  <span
-                    key={idx}
-                    className="px-3 py-1 bg-amber-900/30 text-amber-300 rounded-full text-sm border border-amber-700/50"
-                  >
-                    {keyword}
-                  </span>
-                ))}
+                {analysisData.keywords_missing.map((keyword, idx) => {
+                  // Handle both string and object formats
+                  const keywordText = typeof keyword === 'string' 
+                    ? keyword 
+                    : (keyword.keyword || keyword.name || JSON.stringify(keyword));
+                  const importance = typeof keyword === 'object' && keyword.importance 
+                    ? keyword.importance 
+                    : 'preferred';
+                  
+                  return (
+                    <span
+                      key={idx}
+                      className={`px-3 py-1 rounded-full text-sm border ${
+                        importance === 'required' 
+                          ? 'bg-red-900/30 text-red-300 border-red-700/50' 
+                          : 'bg-amber-900/30 text-amber-300 border-amber-700/50'
+                      }`}
+                      title={typeof keyword === 'object' && keyword.why_matters ? keyword.why_matters : ''}
+                    >
+                      {keywordText}
+                      {importance === 'required' && (
+                        <span className="ml-1 text-xs">*</span>
+                      )}
+                    </span>
+                  );
+                })}
               </div>
             </motion.div>
           )}
@@ -795,7 +840,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                     <span className="text-amber-400 text-sm">+{Math.min(15, analysisData.keywords_missing.length * 2)}%</span>
                   </div>
                   <p className="text-gray-400 text-sm mb-2">
-                    Include {analysisData.keywords_missing.slice(0, 3).join(', ')}
+                    Include {analysisData.keywords_missing.slice(0, 3).map(k => typeof k === 'string' ? k : (k.keyword || k.name || 'keyword')).join(', ')}
                     {analysisData.keywords_missing.length > 3 && ` and ${analysisData.keywords_missing.length - 3} more`} in your resume.
                   </p>
                   <p className="text-slate-500 text-sm italic">
@@ -927,7 +972,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
               >
                 <div className="flex flex-col items-center text-center gap-2">
                   <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition">
-                    {aiFeedback ? (
+                    {aiFeedback && aiFeedback.length > 0 ? (
                       <CheckCircle className="w-6 h-6 text-green-400" />
                     ) : (
                       <Sparkles className="w-6 h-6 text-purple-400" />
@@ -935,10 +980,10 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                   </div>
                   <div>
                     <p className="text-white font-semibold text-sm">
-                      {aiFeedback ? 'Generated ✓' : 'Generate AI Feedback'}
+                      {aiFeedback && aiFeedback.length > 0 ? 'Generated ✓' : 'Generate AI Feedback'}
                     </p>
                     <p className="text-gray-400 text-xs mt-1">
-                      {aiFeedback ? 'See below' : 'Get detailed improvement suggestions'}
+                      {aiFeedback && aiFeedback.length > 0 ? 'See below' : 'Get detailed improvement suggestions'}
                     </p>
                   </div>
                 </div>
@@ -1020,148 +1065,289 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
     );
   }
 
-  // Default: Analyze mode
+  // Default: Analyze mode - Redesigned to match guest page
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Analyze Your Resume</h1>
-        <p className="text-gray-400">Upload your resume and job description to get AI-powered insights</p>
+    <div className="min-h-screen bg-black relative overflow-hidden pt-24 pb-12 px-4">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 z-0 pointer-events-none" />
+      <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+
+      {/* Content container */}
+      <div className="relative z-10 max-w-6xl mx-auto">
+        {/* Credits Banner */}
         {userProfile && (
-          <div className="mt-4 flex items-center gap-2">
-            <span className="text-gray-400">Credits remaining:</span>
-            <span className={`font-semibold ${userProfile.credits > 0 ? 'text-cyan-400' : 'text-red-400'}`}>
-              {userProfile.credits}
-            </span>
+          <div className="bg-gradient-to-r from-cyan-600/90 to-purple-600/90 backdrop-blur-sm border border-cyan-400/50 rounded-xl p-4 md:p-5 mb-8">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <div className="animate-pulse">
+                  <Sparkles className="w-6 h-6 text-yellow-300" />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-base md:text-lg">
+                    {userProfile.credits > 0 
+                      ? `You have ${userProfile.credits} ${userProfile.credits === 1 ? 'credit' : 'credits'} remaining`
+                      : 'No credits remaining'}
+                  </p>
+                  <p className="text-white/80 text-sm">
+                    {userProfile.credits > 0 
+                      ? 'Ready to analyze your resume?'
+                      : 'Upgrade your plan to continue analyzing'}
+                  </p>
+                </div>
+              </div>
+              {userProfile.credits === 0 && (
+                <button
+                  onClick={() => navigate(ROUTES.PRICING)}
+                  className="px-4 py-2 rounded-lg bg-white text-cyan-600 hover:bg-cyan-50 font-semibold text-sm transition-all hover:scale-105 active:scale-95"
+                >
+                  Upgrade Now
+                </button>
+              )}
+            </div>
           </div>
         )}
-      </div>
 
-      {/* Error Message */}
-      {error && (
-        <motion.div
-          className="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-6 flex items-start gap-3 relative z-10"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-          <p className="text-red-400 text-sm relative z-10">{error}</p>
-        </motion.div>
-      )}
-
-      {/* Form */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
-        {/* Resume Upload */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-        >
-          <label className="block text-white font-semibold mb-3">Resume File</label>
-          <div className="relative">
-            <input
-              type="file"
-              accept=".pdf,.docx,.txt"
-              onChange={handleFileUpload}
-              className="hidden"
-              id="resume-upload"
-            />
-            <label
-              htmlFor="resume-upload"
-              className="flex items-center justify-center w-full px-4 py-8 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-purple-500 transition-colors bg-white/5 backdrop-blur-sm"
-            >
-              {resumeFile ? (
-                <div className="text-center">
-                  <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                  <p className="text-white font-semibold text-sm">{resumeFile.name}</p>
-                  <p className="text-gray-400 text-xs mt-1">Click to change</p>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <FileUp className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-white font-semibold text-sm">Upload Your Resume</p>
-                  <p className="text-gray-400 text-xs mt-1">PDF, DOCX, or TXT</p>
-                </div>
-              )}
-            </label>
-          </div>
-        </motion.div>
-
-        {/* Job Details */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-        >
-          <label className="block text-white font-semibold mb-3">Job Details</label>
-          <div className="space-y-3">
-            <input
-              type="text"
-              placeholder="Company (optional)"
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-              className="w-full px-4 py-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Job Title (optional)"
-              value={jobTitle}
-              onChange={(e) => setJobTitle(e.target.value)}
-              className="w-full px-4 py-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
-            />
-            <textarea
-              placeholder="Paste job description here (required)"
-              value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
-              className="w-full px-4 py-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none h-32 resize-none"
-            />
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Progress Section */}
-      {loading && (
-        <motion.div
-          className="mt-6 space-y-4 relative z-10"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <div className="space-y-2">
-            <div className="flex items-center justify-between relative z-10">
-              <span className="text-white font-semibold flex items-center gap-2 relative z-10">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                >
-                  <Loader className="w-4 h-4 text-purple-400" />
-                </motion.div>
-                {loadingMessage}
-              </span>
-              <span className="text-gray-400 text-sm relative z-10">{Math.round(loadingProgress)}%</span>
-            </div>
-            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden relative z-10">
-              <motion.div
-                className="h-full bg-gradient-to-r from-purple-500 to-blue-600"
-                initial={{ width: '0%' }}
-                animate={{ width: `${loadingProgress}%` }}
-                transition={{ ease: 'easeOut', duration: 0.3 }}
-              />
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Analyze Button */}
-      {!loading && (
-        <div className="w-full mt-6 relative z-10">
-          <ShimmerButton
-            onClick={handleAnalyze}
-            disabled={loading || !resumeFile || !jobDescription}
-            className="w-full"
-          >
-            Start Analysis
-            <ArrowRight className="w-5 h-5" />
-          </ShimmerButton>
+        {/* Main Hero Section */}
+        <div className="text-center mb-10">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 font-display">
+            AI-Powered Resume Analysis
+          </h1>
+          <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
+            Get detailed insights, keyword gaps, and ATS optimization tips in <span className="text-cyan-400 font-semibold">seconds</span>.
+          </p>
         </div>
-      )}
+
+        {/* Error Message */}
+        {error && (
+          <motion.div
+            className="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-6 flex items-start gap-3 relative z-10 max-w-4xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <p className="text-red-400 text-sm relative z-10">{error}</p>
+          </motion.div>
+        )}
+
+        {/* Two Column Layout: Form + What You Get */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 relative z-10">
+          {/* Left Column: Upload Form (3/5 width) */}
+          <div className="lg:col-span-3 space-y-6">
+            <SpotlightCard className="rounded-xl p-6 md:p-8">
+              <div className="space-y-6">
+                {/* Resume Upload */}
+                <div>
+                  <label className="block text-white font-semibold mb-3 text-lg">1. Upload Your Resume</label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept=".pdf,.docx,.txt"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="resume-upload"
+                    />
+                    <label
+                      htmlFor="resume-upload"
+                      className="flex items-center justify-center w-full px-4 py-10 border-2 border-dashed border-white/20 rounded-xl cursor-pointer hover:border-purple-500 hover:bg-purple-500/5 transition-all bg-white/5 backdrop-blur-sm relative z-10"
+                    >
+                      {resumeFile ? (
+                        <div className="text-center">
+                          <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
+                          <p className="text-white font-semibold">{resumeFile.name}</p>
+                          <p className="text-slate-400 text-sm mt-1">Click to change file</p>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <FileUp className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                          <p className="text-white font-semibold text-lg">Drop your resume here</p>
+                          <p className="text-slate-400 text-sm mt-1">or click to browse</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                </div>
+
+                {/* Job Details */}
+                <div>
+                  <label className="block text-white font-semibold mb-3 text-lg">2. Add Job Details</label>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        placeholder="Company (optional)"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Job Title (optional)"
+                        value={jobTitle}
+                        onChange={(e) => setJobTitle(e.target.value)}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
+                      />
+                    </div>
+                    <textarea
+                      placeholder="Paste the job description here (required)"
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none h-36 resize-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Progress Section */}
+                {loading && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-white font-semibold flex items-center gap-2">
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                          >
+                            <Loader className="w-5 h-5 text-purple-400" />
+                          </motion.div>
+                          {loadingMessage}
+                        </span>
+                        <span className="text-gray-400 text-sm">{Math.round(loadingProgress)}%</span>
+                      </div>
+                      <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                        <motion.div
+                          className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 transition-all duration-300"
+                          initial={{ width: '0%' }}
+                          animate={{ width: `${loadingProgress}%` }}
+                        />
+                      </div>
+                      {/* Loading step indicators */}
+                      <div className="flex justify-between text-xs text-gray-500 pt-2">
+                        <span className={loadingProgress >= 20 ? 'text-purple-400' : ''}>Parsing</span>
+                        <span className={loadingProgress >= 40 ? 'text-blue-400' : ''}>Analyzing</span>
+                        <span className={loadingProgress >= 60 ? 'text-cyan-400' : ''}>Matching</span>
+                        <span className={loadingProgress >= 80 ? 'text-green-400' : ''}>Scoring</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Analyze Button */}
+                {!loading && (
+                  <div className="pt-2">
+                    <ShimmerButton
+                      onClick={handleAnalyze}
+                      disabled={loading || !resumeFile || !jobDescription || (userProfile && userProfile.credits <= 0)}
+                      className="w-full h-14 text-lg"
+                    >
+                      <Search className="w-5 h-5" />
+                      Analyze My Resume
+                      <ArrowRight className="w-5 h-5" />
+                    </ShimmerButton>
+                  </div>
+                )}
+
+                {/* Trust Badges */}
+                <div className="flex flex-wrap justify-center gap-4 md:gap-6 pt-4 border-t border-white/10">
+                  <div className="flex items-center gap-2 text-gray-400 text-sm">
+                    <Lock className="w-4 h-4 text-green-400" />
+                    <span>Private & Secure</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-400 text-sm">
+                    <Shield className="w-4 h-4 text-blue-400" />
+                    <span>AI-Powered Analysis</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-400 text-sm">
+                    <FileText className="w-4 h-4 text-purple-400" />
+                    <span>PDF, DOCX, or TXT</span>
+                  </div>
+                </div>
+              </div>
+            </SpotlightCard>
+          </div>
+
+          {/* Right Column: What You Get (2/5 width) */}
+          <div className="lg:col-span-2">
+            <div className="sticky top-8 space-y-6">
+              {/* Sneak Peek Card */}
+              <SpotlightCard className="rounded-xl p-6">
+                <h3 className="text-white font-bold text-lg mb-4 font-display">What You Get</h3>
+
+                {/* Mock Score Preview */}
+                <div className="relative mb-6 p-4 rounded-xl bg-gradient-to-br from-slate-800/80 to-slate-700/80 border border-white/10 overflow-hidden">
+                  {/* Decorative blur */}
+                  <div className="absolute -top-4 -right-4 w-20 h-20 bg-cyan-500/30 rounded-full blur-xl" />
+                  <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-purple-500/30 rounded-full blur-xl" />
+
+                  <div className="relative flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Resume Score</p>
+                      <p className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 font-display">
+                        85/100
+                      </p>
+                    </div>
+                    <div className="w-16 h-16 rounded-full border-4 border-cyan-400/50 flex items-center justify-center">
+                      <Target className="w-8 h-8 text-cyan-400" />
+                    </div>
+                  </div>
+                  <p className="text-gray-500 text-xs mt-3 italic">Example preview</p>
+                </div>
+
+                {/* Feature List */}
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-white font-medium">ATS Parsability Check</p>
+                      <p className="text-gray-400 text-sm">See if your resume format works with ATS systems</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-white font-medium">Missing Keyword Report</p>
+                      <p className="text-gray-400 text-sm">Find keywords you're missing from the job description</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-white font-medium">Executive Summary Suggestions</p>
+                      <p className="text-gray-400 text-sm">Get AI-powered tips to improve your resume</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-white font-medium">Match Score Breakdown</p>
+                      <p className="text-gray-400 text-sm">Detailed analysis of how well you match the role</p>
+                    </div>
+                  </li>
+                </ul>
+              </SpotlightCard>
+
+              {/* Social Proof Mini */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                <div className="flex items-center justify-between text-center">
+                  <div>
+                    <p className="text-white font-bold text-lg font-display">10,000+</p>
+                    <p className="text-gray-400 text-xs">Resumes Analyzed</p>
+                  </div>
+                  <div className="w-px h-10 bg-white/10" />
+                  <div>
+                    <p className="text-white font-bold text-lg font-display">92%</p>
+                    <p className="text-gray-400 text-xs">Success Rate</p>
+                  </div>
+                  <div className="w-px h-10 bg-white/10" />
+                  <div>
+                    <p className="text-white font-bold text-lg font-display">4.8/5</p>
+                    <p className="text-gray-400 text-xs">User Rating</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

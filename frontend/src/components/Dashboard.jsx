@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, X } from 'lucide-react';
+import { CheckCircle, X, ArrowRight } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import { getCreditsDisplay } from '../utils/credits';
 
@@ -232,6 +232,73 @@ const Dashboard = ({ userProfile }) => {
         <div className="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg">
           {error}
         </div>
+      )}
+
+      {/* Welcome/Onboarding Section for New Users */}
+      {(!dashboardStats || dashboardStats.total_analyses === 0) && !loading && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-br from-cyan-900/20 via-purple-900/20 to-blue-900/20 border border-cyan-500/30 rounded-2xl p-8 md:p-12 mb-6"
+        >
+          <div className="text-center max-w-2xl mx-auto">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 mb-6">
+              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-display">
+              Welcome to Your Career Dashboard! 🎯
+            </h2>
+            <p className="text-gray-300 text-lg mb-2">
+              Get started by analyzing your resume against any job description
+            </p>
+            <p className="text-gray-400 text-sm mb-8">
+              Our AI will help you identify gaps, optimize keywords, and improve your match score
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <button
+                onClick={() => navigate(ROUTES.ANALYZE)}
+                className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white px-8 py-4 rounded-lg font-semibold transition shadow-lg hover:shadow-cyan-500/25 flex items-center gap-2 text-lg"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Start Your First Analysis
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+              <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                <div className="w-12 h-12 rounded-lg bg-cyan-500/20 flex items-center justify-center mb-4">
+                  <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <h3 className="text-white font-semibold mb-2">Upload Resume</h3>
+                <p className="text-gray-400 text-sm">Upload your resume in PDF, DOCX, or TXT format</p>
+              </div>
+              <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center mb-4">
+                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-white font-semibold mb-2">Paste Job Description</h3>
+                <p className="text-gray-400 text-sm">Add the job description you're applying for</p>
+              </div>
+              <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center mb-4">
+                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-white font-semibold mb-2">Get Insights</h3>
+                <p className="text-gray-400 text-sm">Receive detailed analysis and improvement suggestions</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       )}
 
       {/* Stats Cards */}

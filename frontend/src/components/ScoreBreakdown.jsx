@@ -81,7 +81,7 @@ const ScoreBreakdown = ({ scoreBreakdown, overallScore }) => {
   return (
     <div className="space-y-6">
       {/* Overall Score Summary */}
-      <div className="bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-600 rounded-lg p-6">
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-2xl font-bold text-white font-display">Score Breakdown</h3>
           <button
@@ -101,18 +101,18 @@ const ScoreBreakdown = ({ scoreBreakdown, overallScore }) => {
           {factors.map((factor) => (
             <div
               key={factor.key}
-              className="bg-slate-700/50 border border-slate-600 rounded-lg p-4 cursor-pointer hover:border-purple-500/50 transition-colors"
+              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4 cursor-pointer hover:border-cyan-400/50 transition-colors"
               onClick={() => toggleFactor(factor.key)}
             >
-              <div className="text-xs text-slate-400 mb-2">{factor.label}</div>
+              <div className="text-xs text-gray-400 mb-2">{factor.label}</div>
               <div className="text-2xl font-bold text-white mb-1">
                 {factor.data?.score || 0}%
               </div>
-              <div className="text-xs text-slate-400">
+              <div className="text-xs text-gray-400">
                 Weight: {(factor.data?.weight * 100).toFixed(0)}% | 
-                Contribution: {factor.data?.weighted_contribution?.toFixed(1) || 0}%
+                Contribution: {Math.max(0, factor.data?.weighted_contribution || 0).toFixed(1)}%
               </div>
-              <div className="mt-2 w-full bg-slate-600 rounded-full h-1.5">
+              <div className="mt-2 w-full bg-white/10 rounded-full h-1.5">
                 <div
                   className={`h-1.5 rounded-full ${
                     factor.color === 'purple' ? 'bg-gradient-to-r from-purple-500 to-purple-600' :
@@ -121,7 +121,7 @@ const ScoreBreakdown = ({ scoreBreakdown, overallScore }) => {
                     factor.color === 'green' ? 'bg-gradient-to-r from-green-500 to-green-600' :
                     'bg-gradient-to-r from-yellow-500 to-yellow-600'
                   }`}
-                  style={{ width: `${factor.data?.score || 0}%` }}
+                  style={{ width: `${Math.max(0, Math.min(100, factor.data?.score || 0))}%` }}
                 />
               </div>
             </div>
@@ -148,10 +148,30 @@ const ScoreBreakdown = ({ scoreBreakdown, overallScore }) => {
           </div>
         )}
 
-        {/* Final Formula */}
+        {/* Final Formula - Improved Display */}
         {calc.final_formula && (
-          <div className="bg-slate-700/30 rounded-lg p-3 text-sm font-mono text-slate-300">
-            {calc.final_formula}
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4">
+            <h4 className="text-sm font-semibold text-white mb-2">Score Calculation</h4>
+            <div className="text-xs font-mono text-gray-300 space-y-1">
+              {(() => {
+                // Parse and format the formula string for better display
+                const formula = calc.final_formula;
+                // If it contains negative values, show them more clearly
+                if (formula.includes('Base weighted score:') && formula.includes('-')) {
+                  const parts = formula.split('|');
+                  return (
+                    <div className="space-y-1">
+                      {parts.map((part, idx) => (
+                        <div key={idx} className={part.includes('-') && !part.includes('Penalties') ? 'text-amber-400' : 'text-gray-300'}>
+                          {part.trim()}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }
+                return <div>{formula}</div>;
+              })()}
+            </div>
           </div>
         )}
       </div>
@@ -162,7 +182,7 @@ const ScoreBreakdown = ({ scoreBreakdown, overallScore }) => {
             {factors.map((factor) => (
               <div
                 key={factor.key}
-                className="bg-slate-800/50 border border-slate-700 rounded-lg p-6"
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
               >
                 <div
                   className="flex items-center justify-between cursor-pointer"
@@ -170,12 +190,12 @@ const ScoreBreakdown = ({ scoreBreakdown, overallScore }) => {
                 >
                   <div className="flex-1">
                     <h4 className="text-lg font-semibold text-white mb-1">{factor.label}</h4>
-                    <p className="text-sm text-slate-400">{factor.data?.explanation}</p>
+                    <p className="text-sm text-gray-400">{factor.data?.explanation}</p>
                   </div>
                   {expandedFactors[factor.key] ? (
-                    <ChevronUp className="w-5 h-5 text-slate-400" />
+                    <ChevronUp className="w-5 h-5 text-gray-400" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-slate-400" />
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
                   )}
                 </div>
 
@@ -233,13 +253,13 @@ const ScoreBreakdown = ({ scoreBreakdown, overallScore }) => {
 
                       {/* Details */}
                       {factor.data?.details && (
-                        <div className="bg-slate-700/30 rounded-lg p-3">
-                          <h5 className="text-sm font-semibold text-slate-300 mb-2">Details</h5>
-                          <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
+                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3">
+                          <h5 className="text-sm font-semibold text-gray-300 mb-2">Details</h5>
+                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
                             {Object.entries(factor.data.details).map(([key, value]) => (
                               <div key={key}>
                                 <span className="capitalize">{key.replace(/_/g, ' ')}:</span>{' '}
-                                <span className="text-slate-300">{String(value)}</span>
+                                <span className="text-gray-300">{String(value)}</span>
                               </div>
                             ))}
                           </div>
@@ -252,7 +272,7 @@ const ScoreBreakdown = ({ scoreBreakdown, overallScore }) => {
 
             {/* Penalties & Bonuses */}
             {(calc.penalties?.length > 0 || calc.bonuses?.length > 0) && (
-              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">
                 <h4 className="text-lg font-semibold text-white mb-4">Penalties & Bonuses</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {calc.penalties?.length > 0 && (
