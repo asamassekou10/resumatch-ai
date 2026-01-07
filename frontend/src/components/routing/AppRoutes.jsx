@@ -17,6 +17,7 @@ const AuthPage = lazy(() => import('../AuthPage'));
 const GuestAnalyze = lazy(() => import('../GuestAnalyze'));
 const PricingPage = lazy(() => import('../PricingPageV2'));
 const HelpPage = lazy(() => import('../HelpPage'));
+const Unsubscribe = lazy(() => import('../Unsubscribe'));
 
 // SEO Pages
 const JobRoleLandingPage = lazy(() => import('../seo/JobRoleLandingPage'));
@@ -128,6 +129,8 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin }) => {
             path={ROUTES.HELP_PRIVACY}
             element={<HelpPage defaultTab="privacy" />}
           />
+
+          <Route path="/unsubscribe" element={<Unsubscribe />} />
 
           {/* Programmatic SEO: Job Role Landing Pages */}
           <Route

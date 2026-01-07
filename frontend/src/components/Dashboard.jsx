@@ -215,6 +215,121 @@ const Dashboard = ({ userProfile }) => {
         )}
       </div>
 
+      {/* Trial Status Banner */}
+      {userProfile && userProfile.is_trial_active && userProfile.trial_end_date && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-green-600/90 to-emerald-600/90 backdrop-blur-sm border border-green-400/50 rounded-xl p-4 md:p-5 mb-6"
+        >
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-3">
+              <div className="animate-pulse">
+                <svg className="w-6 h-6 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-white font-bold text-base md:text-lg">
+                  {(() => {
+                    const trialEnd = new Date(userProfile.trial_end_date);
+                    const now = new Date();
+                    const daysRemaining = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+                    if (daysRemaining > 0) {
+                      return `Free Trial Active - ${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} remaining`;
+                    } else {
+                      return 'Free Trial Expired - Upgrade to Keep Pro Benefits';
+                    }
+                  })()}
+                </p>
+                <p className="text-white/80 text-sm">
+                  {(() => {
+                    const trialEnd = new Date(userProfile.trial_end_date);
+                    const now = new Date();
+                    const daysRemaining = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+                    if (daysRemaining > 2) {
+                      return 'Enjoy all Pro features during your trial';
+                    } else if (daysRemaining > 0) {
+                      return 'Trial ending soon - Upgrade now to keep your Pro benefits';
+                    } else {
+                      return 'Your trial has ended. Upgrade within 3 days to keep Pro features';
+                    }
+                  })()}
+                </p>
+              </div>
+            </div>
+            {(() => {
+              const trialEnd = new Date(userProfile.trial_end_date);
+              const now = new Date();
+              const daysRemaining = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+              if (daysRemaining <= 2 || daysRemaining <= 0) {
+                return (
+                  <button
+                    onClick={() => navigate(ROUTES.PRICING)}
+                    className="px-4 py-2 rounded-lg bg-white text-green-600 hover:bg-green-50 font-semibold text-sm transition-all hover:scale-105 active:scale-95"
+                  >
+                    Upgrade Now
+                  </button>
+                );
+              }
+              return null;
+            })()}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Trial Conversion Banner for Free Users */}
+      {userProfile && userProfile.subscription_tier === 'free' && !userProfile.trial_start_date && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-purple-600/90 to-cyan-600/90 backdrop-blur-sm border border-purple-400/50 rounded-xl p-4 md:p-5 mb-6"
+        >
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-3">
+              <div className="animate-pulse">
+                <svg className="w-6 h-6 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-white font-bold text-base md:text-lg">
+                  Start Your 7-Day Free Trial
+                </p>
+                <p className="text-white/80 text-sm">
+                  Get 100 credits and access to all Pro features - No credit card required
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                try {
+                  const response = await fetch(`${API_URL}/trial/activate`, {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json'
+                    }
+                  });
+                  const data = await response.json();
+                  if (response.ok) {
+                    // Refresh user profile
+                    window.location.reload();
+                  } else {
+                    alert(data.error || 'Failed to activate trial');
+                  }
+                } catch (err) {
+                  alert('Failed to activate trial. Please try again.');
+                }
+              }}
+              className="px-4 py-2 rounded-lg bg-white text-purple-600 hover:bg-purple-50 font-semibold text-sm transition-all hover:scale-105 active:scale-95"
+            >
+              Activate Free Trial
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       {/* Quick Actions */}
       <div className="flex gap-4">
         <button

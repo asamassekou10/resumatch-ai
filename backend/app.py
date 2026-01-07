@@ -45,7 +45,15 @@ from routes.analysis import analysis_bp
 from routes.dashboard import dashboard_bp
 from routes_admin_diagnostics import admin_diag_bp
 from scheduled_ingestion_tasks import init_scheduler
+from email_automation import init_email_scheduler
 import logging
+
+# Default email preferences
+DEFAULT_EMAIL_PREFS = {
+    'marketing': True,
+    'weekly': True,
+    'trial_updates': True
+}
 
 # Load environment variables
 load_dotenv()
@@ -342,6 +350,22 @@ def auto_migrate():
                 # Admin fields
                 'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;',
                 'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;',
+                # Trial tracking fields
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS trial_start_date TIMESTAMP;',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS trial_end_date TIMESTAMP;',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_trial_active BOOLEAN DEFAULT FALSE;',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS trial_credits_granted INTEGER DEFAULT 0;',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS trial_expired_date TIMESTAMP;',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS last_email_sent_date TIMESTAMP;',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS email_sequence_step INTEGER DEFAULT 0;',
+                # Email automation improvements
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS weekly_email_start_date TIMESTAMP;',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS email_preferences JSONB DEFAULT \'{}\';',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS last_email_opened_date TIMESTAMP;',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS last_email_clicked_date TIMESTAMP;',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS email_bounce_count INTEGER DEFAULT 0;',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS email_variant VARCHAR(50);',
+                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS timezone VARCHAR(50) DEFAULT \'UTC\';',
                 # Set Google OAuth users as verified
                 'UPDATE "user" SET email_verified = TRUE WHERE auth_provider = \'google\';'
             ]
@@ -517,13 +541,24 @@ def register():
 
     # Create user (NOT verified yet)
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    now = datetime.utcnow()
+    trial_end = now + timedelta(days=7)
+    
     user = User(
         email=email,
         password_hash=hashed_password,
         auth_provider='email',
         email_verified=False,  # Not verified yet
         verification_token=verification_token,
-        credits=5  # Free users get 5 initial credits
+        # Automatic 7-day free trial activation
+        subscription_tier='pro',  # Trial mode - Pro tier
+        subscription_status='trial',
+        credits=100,  # Pro tier credits during trial
+        is_trial_active=True,
+        trial_start_date=now,
+        trial_end_date=trial_end,
+        trial_credits_granted=100,
+        email_sequence_step=0
     )
 
     try:
@@ -537,21 +572,54 @@ def register():
 
         # Generate verification link
         verification_link = create_verification_link(user.id, verification_token)
+        unsubscribe_link = None
+        unsubscribe_token = email_service.generate_unsubscribe_token(user.id)
+        if unsubscribe_token:
+            unsubscribe_link = f"{frontend_url}/unsubscribe?token={unsubscribe_token}"
 
-        # Send verification email
+        # Send emails: verification, welcome, and trial activation
+        recipient_name = email.split('@')[0]
+        email_sent = False
+        welcome_sent = False
+        trial_email_sent = False
+        
         try:
+            # Send verification email
             email_sent = email_service.send_verification_email(
                 recipient_email=email,
-                recipient_name=email.split('@')[0],
+                recipient_name=recipient_name,
                 verification_link=verification_link
             )
+            
+            # Send welcome email
+            welcome_sent = email_service.send_welcome_email(
+                recipient_email=email,
+                recipient_name=recipient_name,
+                verification_required=True,
+                unsubscribe_link=unsubscribe_link
+            )
+            
+            # Send trial activation email
+            trial_email_sent = email_service.send_trial_activation_email(
+                recipient_email=email,
+                recipient_name=recipient_name,
+                trial_end_date=trial_end,
+                unsubscribe_link=unsubscribe_link
+            )
+            
+            # Update email tracking
+            user.last_email_sent_date = now
+            user.email_sequence_step = 1  # Welcome and trial emails sent
+            db.session.commit()
 
             if email_sent:
-                logging.info(f"New user registered: {email}, verification email sent")
+                logging.info(f"New user registered: {email}, verification email sent, trial activated")
                 response = {
-                    'message': 'Registration successful! Please check your email to verify your account.',
+                    'message': 'Registration successful! Your 7-day free trial has been activated. Please check your email to verify your account.',
                     'email': email,
-                    'verification_required': True
+                    'verification_required': True,
+                    'trial_active': True,
+                    'trial_end_date': trial_end.isoformat()
                 }
             else:
                 logging.error(f"User registered but verification email failed: {email}. User ID: {user.id}")
@@ -566,19 +634,23 @@ def register():
                 
                 # Still allow registration, but inform user email failed
                 response = {
-                    'message': 'Registration successful! However, we could not send the verification email. Please use the resend verification feature or contact support@resumeanalyzerai.com.',
+                    'message': 'Registration successful! Your 7-day free trial has been activated. However, we could not send the verification email. Please use the resend verification feature or contact support@resumeanalyzerai.com.',
                     'email': email,
                     'verification_required': True,
                     'email_sent': False,
+                    'trial_active': True,
+                    'trial_end_date': trial_end.isoformat(),
                     'verification_link': verification_link  # Provide link as fallback
                 }
         except Exception as e:
             logging.error(f"Exception during email sending for {email}: {str(e)}", exc_info=True)
             response = {
-                'message': 'Registration successful! However, we encountered an error sending the verification email. Please use the resend verification feature or contact support@resumeanalyzerai.com.',
+                'message': 'Registration successful! Your 7-day free trial has been activated. However, we encountered an error sending the verification email. Please use the resend verification feature or contact support@resumeanalyzerai.com.',
                 'email': email,
                 'verification_required': True,
                 'email_sent': False,
+                'trial_active': True,
+                'trial_end_date': trial_end.isoformat(),
                 'verification_link': verification_link
             }
 
@@ -591,6 +663,74 @@ def register():
         db.session.rollback()
         logging.error(f"Registration error: {str(e)}")
         return jsonify({'error': 'Registration failed'}), 500
+
+@app.route('/api/trial/activate', methods=['POST'])
+@jwt_required()
+def activate_trial():
+    """Activate free trial for existing users who haven't had one yet"""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Check if user already had a trial
+        if user.trial_start_date is not None:
+            return jsonify({
+                'error': 'You have already used your free trial',
+                'trial_start_date': user.trial_start_date.isoformat() if user.trial_start_date else None
+            }), 400
+        
+        # Check if user is already on a paid plan
+        if user.subscription_status == 'active' and user.subscription_tier in ['pro', 'elite']:
+            return jsonify({
+                'error': 'You already have an active subscription',
+                'subscription_tier': user.subscription_tier
+            }), 400
+        
+        # Activate trial
+        now = datetime.utcnow()
+        trial_end = now + timedelta(days=7)
+        
+        user.subscription_tier = 'pro'
+        user.subscription_status = 'trial'
+        user.credits = 100
+        user.is_trial_active = True
+        user.trial_start_date = now
+        user.trial_end_date = trial_end
+        user.trial_credits_granted = 100
+        user.email_sequence_step = 0
+        
+        db.session.commit()
+        
+        # Send welcome emails
+        recipient_name = user.name or user.email.split('@')[0]
+        unsubscribe_link = None
+        unsubscribe_token = email_service.generate_unsubscribe_token(user.id)
+        if unsubscribe_token:
+            unsubscribe_link = f"{frontend_url}/unsubscribe?token={unsubscribe_token}"
+        email_service.send_welcome_email(user.email, recipient_name, verification_required=not user.email_verified, unsubscribe_link=unsubscribe_link)
+        email_service.send_trial_activation_email(user.email, recipient_name, trial_end, unsubscribe_link=unsubscribe_link)
+        
+        # Update email tracking
+        user.last_email_sent_date = now
+        user.email_sequence_step = 1
+        db.session.commit()
+        
+        logging.info(f"Trial activated for existing user: {user.email}")
+        
+        return jsonify({
+            'message': 'Free trial activated successfully!',
+            'trial_active': True,
+            'trial_end_date': trial_end.isoformat(),
+            'credits': 100
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error activating trial: {str(e)}", exc_info=True)
+        return jsonify({'error': 'Failed to activate trial'}), 500
 
 @app.route('/api/auth/login', methods=['POST'])
 @limiter.limit("5 per minute")
@@ -628,7 +768,11 @@ def login():
             return jsonify({'error': 'Please login with Google'}), 401
 
         # Update last login
-        user.last_login = datetime.utcnow()
+        now = datetime.utcnow()
+        user.last_login = now
+        # Initialize weekly email reference date if not set to avoid resetting on subsequent logins
+        if not user.weekly_email_start_date:
+            user.weekly_email_start_date = user.created_at or now
         db.session.commit()
 
         logging.info(f"Successful login: {email}")
@@ -649,7 +793,10 @@ def login():
                 'subscription_status': user.subscription_status,
                 'credits': user.credits,
                 'is_admin': user.is_admin,
-                'is_active': user.is_active
+                'is_active': user.is_active,
+                'is_trial_active': user.is_trial_active,
+                'trial_start_date': user.trial_start_date.isoformat() if user.trial_start_date else None,
+                'trial_end_date': user.trial_end_date.isoformat() if user.trial_end_date else None
             }
         }), 200
 
@@ -896,7 +1043,10 @@ def google_callback():
                 user.profile_picture = picture
             user.last_login = datetime.utcnow()
         else:
-            # Create new user
+            # Create new user with automatic trial activation
+            now = datetime.utcnow()
+            trial_end = now + timedelta(days=7)
+            
             user = User(
                 email=email,
                 google_id=google_id,
@@ -904,10 +1054,33 @@ def google_callback():
                 profile_picture=picture,
                 auth_provider='google',
                 last_login=datetime.utcnow(),
-                email_verified=True,
-                credits=5  # Free users get 5 initial credits
+                email_verified=True,  # Google OAuth users are pre-verified
+                # Automatic 7-day free trial activation
+                subscription_tier='pro',  # Trial mode - Pro tier
+                subscription_status='trial',
+                credits=100,  # Pro tier credits during trial
+                is_trial_active=True,
+                trial_start_date=now,
+                trial_end_date=trial_end,
+                trial_credits_granted=100,
+                email_sequence_step=0
             )
             db.session.add(user)
+            db.session.commit()
+            
+            # Send welcome emails for new Google OAuth users
+            recipient_name = name or email.split('@')[0]
+            unsubscribe_link = None
+            unsubscribe_token = email_service.generate_unsubscribe_token(user.id)
+            if unsubscribe_token:
+                unsubscribe_link = f"{frontend_url}/unsubscribe?token={unsubscribe_token}"
+            email_service.send_welcome_email(recipient_email=email, recipient_name=recipient_name, verification_required=False, unsubscribe_link=unsubscribe_link)
+            email_service.send_trial_activation_email(recipient_email=email, recipient_name=recipient_name, trial_end_date=trial_end, unsubscribe_link=unsubscribe_link)
+            
+            # Update email tracking
+            user.last_email_sent_date = now
+            user.email_sequence_step = 1
+            db.session.commit()
         
         db.session.commit()
         
@@ -1511,8 +1684,82 @@ def get_user_profile():
         'credits': user.credits,
         'email_verified': user.email_verified,
         'is_admin': user.is_admin,
-        'is_active': user.is_active
+        'is_active': user.is_active,
+        'is_trial_active': user.is_trial_active,
+        'trial_start_date': user.trial_start_date.isoformat() if user.trial_start_date else None,
+        'trial_end_date': user.trial_end_date.isoformat() if user.trial_end_date else None
     }), 200
+
+
+@app.route('/api/user/email-preferences', methods=['GET'])
+@jwt_required()
+def get_email_preferences():
+    """Get email preferences for the authenticated user"""
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    prefs = user.email_preferences or {}
+    # Ensure defaults are present
+    merged = {**DEFAULT_EMAIL_PREFS, **prefs}
+    return jsonify({'email_preferences': merged}), 200
+
+
+@app.route('/api/user/email-preferences', methods=['PUT'])
+@jwt_required()
+def update_email_preferences():
+    """Update email preferences for the authenticated user"""
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    data = request.json or {}
+    current_prefs = user.email_preferences or {}
+    updated = {**DEFAULT_EMAIL_PREFS, **current_prefs}
+
+    for key in DEFAULT_EMAIL_PREFS.keys():
+        if key in data:
+            updated[key] = bool(data.get(key))
+
+    user.email_preferences = updated
+    db.session.commit()
+    return jsonify({'message': 'Email preferences updated', 'email_preferences': updated}), 200
+
+
+@app.route('/api/user/unsubscribe', methods=['POST'])
+@jwt_required(optional=True)
+def unsubscribe():
+    """
+    Unsubscribe user from all marketing emails using token or auth.
+    Priority: token -> authenticated user.
+    """
+    data = request.json or {}
+    token = data.get('token')
+    user = None
+
+    if token:
+        user_id = email_service.verify_unsubscribe_token(token)
+        if user_id:
+            user = User.query.get(user_id)
+
+    if not user:
+        # Try JWT auth if token not provided/invalid
+        try:
+            user_id = int(get_jwt_identity())
+            user = User.query.get(user_id)
+        except Exception:
+            pass
+
+    if not user:
+        return jsonify({'error': 'Invalid or expired unsubscribe request'}), 400
+
+    user.email_preferences = {k: False for k in DEFAULT_EMAIL_PREFS.keys()}
+    db.session.commit()
+    return jsonify({'message': 'You have been unsubscribed from all emails'}), 200
 
 @app.route('/api/dashboard/stats', methods=['GET'])
 @jwt_required()
@@ -1623,10 +1870,16 @@ def generate_feedback(analysis_id):
                     'analysis_id': analysis_id
                 }
                 
+                # Generate unsubscribe link for the email
+                unsubscribe_token = email_service.generate_unsubscribe_token(user_id)
+                frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+                unsubscribe_link = f"{frontend_url}/unsubscribe?token={unsubscribe_token}"
+                
                 email_sent = email_service.send_analysis_results(
                     recipient_email=user.email,
                     recipient_name=user.name or user.email.split('@')[0],
-                    analysis_data=feedback_data
+                    analysis_data=feedback_data,
+                    unsubscribe_link=unsubscribe_link
                 )
                 
                 if email_sent:
@@ -1851,10 +2104,16 @@ def email_analysis():
             'ats_pass_rate': getattr(analysis, 'ats_pass_rate', 'N/A')
         }
         
+        # Generate unsubscribe link for the email
+        unsubscribe_token = email_service.generate_unsubscribe_token(user_id)
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+        unsubscribe_link = f"{frontend_url}/unsubscribe?token={unsubscribe_token}"
+        
         email_sent = email_service.send_analysis_results(
             recipient_email=user.email,
             recipient_name=user.name or user.email.split('@')[0],
-            analysis_data=analysis_data
+            analysis_data=analysis_data,
+            unsubscribe_link=unsubscribe_link
         )
         
         if email_sent:
@@ -2515,10 +2774,18 @@ def initialize_app():
             # Initialize scheduler for background jobs (non-critical)
             try:
                 init_scheduler(app)
-                logging.info("Application initialized successfully")
+                logging.info("Job ingestion scheduler initialized")
             except Exception as scheduler_error:
                 logging.warning(f"Scheduler initialization failed (non-critical): {str(scheduler_error)}")
                 logging.info("Application initialized without scheduler - API will work normally")
+            
+            # Initialize email automation scheduler
+            try:
+                init_email_scheduler(app, db, User, email_service)
+                logging.info("Email automation scheduler initialized")
+            except Exception as email_scheduler_error:
+                logging.warning(f"Email scheduler initialization failed (non-critical): {str(email_scheduler_error)}")
+                logging.info("Application initialized without email scheduler - emails will not be automated")
         except Exception as e:
             logging.error(f"Critical error initializing application: {str(e)}")
             raise

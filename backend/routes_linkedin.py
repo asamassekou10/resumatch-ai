@@ -135,7 +135,10 @@ def linkedin_callback():
             user.email_verified = profile.get('email_verified', True)
             logger.info(f"Existing user logged in via LinkedIn: {email}")
         else:
-            # Create new user
+            # Create new user with automatic trial activation
+            now = datetime.utcnow()
+            trial_end = now + timedelta(days=7)
+            
             user = User(
                 email=email,
                 name=profile.get('name') or email.split('@')[0],
@@ -143,10 +146,37 @@ def linkedin_callback():
                 profile_picture=profile.get('picture'),
                 auth_provider='linkedin',
                 email_verified=profile.get('email_verified', True),
-                last_login=datetime.utcnow()
+                last_login=datetime.utcnow(),
+                # Automatic 7-day free trial activation
+                subscription_tier='pro',  # Trial mode - Pro tier
+                subscription_status='trial',
+                credits=100,  # Pro tier credits during trial
+                is_trial_active=True,
+                trial_start_date=now,
+                trial_end_date=trial_end,
+                trial_credits_granted=100,
+                email_sequence_step=0
             )
             db.session.add(user)
-            logger.info(f"New user created via LinkedIn: {email}")
+            db.session.commit()
+            
+            # Send welcome emails for new LinkedIn OAuth users
+            from email_service import email_service
+            recipient_name = profile.get('name') or email.split('@')[0]
+            unsubscribe_link = None
+            token = email_service.generate_unsubscribe_token(user.id)
+            if token:
+                frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+                unsubscribe_link = f"{frontend_url}/unsubscribe?token={token}"
+            email_service.send_welcome_email(recipient_email=email, recipient_name=recipient_name, verification_required=False, unsubscribe_link=unsubscribe_link)
+            email_service.send_trial_activation_email(recipient_email=email, recipient_name=recipient_name, trial_end_date=trial_end, unsubscribe_link=unsubscribe_link)
+            
+            # Update email tracking
+            user.last_email_sent_date = now
+            user.email_sequence_step = 1
+            db.session.commit()
+            
+            logger.info(f"New user created via LinkedIn: {email}, trial activated")
 
         db.session.commit()
 

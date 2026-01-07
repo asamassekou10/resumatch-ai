@@ -83,6 +83,24 @@ class User(db.Model):
     credits = db.Column(db.Integer, default=0, nullable=False)
     stripe_customer_id = db.Column(db.String(255), nullable=True, unique=True)
     subscription_id = db.Column(db.String(255), nullable=True, unique=True)
+    
+    # Trial tracking fields
+    trial_start_date = db.Column(db.DateTime, nullable=True, index=True)
+    trial_end_date = db.Column(db.DateTime, nullable=True, index=True)
+    is_trial_active = db.Column(db.Boolean, default=False, nullable=False)
+    trial_credits_granted = db.Column(db.Integer, default=0, nullable=False)
+    trial_expired_date = db.Column(db.DateTime, nullable=True)
+    last_email_sent_date = db.Column(db.DateTime, nullable=True)
+    email_sequence_step = db.Column(db.Integer, default=0, nullable=False)  # Track which email in sequence
+
+    # Email automation preferences and tracking
+    weekly_email_start_date = db.Column(db.DateTime, nullable=True, index=True)  # Fixed reference date for weekly emails
+    email_preferences = db.Column(db.JSON, default={})  # {'marketing': True, 'weekly': True, 'trial_updates': True}
+    last_email_opened_date = db.Column(db.DateTime, nullable=True)
+    last_email_clicked_date = db.Column(db.DateTime, nullable=True)
+    email_bounce_count = db.Column(db.Integer, default=0, nullable=False)
+    email_variant = db.Column(db.String(50), nullable=True)  # For A/B testing
+    timezone = db.Column(db.String(50), default='UTC')  # User timezone for scheduling
 
     # Market preferences for personalized insights
     preferred_industry = db.Column(db.String(100), nullable=True, index=True)  # 'Technology', 'Healthcare', 'Security', etc.
