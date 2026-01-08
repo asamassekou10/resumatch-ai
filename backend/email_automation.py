@@ -103,7 +103,7 @@ def should_send_weekly_email(user, today):
     return True, None
 
 
-def build_unsubscribe_link(user):
+def build_unsubscribe_link(user, email_service):
     """Generate unsubscribe link for a user"""
     try:
         token = email_service.generate_unsubscribe_token(user.id)
@@ -209,7 +209,7 @@ def check_and_send_scheduled_emails(app, db, User, email_service):
                         if days_since_start == 2 and user.email_sequence_step < 2:
                             feedback_link = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/help?feedback=true"
                             recipient_name = user.name or user.email.split('@')[0]
-                            unsubscribe_link = build_unsubscribe_link(user)
+                            unsubscribe_link = build_unsubscribe_link(user, email_service)
 
                             if send_email_with_retry(email_service, email_service.send_followup_email, user.email, recipient_name, feedback_link, unsubscribe_link):
                                 user.email_sequence_step = 2
@@ -260,7 +260,7 @@ def check_and_send_scheduled_emails(app, db, User, email_service):
                             continue
 
                         recipient_name = user.name or user.email.split('@')[0]
-                        unsubscribe_link = build_unsubscribe_link(user)
+                        unsubscribe_link = build_unsubscribe_link(user, email_service)
                         if send_email_with_retry(email_service, email_service.send_weekly_checkin_email, user.email, recipient_name, days_remaining, unsubscribe_link):
                             user.last_email_sent_date = now
                             emails_sent += 1
@@ -314,7 +314,7 @@ def check_trial_expiry(app, db, User, email_service):
                     # Send expiry email
                     recipient_name = user.name or user.email.split('@')[0]
                     trial_end_date = user.trial_end_date
-                    unsubscribe_link = build_unsubscribe_link(user)
+                    unsubscribe_link = build_unsubscribe_link(user, email_service)
                     
                     if email_service.send_trial_expiry_email(user.email, recipient_name, trial_end_date, unsubscribe_link):
                         user.trial_expired_date = now
@@ -364,7 +364,7 @@ def handle_grace_period_end(app, db, User, email_service):
                     # Send final email before downgrade
                     if user.email_sequence_step < 5:  # Haven't sent final email
                         recipient_name = user.name or user.email.split('@')[0]
-                        unsubscribe_link = build_unsubscribe_link(user)
+                        unsubscribe_link = build_unsubscribe_link(user, email_service)
                         if email_service.send_trial_expired_email(user.email, recipient_name, unsubscribe_link):
                             user.email_sequence_step = 5
                             user.last_email_sent_date = now
@@ -426,7 +426,7 @@ def check_inactive_users(app, db, User, email_service):
 
                         days_inactive = (today - user.last_login.date()).days if user.last_login else None
                         recipient_name = user.name or user.email.split('@')[0]
-                        unsubscribe_link = build_unsubscribe_link(user)
+                        unsubscribe_link = build_unsubscribe_link(user, email_service)
 
                         if send_email_with_retry(email_service, email_service.send_reengagement_email, user.email, recipient_name, days_inactive, unsubscribe_link):
                             user.last_email_sent_date = now
