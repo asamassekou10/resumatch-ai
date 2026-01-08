@@ -334,40 +334,40 @@ def auto_migrate():
         try:
             from sqlalchemy import text
             commands = [
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS name VARCHAR(100);',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS google_id VARCHAR(100);',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(500);',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS auth_provider VARCHAR(20) DEFAULT \'email\';',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;',
-                'ALTER TABLE "user" ALTER COLUMN password_hash DROP NOT NULL;',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE;',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(100);',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(100);',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(500);',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_provider VARCHAR(20) DEFAULT \'email\';',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;',
+                'ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);',
                 # Subscription and credit fields
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS subscription_tier VARCHAR(50) DEFAULT \'free\';',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS credits INTEGER DEFAULT 0;',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(255);',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS subscription_id VARCHAR(255);',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_tier VARCHAR(50) DEFAULT \'free\';',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS credits INTEGER DEFAULT 0;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(255);',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_id VARCHAR(255);',
                 # Admin fields
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;',
                 # Trial tracking fields
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS trial_start_date TIMESTAMP;',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS trial_end_date TIMESTAMP;',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_trial_active BOOLEAN DEFAULT FALSE;',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS trial_credits_granted INTEGER DEFAULT 0;',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS trial_expired_date TIMESTAMP;',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS last_email_sent_date TIMESTAMP;',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS email_sequence_step INTEGER DEFAULT 0;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_start_date TIMESTAMP;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_end_date TIMESTAMP;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS is_trial_active BOOLEAN DEFAULT FALSE;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_credits_granted INTEGER DEFAULT 0;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_expired_date TIMESTAMP;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS last_email_sent_date TIMESTAMP;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS email_sequence_step INTEGER DEFAULT 0;',
                 # Email automation improvements
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS weekly_email_start_date TIMESTAMP;',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS email_preferences JSONB DEFAULT \'{}\';',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS last_email_opened_date TIMESTAMP;',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS last_email_clicked_date TIMESTAMP;',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS email_bounce_count INTEGER DEFAULT 0;',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS email_variant VARCHAR(50);',
-                'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS timezone VARCHAR(50) DEFAULT \'UTC\';',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS weekly_email_start_date TIMESTAMP;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS email_preferences JSONB DEFAULT \'{}\';',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS last_email_opened_date TIMESTAMP;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS last_email_clicked_date TIMESTAMP;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS email_bounce_count INTEGER DEFAULT 0;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS email_variant VARCHAR(50);',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS timezone VARCHAR(50) DEFAULT \'UTC\';',
                 # Set Google OAuth users as verified
-                'UPDATE "user" SET email_verified = TRUE WHERE auth_provider = \'google\';'
+                'UPDATE users SET email_verified = TRUE WHERE auth_provider = \'google\';'
             ]
             for command in commands:
                 db.session.execute(text(command))
