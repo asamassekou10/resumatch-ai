@@ -771,8 +771,12 @@ def login():
         now = datetime.utcnow()
         user.last_login = now
         # Initialize weekly email reference date if not set to avoid resetting on subsequent logins
-        if not user.weekly_email_start_date:
-            user.weekly_email_start_date = user.created_at or now
+        try:
+            if hasattr(user, 'weekly_email_start_date') and not user.weekly_email_start_date:
+                user.weekly_email_start_date = user.created_at or now
+        except Exception as e:
+            # Column might not exist yet, ignore and continue
+            logging.warning(f"Could not set weekly_email_start_date: {e}")
         db.session.commit()
 
         logging.info(f"Successful login: {email}")
