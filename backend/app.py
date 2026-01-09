@@ -145,6 +145,7 @@ STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
 STRIPE_BASIC_PRICE_ID = os.getenv('STRIPE_BASIC_PRICE_ID')
 STRIPE_STUDENT_PRICE_ID = os.getenv('STRIPE_STUDENT_PRICE_ID')
 STRIPE_PRO_PRICE_ID = os.getenv('STRIPE_PRO_PRICE_ID')
+STRIPE_PRO_FOUNDING_PRICE_ID = os.getenv('STRIPE_PRO_FOUNDING_PRICE_ID')
 STRIPE_ELITE_PRICE_ID = os.getenv('STRIPE_ELITE_PRICE_ID')
 
 # Product IDs for tier identification
@@ -2296,6 +2297,17 @@ def create_checkout_session():
                     'error': 'Student plan requires a valid .edu email address',
                     'details': 'Please sign up with your educational email to access the Student plan'
                 }), 403
+        elif tier_param == 'pro_founding':
+            price_id = STRIPE_PRO_FOUNDING_PRICE_ID
+            # Check founding member limit (first 100 only)
+            from models import User
+            founding_members_count = User.query.filter_by(subscription_tier='pro_founding').count()
+            if founding_members_count >= 100:
+                return jsonify({
+                    'error': 'Founding Member tier is full',
+                    'details': 'All 100 Founding Member spots have been claimed. Please choose Pro tier at $24.99/month.',
+                    'alternative_tier': 'pro'
+                }), 403
         elif tier_param == 'elite':
             price_id = STRIPE_ELITE_PRICE_ID
         else:
@@ -2423,17 +2435,31 @@ def stripe_webhook():
         if user_id:
             user = User.query.get(int(user_id))
             if user:
-                user.subscription_id = session.get('subscription')
+                from config_manager import ConfigManager
+                config_manager = ConfigManager()
 
-                # Allocate credits based on tier
-                if tier == 'elite':
-                    user.subscription_tier = 'elite'
-                    user.credits = 1000  # 1000 credits/month for Elite
-                    logging.info(f"User {user_id} upgraded to Elite tier (1000 credits)")
+                user.subscription_id = session.get('subscription')
+                user.subscription_tier = tier
+                user.subscription_status = 'active'
+
+                # Set subscription start date for billing anniversary
+                if not user.subscription_start_date:
+                    user.subscription_start_date = datetime.utcnow()
+
+                # Allocate credits based on tier from database
+                tier_config = config_manager.get_subscription_tier(tier)
+                if tier_config:
+                    user.credits = tier_config.monthly_credits
+                    logging.info(f"User {user_id} upgraded to {tier} tier ({tier_config.monthly_credits} credits)")
                 else:
-                    user.subscription_tier = 'pro'
-                    user.credits = 100  # 100 credits/month for Pro
-                    logging.info(f"User {user_id} upgraded to Pro tier (100 credits)")
+                    # Fallback for backward compatibility
+                    if tier == 'elite':
+                        user.credits = 1000
+                    elif tier == 'pro':
+                        user.credits = 100
+                    else:
+                        user.credits = 20
+                    logging.warning(f"Tier config not found for {tier}, using fallback credits")
 
                 db.session.commit()
 
@@ -2446,11 +2472,12 @@ def stripe_webhook():
         if user:
             # Downgrade to free tier
             user.subscription_tier = 'free'
-            user.credits = 5  # Free tier gets 5 credits
+            user.subscription_status = 'cancelled'
+            user.credits = 3  # Free tier gets 3 credits
             user.subscription_id = None
             db.session.commit()
 
-            logging.info(f"User {user.id} downgraded to free tier (5 credits)")
+            logging.info(f"User {user.id} downgraded to free tier (3 credits)")
     
     return jsonify({'status': 'success'}), 200
 
@@ -2790,6 +2817,15 @@ def initialize_app():
             except Exception as email_scheduler_error:
                 logging.warning(f"Email scheduler initialization failed (non-critical): {str(email_scheduler_error)}")
                 logging.info("Application initialized without email scheduler - emails will not be automated")
+
+            # Initialize subscription management scheduler
+            try:
+                from scheduler import setup_scheduler
+                setup_scheduler()
+                logging.info("Subscription scheduler initialized (credit reset & trial expiration)")
+            except Exception as subscription_scheduler_error:
+                logging.warning(f"Subscription scheduler initialization failed (non-critical): {str(subscription_scheduler_error)}")
+                logging.info("Application initialized without subscription scheduler - credits will not auto-reset")
         except Exception as e:
             logging.error(f"Critical error initializing application: {str(e)}")
             raise

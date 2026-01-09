@@ -52,9 +52,12 @@ def register():
         user = User(
             email=email,
             password_hash=password_hash,
+            credits=10,  # Launch: 10 free credits
+            subscription_tier='free',
+            subscription_status='inactive',
             created_at=datetime.utcnow()
         )
-        
+
         db.session.add(user)
         db.session.commit()
         

@@ -59,14 +59,8 @@ const PricingPageV2 = ({ token, userProfile }) => {
     }
   };
 
-  // Handle upgrade to Basic
-  const handleUpgradeToBasic = () => handleUpgrade('basic');
-
-  // Handle upgrade to Student
-  const handleUpgradeToStudent = () => handleUpgrade('student');
-
-  // Handle upgrade to Pro
-  const handleUpgradeToPro = () => handleUpgrade('pro');
+  // Handle upgrade to Pro Founding Member
+  const handleUpgradeToProFounding = () => handleUpgrade('pro_founding');
 
   // Handle upgrade to Elite
   const handleUpgradeToElite = () => handleUpgrade('elite');
@@ -108,28 +102,10 @@ const PricingPageV2 = ({ token, userProfile }) => {
     }
 
     // Upgrade buttons
-    if (lowerPlan === 'basic') {
+    if (lowerPlan === 'pro founding') {
       return {
-        text: 'Choose Basic',
-        action: handleUpgradeToBasic,
-        variant: 'secondary',
-        disabled: loading
-      };
-    }
-
-    if (lowerPlan === 'student') {
-      return {
-        text: 'Choose Student',
-        action: handleUpgradeToStudent,
-        variant: 'secondary',
-        disabled: loading
-      };
-    }
-
-    if (lowerPlan === 'pro') {
-      return {
-        text: normalizedTier === 'elite' ? 'Downgrade to Pro' : 'Choose Pro',
-        action: handleUpgradeToPro,
+        text: 'Join as Founding Member',
+        action: handleUpgradeToProFounding,
         variant: 'primary',
         disabled: loading
       };
@@ -139,7 +115,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
       return {
         text: 'Choose Elite',
         action: handleUpgradeToElite,
-        variant: 'primary',
+        variant: 'secondary',
         disabled: loading
       };
     }
@@ -148,13 +124,13 @@ const PricingPageV2 = ({ token, userProfile }) => {
   const plans = [
     {
       name: 'Free',
-      description: 'Perfect to get started',
+      description: 'Try before you buy',
       monthlyPrice: 0,
       yearlyPrice: 0,
-      credits: 5,
+      credits: 10,
       features: [
-        '5 free credits/month',
-        'Resume analysis',
+        '10 free analyses',
+        'Resume scanning',
         'Keyword matching',
         'Basic feedback',
         'Community support'
@@ -164,71 +140,40 @@ const PricingPageV2 = ({ token, userProfile }) => {
       icon: Sparkles
     },
     {
-      name: 'Basic',
-      description: 'Essential tools for job seekers',
-      monthlyPrice: 5.99,
-      yearlyPrice: 59.99,
-      credits: 20,
+      name: 'Pro Founding',
+      description: 'Lock in $19.99 forever',
+      monthlyPrice: 19.99,
+      yearlyPrice: 199.99,
+      credits: 50,
       features: [
-        '20 credits/month',
-        'Resume analysis',
-        'Keyword matching',
-        'AI feedback generation',
-        'Email support'
-      ],
-      notIncluded: ['Cover letter generation', 'Priority support', 'Advanced analytics'],
-      highlighted: false,
-      icon: FileText
-    },
-    {
-      name: 'Student',
-      description: 'Exclusively for students',
-      monthlyPrice: 4.99,
-      yearlyPrice: 49.99,
-      credits: 30,
-      features: [
-        '30 credits/month',
-        'Resume analysis',
-        'Keyword matching',
-        'AI feedback generation',
-        'Career path guidance',
-        'Student-focused templates',
-        'Requires .edu email'
-      ],
-      notIncluded: ['Cover letter generation', 'Priority support'],
-      highlighted: false,
-      icon: BookOpen,
-      badge: 'Students Only'
-    },
-    {
-      name: 'Pro',
-      description: 'For active job seekers',
-      monthlyPrice: 9.99,
-      yearlyPrice: 99.99,
-      credits: 100,
-      features: [
-        '100 credits/month',
-        'Unlimited analyses',
+        '50 analyses/month',
+        'Full ATS scanning',
         'AI feedback generation',
         'Resume optimization',
         'Cover letter generation',
-        'Priority support'
+        'Unlimited templates',
+        'Priority support',
+        '🏆 Founding Member badge',
+        '🔒 Price locked forever'
       ],
-      notIncluded: ['Unlimited API access', 'Custom integrations'],
+      notIncluded: ['API access', 'Bulk uploads'],
       highlighted: true,
-      icon: Zap
+      icon: Zap,
+      badge: 'Limited: First 100 Only',
+      specialNote: 'Regular price $24.99 - Save $5/month forever'
     },
     {
       name: 'Elite',
-      description: 'For power users',
+      description: 'For recruiters & coaches',
       monthlyPrice: 49.99,
       yearlyPrice: 499.99,
-      credits: 1000,
+      credits: 200,
       features: [
-        '1000 credits/month',
+        '200 analyses/month',
         'Everything in Pro',
-        'Unlimited API access',
-        'Custom integrations',
+        'API access',
+        'Bulk uploads',
+        'White-label options',
         'Advanced analytics',
         'Dedicated support'
       ],

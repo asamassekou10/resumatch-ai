@@ -23,6 +23,27 @@ def is_admin():
     except:
         return False
 
+@analytics_bp.route('/analytics/founding-members-count', methods=['GET'])
+def get_founding_members_count():
+    """
+    Get count of Founding Members (public endpoint for banner)
+    Returns: Number of users subscribed to pro_founding tier
+    """
+    try:
+        count = User.query.filter_by(subscription_tier='pro_founding').count()
+        remaining = max(0, 100 - count)
+
+        return jsonify({
+            'count': count,
+            'remaining': remaining,
+            'total': 100,
+            'percentage_claimed': round((count / 100) * 100, 1)
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error getting founding members count: {str(e)}")
+        return jsonify({'error': 'Failed to get founding members count'}), 500
+
 @analytics_bp.route('/analytics/overview', methods=['GET'])
 @jwt_required()
 def get_analytics_overview():

@@ -83,6 +83,8 @@ class User(db.Model):
     credits = db.Column(db.Integer, default=0, nullable=False)
     stripe_customer_id = db.Column(db.String(255), nullable=True, unique=True)
     subscription_id = db.Column(db.String(255), nullable=True, unique=True)
+    subscription_start_date = db.Column(db.DateTime, nullable=True, index=True)  # For billing anniversary
+    last_credit_reset = db.Column(db.DateTime, nullable=True)  # Track last credit reset
     
     # Trial tracking fields
     trial_start_date = db.Column(db.DateTime, nullable=True, index=True)

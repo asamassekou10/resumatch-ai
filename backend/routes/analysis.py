@@ -48,14 +48,28 @@ def analyze_resume():
     """Analyze resume against job description"""
     try:
         user = get_current_user()
-        
+
+        # Check if user has enough credits
+        from services.subscription_service import SubscriptionService
+        credit_check = SubscriptionService.check_credit_limit(user.id, 'resume_analysis')
+
+        if not credit_check['has_credits']:
+            return jsonify({
+                'status': 'error',
+                'error': 'Insufficient credits',
+                'credits_available': credit_check['credits_available'],
+                'credits_needed': credit_check['credits_needed'],
+                'message': f"You need {credit_check['credits_needed']} credit(s) but only have {credit_check['credits_available']}. Please upgrade your plan.",
+                'upgrade_url': '/pricing'
+            }), 402  # Payment Required
+
         # Check rate limits
         today = datetime.utcnow().date()
         analyses_today = Analysis.query.filter(
             Analysis.user_id == user.id,
             db.func.date(Analysis.created_at) == today
         ).count()
-        
+
         RateLimitValidator.validate_analysis_rate_limit(user.id, analyses_today)
         
         # Validate file upload
@@ -95,14 +109,17 @@ def analyze_resume():
         
         db.session.add(analysis)
         db.session.commit()
-        
-        logger.info(f"Analysis completed for user {user.id}, score: {result['match_score']}%")
-        
+
+        # Deduct credits after successful analysis
+        deduction_result = SubscriptionService.deduct_credits(user.id, 'resume_analysis')
+        logger.info(f"Analysis completed for user {user.id}, score: {result['match_score']}%. Credits remaining: {deduction_result['credits_remaining']}")
+
         return create_success_response(
             "Analysis completed successfully",
             {
                 'analysis_id': analysis.id,
                 'match_score': result['match_score'],
+                'credits_remaining': deduction_result['credits_remaining'],
                 'keywords_found': result['keywords_found'],
                 'keywords_missing': result['keywords_missing'],
                 'suggestions': result['suggestions'],
