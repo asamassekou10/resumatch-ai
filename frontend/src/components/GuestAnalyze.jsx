@@ -36,7 +36,7 @@ const GuestAnalyze = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState('welcome'); // welcome, analyze, analyzing, complete, results
   const [guestToken, setGuestToken] = useState(null);
-  const [guestCredits, setGuestCredits] = useState(2);
+  const [guestCredits, setGuestCredits] = useState(1);
   const [loading, setLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState('Analyzing resume...');
@@ -54,7 +54,7 @@ const GuestAnalyze = () => {
   const faqData = [
     {
       question: "Is this really free?",
-      answer: "Yes! You get 2 free resume scans every 24 hours without creating an account. For unlimited scans and premium features like AI-optimized resumes and cover letter generation, you can upgrade to a paid plan."
+      answer: "Yes! You get 1 free resume scan without creating an account. Sign up for a free account to get 10 analyses per month plus access to premium features like AI-optimized resumes and cover letter generation."
     },
     {
       question: "Do you sell my data or resume?",
@@ -224,12 +224,12 @@ const GuestAnalyze = () => {
       const errorMessage = err.message || 'Analysis failed. Please try again.';
 
       if (errorMessage.includes('No guest credits remaining') || errorMessage.includes('INSUFFICIENT_CREDITS')) {
-        setError('🎯 You\'ve used all 2 free analyses! Ready to level up? Get unlimited analyses, AI-powered insights, and exclusive features with a 7-day FREE trial. No credit card required!');
+        setError('🎯 You\'ve used your free guest analysis! Ready for more? Sign up now and get 10 free analyses per month, AI-powered insights, and exclusive features. No credit card required!');
         setGuestCredits(0);
-      } else if (errorMessage.includes('Daily guest analysis limit reached') || errorMessage.includes('DAILY_LIMIT_EXCEEDED')) {
-        setError('📊 You\'ve reached your 2 free analyses for today! Want more? Start your 7-day FREE trial now and get unlimited analyses, AI optimization, cover letter generation, and premium features. No credit card required!');
+      } else if (errorMessage.includes('Daily guest analysis limit reached') || errorMessage.includes('DAILY_LIMIT_EXCEEDED') || errorMessage.includes('Guest analysis limit reached')) {
+        setError('📊 You\'ve used your free guest analysis! Want more? Sign up now for 10 free analyses per month plus AI optimization, cover letter generation, and premium features. No credit card required!');
       } else if (errorMessage.includes('Too many guest sessions') || errorMessage.includes('RATE_LIMIT_EXCEEDED')) {
-        setError('⏰ Too many sessions created. Try again in 24 hours, or start your 7-day FREE trial for unlimited access and premium features!');
+        setError('⏰ Too many sessions created. Sign up for a free account to get 10 analyses per month and unlock premium features!');
       } else {
         setError(errorMessage);
       }
@@ -250,7 +250,7 @@ const GuestAnalyze = () => {
     <>
       <SEO
         title="Free AI Resume Scanner | ATS Score & Missing Keywords in 10 Seconds"
-        description="Scan your resume for free. Get your ATS compatibility score, missing keywords report, and executive summary suggestions in 10 seconds. No signup required. 2 free scans daily."
+        description="Scan your resume for free. Get your ATS compatibility score, missing keywords report, and executive summary suggestions in 10 seconds. No signup required. 1 free scan for guests."
         keywords="free resume scanner, free ATS checker, resume keyword analyzer, ATS score free, resume analysis free, AI resume checker"
         url="https://resumeanalyzerai.com/guest-analyze"
         structuredData={[faqSchema]}
@@ -269,7 +269,7 @@ const GuestAnalyze = () => {
             <div className="text-center">
               <h1 className="text-4xl font-bold text-white mb-4 font-display">Guest Access</h1>
               <p className="text-gray-300 text-lg mb-8">
-                Get started with 2 free analyses instantly. No sign-up required.
+                Try 1 free analysis instantly. No sign-up required.
               </p>
               <SpotlightCard className="rounded-lg p-8">
                 {error ? (
@@ -312,8 +312,8 @@ const GuestAnalyze = () => {
                     <Sparkles className="w-6 h-6 text-yellow-300" />
                   </div>
                   <div>
-                    <p className="text-white font-bold text-base md:text-lg">Welcome! You have {guestCredits} Free Credits active today.</p>
-                    <p className="text-white/80 text-sm">No account needed. Your resume stays private.</p>
+                    <p className="text-white font-bold text-base md:text-lg">Welcome! You have {guestCredits} Free Analysis available.</p>
+                    <p className="text-white/80 text-sm">No account needed. Sign up for 10 free analyses/month!</p>
                   </div>
                 </div>
                 <div className="flex gap-2">

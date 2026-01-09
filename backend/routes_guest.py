@@ -132,7 +132,7 @@ def create_guest_session():
         guest_session = GuestSession(
             id=session_id,
             session_token=session_token,
-            credits_remaining=2,  # Strictly limit to 2 analyses per 24 hours
+            credits_remaining=1,  # Strictly limit to 1 analysis per session
             credits_used=0,
             ip_address=ip_address,
             user_agent=user_agent,
@@ -144,14 +144,14 @@ def create_guest_session():
         db.session.add(guest_session)
         db.session.commit()
 
-        logger.info(f"Created guest session {session_id} from {ip_address} (2 credits)")
+        logger.info(f"Created guest session {session_id} from {ip_address} (1 credit)")
 
         return jsonify({
             'guest_token': session_token,
-            'credits': 2,  # Show 2 credits
+            'credits': 1,  # Show 1 credit
             'expires_at': expires_at.isoformat(),
             'session_id': session_id,
-            'message': 'Guest session created - 2 free analyses available'
+            'message': 'Guest session created - 1 free analysis available'
         }), 201
 
     except Exception as e:
@@ -166,7 +166,7 @@ def create_guest_session():
 @guest_token_required
 def analyze_resume_guest():
     """
-    Analyze resume as guest (uses 1 credit, max 2 analyses per session)
+    Analyze resume as guest (uses 1 credit, max 1 analysis per session)
 
     Request body (multipart/form-data):
         - resume: Resume file (PDF, DOCX, or TXT)
@@ -201,12 +201,12 @@ def analyze_resume_guest():
             GuestSession.created_at >= datetime.utcnow() - timedelta(hours=24)
         ).count()
 
-        if total_analyses_from_ip >= 2:
-            logger.warning(f"Analysis attempt from IP {ip_address} that exceeded daily limit")
+        if total_analyses_from_ip >= 1:
+            logger.warning(f"Analysis attempt from IP {ip_address} that exceeded limit")
             return jsonify({
-                'error': 'Daily guest analysis limit reached for your network.',
+                'error': 'Guest analysis limit reached. Sign up for 10 free analyses!',
                 'error_type': 'DAILY_LIMIT_EXCEEDED',
-                'upgrade_message': 'Create an account for unlimited access!'
+                'upgrade_message': 'Create an account for 10 free analyses and unlock premium features!'
             }), 429
 
         # Validate file upload
