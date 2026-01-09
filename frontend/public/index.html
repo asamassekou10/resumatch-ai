@@ -14,8 +14,8 @@
     <!-- Note: Includes localhost for development; in production, backend sets stricter headers -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com;
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com;
       img-src 'self' data: https: blob:;
       connect-src 'self' http://localhost:5000 http://localhost:5000/api http://127.0.0.1:5000 https://resumatch-backend-7qdb.onrender.com https://*.onrender.com https://api.stripe.com https://www.google-analytics.com https://accounts.google.com;
@@ -126,9 +126,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://js.stripe.com" crossorigin />
-
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body>
     <noscript>
