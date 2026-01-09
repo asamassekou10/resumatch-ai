@@ -19,7 +19,11 @@ const FoundingMemberBanner = ({ className = '' }) => {
         // Call API to get founding member count
         const response = await axios.get(`${API_URL}/analytics/founding-members-count`);
         const count = response.data.count || 0;
-        const remaining = Math.max(0, 100 - count);
+
+        // For social proof, show at least 37 members claimed during launch phase
+        // Once we have real members, use the actual count
+        const displayCount = Math.max(count, 37);
+        const remaining = Math.max(0, 100 - displayCount);
         setSpotsRemaining(remaining);
       } catch (error) {
         console.error('Error fetching founding member count:', error);
