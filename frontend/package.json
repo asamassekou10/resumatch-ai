@@ -25,7 +25,7 @@
     "start": "react-scripts start",
     "build": "npm run generate:sitemap && react-scripts build",
     "build:prod": "npm run generate:sitemap && REACT_APP_ENABLE_ANALYTICS=true react-scripts build",
-    "postbuild": "react-snap",
+    "postbuild": "node scripts/postbuild.js",
     "generate:sitemap": "node scripts/generate-sitemap.js",
     "generate:favicon": "node scripts/generate-favicon.js",
     "test": "react-scripts test --watchAll=false",
