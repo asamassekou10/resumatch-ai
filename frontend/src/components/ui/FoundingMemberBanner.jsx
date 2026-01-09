@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Clock } from 'lucide-react';
 import axios from 'axios';
+import { isPrerendering } from '../../utils/prerender';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -10,10 +11,16 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
  * Shows how many Founding Member spots remain (limited to 100)
  */
 const FoundingMemberBanner = ({ className = '' }) => {
-  const [spotsRemaining, setSpotsRemaining] = useState(null);
+  const [spotsRemaining, setSpotsRemaining] = useState(63); // Default for prerendering
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Skip API calls during prerendering
+    if (isPrerendering()) {
+      setLoading(false);
+      return;
+    }
+
     const fetchFoundingMemberCount = async () => {
       try {
         // Call API to get founding member count

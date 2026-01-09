@@ -132,7 +132,16 @@
     ],
     "skipThirdPartyRequests": true,
     "cacheAjaxRequests": false,
-    "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox"],
-    "crawl": false
+    "puppeteerArgs": [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-web-security",
+      "--disable-features=IsolateOrigins,site-per-process"
+    ],
+    "waitFor": 1000,
+    "crawl": false,
+    "ignoreForPrerender": [
+      "onError"
+    ]
   }
 }

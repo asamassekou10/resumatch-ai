@@ -9,6 +9,7 @@ import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
 import ScoreBreakdown from './ScoreBreakdown';
 import { generateFAQSchema } from '../utils/structuredData';
+import { isPrerendering } from '../utils/prerender';
 
 // FAQ Accordion Component - Using CSS transitions instead of Framer Motion
 const FAQItem = ({ question, answer, isOpen, onClick }) => (
@@ -78,6 +79,12 @@ const GuestAnalyze = () => {
 
   // Initialize guest session on mount
   useEffect(() => {
+    // Skip API calls during prerendering
+    if (isPrerendering()) {
+      setStep('analyze'); // Just show the form during prerendering
+      return;
+    }
+
     const initGuestSession = async () => {
       try {
         // First, check if we have a valid existing session
