@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, X, ArrowRight } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import { getCreditsDisplay } from '../utils/credits';
-import CreditBalance from './ui/CreditBalance';
 import TrialOfferBanner from './ui/TrialOfferBanner';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';

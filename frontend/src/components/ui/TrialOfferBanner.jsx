@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight, Zap } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import ShimmerButton from './ShimmerButton';
 
 /**
@@ -9,7 +8,6 @@ import ShimmerButton from './ShimmerButton';
  * Displays 30-day mega trial offer to users who have used their free credits
  */
 const TrialOfferBanner = ({ credits = 0, onStartTrial, className = '' }) => {
-  const navigate = useNavigate();
 
   // Only show when user has 3 or fewer credits left
   if (credits > 3) {
