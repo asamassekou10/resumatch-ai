@@ -37,7 +37,9 @@ export const skipDuringPrerender = (fn) => {
   return null;
 };
 
-export default {
+const prerenderUtils = {
   isPrerendering,
   skipDuringPrerender,
 };
+
+export default prerenderUtils;
