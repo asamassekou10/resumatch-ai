@@ -309,28 +309,16 @@ const PricingPageV2 = ({ token, userProfile }) => {
                   }`}
                 >
                   <div className="relative z-10">
-                    {/* Badge */}
-                    {plan.highlighted && (
+                    {/* Badge - Show custom badge if present, otherwise show "POPULAR" for highlighted */}
+                    {(plan.badge || plan.highlighted) && (
                       <motion.div
-                        className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20"
+                        className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20 whitespace-nowrap"
                         initial={{ y: -20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.3 }}
                       >
-                        <span className="bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
-                          POPULAR
-                        </span>
-                      </motion.div>
-                    )}
-                    {plan.badge && (
-                      <motion.div
-                        className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20"
-                        initial={{ y: -20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.3 }}
-                      >
-                        <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
-                          {plan.badge}
+                        <span className={`${plan.badge ? 'bg-gradient-to-r from-cyan-600 to-purple-600' : 'bg-purple-600'} text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg`}>
+                          {plan.badge || 'POPULAR'}
                         </span>
                       </motion.div>
                     )}
@@ -371,6 +359,37 @@ const PricingPageV2 = ({ token, userProfile }) => {
                         >
                           Save ${savings.savings.toFixed(2)} ({savings.percentage}%)
                         </motion.p>
+                      )}
+                      {/* Special savings for Pro Founding and Elite */}
+                      {plan.name === 'Pro Founding' && !isYearly && (
+                        <motion.div
+                          className="mt-2 relative z-10"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.2 }}
+                        >
+                          <p className="text-gray-400 text-sm">
+                            Regular price: <span className="line-through text-gray-500">$24.99/mo</span>
+                          </p>
+                          <p className="text-green-400 text-sm font-semibold">
+                            💰 Save $5/month forever
+                          </p>
+                        </motion.div>
+                      )}
+                      {plan.name === 'Elite' && !isYearly && (
+                        <motion.div
+                          className="mt-2 relative z-10"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.2 }}
+                        >
+                          <p className="text-gray-400 text-sm">
+                            Best for professionals
+                          </p>
+                          <p className="text-cyan-400 text-sm font-semibold">
+                            ⚡ Premium features included
+                          </p>
+                        </motion.div>
                       )}
                     </div>
 
