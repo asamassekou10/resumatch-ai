@@ -9,7 +9,6 @@ import EntranceOverlay from './ui/EntranceOverlay';
 import Footer from './ui/Footer';
 import SpotlightCard from './ui/SpotlightCard';
 import FreeTrialBanner from './ui/FreeTrialBanner';
-import FoundingMemberBanner from './ui/FoundingMemberBanner';
 import { generateFAQSchema } from '../utils/structuredData';
 import BLOG_POSTS from '../utils/blogContent';
 
@@ -232,7 +231,7 @@ const LandingPageV2 = ({ token }) => {
 
             {/* Free Credits Badge */}
             <motion.div
-              className="mb-6 max-w-2xl mx-auto relative z-10"
+              className="mb-8 max-w-2xl mx-auto relative z-10"
               variants={fadeInUp}
               custom={2.5}
             >
@@ -244,20 +243,11 @@ const LandingPageV2 = ({ token }) => {
               </div>
             </motion.div>
 
-            {/* Founding Member Banner */}
-            <motion.div
-              className="mb-8 max-w-2xl mx-auto relative z-10"
-              variants={fadeInUp}
-              custom={3}
-            >
-              <FoundingMemberBanner />
-            </motion.div>
-
             {/* CTA Buttons */}
             <motion.div
               className="flex flex-col sm:flex-row gap-4 justify-center items-center relative z-10"
               variants={fadeInUp}
-              custom={4}
+              custom={3}
             >
               <ShimmerButton onClick={() => navigate(ROUTES.GUEST_ANALYZE)}>
                 Try For Free <ArrowRight size={16} />
@@ -277,7 +267,7 @@ const LandingPageV2 = ({ token }) => {
             <motion.div
               className="mt-12 flex justify-center items-center text-gray-400 text-sm relative z-10"
               variants={fadeInUp}
-              custom={5}
+              custom={4}
             >
               <div className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-yellow-400" />

@@ -7,6 +7,7 @@ import SEO from './common/SEO';
 import ShimmerButton from './ui/ShimmerButton';
 import SpotlightCard from './ui/SpotlightCard';
 import Footer from './ui/Footer';
+import FoundingMemberBanner from './ui/FoundingMemberBanner';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -265,8 +266,18 @@ const PricingPageV2 = ({ token, userProfile }) => {
           )}
         </motion.div>
 
+        {/* Founding Member Banner */}
+        <motion.div
+          className="max-w-4xl mx-auto mb-8 relative z-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <FoundingMemberBanner />
+        </motion.div>
+
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-12 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12 relative z-10">
           {plans.map((plan, i) => {
             const IconComponent = plan.icon;
             const price = calculatePrice(plan);
