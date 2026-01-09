@@ -40,7 +40,7 @@ Allow: /*.webp
 Allow: /*.ico
 
 # Sitemap location
-Sitemap: https://resumeanalyzerai.com/sitemap.xml
+Sitemap: https://www.resumeanalyzerai.com/sitemap.xml
 
 # Crawl delay (optional, be nice to servers)
 Crawl-delay: 1
