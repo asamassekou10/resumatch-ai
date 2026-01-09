@@ -15,18 +15,25 @@
 
 ---
 
-### Deployment 2: SEO Prerendering Implementation ✅
+### Deployment 2: SEO Prerendering Implementation ⚠️ PARTIALLY COMPLETED
 **Commits:**
 - `84b6492` - "Implement react-snap prerendering to fix Google indexing issues"
 - `8cb1931` - "Update package-lock.json for react-snap dependency"
+- `d2f8887` - "Fix react-snap prerendering by skipping API calls during SSR"
+- `64e3ac5` - "Fix build errors: Update index.js hydration support, remove Tailwind CDN, temporarily disable react-snap"
 
-**Changes:**
-- Added react-snap for prerendering 39 pages
-- Updated index.js to support hydration
-- Fixed sitemap URLs (non-www → www.resumeanalyzerai.com)
-- Updated robots.txt sitemap reference
+**Changes Completed:**
+- ✅ Added prerendering detection utility (`frontend/src/utils/prerender.js`)
+- ✅ Updated `FoundingMemberBanner.jsx` to skip API calls during prerendering
+- ✅ Updated `GuestAnalyze.jsx` to skip API calls during prerendering
+- ✅ Updated `index.js` to support hydration for prerendered pages
+- ✅ Removed Tailwind CDN script from `index.html` (was causing errors)
+- ✅ Fixed sitemap URLs (non-www → www.resumeanalyzerai.com)
+- ✅ Updated robots.txt sitemap reference
 
-**Status:** ✅ Lock file updated, deployment in progress
+**Status:** ⚠️ react-snap prerendering temporarily disabled due to persistent errors
+
+**Blocker:** react-snap fails with `SyntaxError: Unexpected token '<'` - indicates external resource returning HTML instead of JavaScript during headless browser prerendering. Root cause needs investigation.
 
 ---
 
@@ -109,29 +116,29 @@ curl -X POST https://www.resumeanalyzerai.com/api/guest/session
 
 ## Next Actions Required
 
-### Google Search Console (User Action)
+### 1. Fix react-snap Prerendering (Technical)
 
-**1. Submit Updated Sitemap:**
+**Issue:** `SyntaxError: Unexpected token '<'` during prerendering
+**Likely Causes:**
+- Service Worker interfering with prerendering
+- External font or script loading that returns HTML 404 pages
+- React Router navigation during prerendering
+
+**Investigation Steps:**
+1. Disable Service Worker during prerendering
+2. Check if Google Fonts or other external resources cause errors
+3. Try alternative: Next.js migration OR Prerender.io service
+
+### 2. Google Search Console (User Action)
+
+**Update Sitemap** (can do now, even without prerendering):
 1. Go to [Google Search Console](https://search.google.com/search-console)
 2. Navigate to **Sitemaps**
 3. Remove: `https://resumeanalyzerai.com/sitemap.xml` (old non-www)
 4. Add: `https://www.resumeanalyzerai.com/sitemap.xml` (new www)
 5. Click **Submit**
 
-**2. Request Indexing (Top 10 Priority Pages):**
-Use URL Inspection tool for:
-1. `https://www.resumeanalyzerai.com/blog/how-to-beat-ats-2026`
-2. `https://www.resumeanalyzerai.com/blog/software-engineer-resume-hiring-managers`
-3. `https://www.resumeanalyzerai.com/resume-for/software-engineer`
-4. `https://www.resumeanalyzerai.com/resume-for/registered-nurse`
-5. `https://www.resumeanalyzerai.com/guest-analyze`
-6. `https://www.resumeanalyzerai.com/pricing`
-7. `https://www.resumeanalyzerai.com/blog/account-executive-resume-saas`
-8. `https://www.resumeanalyzerai.com/blog/nursing-resume-tips-healthcare`
-9. `https://www.resumeanalyzerai.com/resume-for/data-analyst`
-10. `https://www.resumeanalyzerai.com/resources/for-students`
-
-Click **Request Indexing** for each.
+Note: Without prerendering, pages will still show as "Discovered - not indexed" until we fix react-snap or implement alternative solution.
 
 ---
 
@@ -230,6 +237,6 @@ git push
 
 ---
 
-**Last Updated:** 2026-01-09 03:00 UTC
-**Deployment Status:** ⏳ In Progress
-**Next Check:** After CI/CD completes (~5 minutes)
+**Last Updated:** 2026-01-09 05:10 UTC
+**Deployment Status:** ⚠️ Partial - Guest limit deployed, react-snap blocked
+**Next Step:** Investigate react-snap SyntaxError or consider alternative prerendering solution
