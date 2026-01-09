@@ -77,7 +77,7 @@
     "to-ico": "^1.1.5"
   },
   "reactSnap": {
-    "inlineCss": true,
+    "inlineCss": false,
     "minifyHtml": {
       "collapseWhitespace": true,
       "removeComments": true
