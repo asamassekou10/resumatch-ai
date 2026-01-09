@@ -5,11 +5,9 @@ Handles credit resets, trial management, and subscription lifecycle
 
 from datetime import datetime, timedelta
 from models import db, User, SubscriptionTier
-from config_manager import ConfigManager
 import logging
 
 logger = logging.getLogger(__name__)
-config_manager = ConfigManager()
 
 
 class SubscriptionService:
@@ -47,7 +45,9 @@ class SubscriptionService:
                                  (subscription_day > last_day_of_month and current_day == last_day_of_month)
 
                     if should_reset:
-                        tier = config_manager.get_subscription_tier(user.subscription_tier)
+                        from config_manager import ConfigManager
+                        config_mgr = ConfigManager(db)
+                        tier = config_mgr.get_subscription_tier(user.subscription_tier)
                         if tier:
                             user.credits = tier.monthly_credits
                             user.last_credit_reset = today
@@ -223,7 +223,9 @@ class SubscriptionService:
 
             # Get credit cost for this operation and tier
             if amount is None:
-                rate_limit = config_manager.get_rate_limit(operation, user.subscription_tier)
+                from config_manager import ConfigManager
+                config_mgr = ConfigManager(db)
+                rate_limit = config_mgr.get_rate_limit(operation, user.subscription_tier)
                 if rate_limit:
                     amount = rate_limit.cost_in_credits
                 else:
@@ -276,7 +278,9 @@ class SubscriptionService:
 
             # Get credit cost
             if amount is None:
-                rate_limit = config_manager.get_rate_limit(operation, user.subscription_tier)
+                from config_manager import ConfigManager
+                config_mgr = ConfigManager(db)
+                rate_limit = config_mgr.get_rate_limit(operation, user.subscription_tier)
                 if rate_limit:
                     amount = rate_limit.cost_in_credits
                 else:
@@ -337,7 +341,9 @@ class SubscriptionService:
             if not user:
                 return None
 
-            tier = config_manager.get_subscription_tier(user.subscription_tier)
+            from config_manager import ConfigManager
+            config_mgr = ConfigManager(db)
+            tier = config_mgr.get_subscription_tier(user.subscription_tier)
 
             return {
                 'user_id': user.id,

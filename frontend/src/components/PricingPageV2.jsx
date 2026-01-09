@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, Zap, Crown, Sparkles, ArrowRight, FileText, BookOpen } from 'lucide-react';
+import { CheckCircle, Zap, Crown, Sparkles, ArrowRight } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import ShimmerButton from './ui/ShimmerButton';
