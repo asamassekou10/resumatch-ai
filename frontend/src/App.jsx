@@ -5,6 +5,7 @@ import AppRoutes from './components/routing/AppRoutes';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import PaymentSuccessModal from './components/PaymentSuccessModal';
 import axios from 'axios';
+import { isPrerendering } from './utils/prerender';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -43,6 +44,9 @@ function App() {
    * This runs once on mount to check URL params
    */
   useEffect(() => {
+    // Skip during prerendering
+    if (isPrerendering()) return;
+
     const urlParams = new URLSearchParams(window.location.search);
 
     // Get all possible params
@@ -177,6 +181,9 @@ function App() {
    * Fetch user profile on mount if token exists
    */
   useEffect(() => {
+    // Skip during prerendering
+    if (isPrerendering()) return;
+
     if (token) {
       fetchUserProfile();
     }
@@ -234,8 +241,8 @@ function App() {
           userCredits={userProfile?.credits}
         />
 
-        {/* Vercel Analytics */}
-        <Analytics />
+        {/* Vercel Analytics - Skip during prerendering */}
+        {!isPrerendering() && <Analytics />}
       </BrowserRouter>
     </ErrorBoundary>
   );

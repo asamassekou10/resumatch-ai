@@ -13,8 +13,8 @@ if (!isPrerendering()) {
   initAnalytics();
 }
 
-// Register Service Worker for PWA
-if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+// Register Service Worker for PWA (skip during prerendering)
+if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production' && !isPrerendering()) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/service-worker.js')
