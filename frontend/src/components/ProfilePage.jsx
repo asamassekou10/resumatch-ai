@@ -48,7 +48,7 @@ const ProfilePage = ({ user }) => {
               <div className="text-center">
                 {/* Avatar */}
                 <div className="relative inline-block mb-4">
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 flex items-center justify-center text-white text-4xl font-bold">
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-white text-4xl font-bold">
                     {user.name?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <button className="absolute bottom-0 right-0 bg-cyan-500 hover:bg-cyan-600 text-white p-2 rounded-full transition">
@@ -67,7 +67,7 @@ const ProfilePage = ({ user }) => {
                   </div>
                   <div className="bg-white/5 rounded-lg p-3 relative z-10">
                     <p className="text-gray-400 text-xs mb-1 relative z-10">Plan</p>
-                    <p className="text-purple-400 text-lg font-bold capitalize font-display relative z-10">{user.subscription_tier || 'free'}</p>
+                    <p className="text-blue-400 text-lg font-bold capitalize font-display relative z-10">{user.subscription_tier || 'free'}</p>
                   </div>
                 </div>
               </div>
@@ -134,7 +134,7 @@ const ProfilePage = ({ user }) => {
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition relative z-10"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition relative z-10"
                     />
                   ) : (
                     <p className="text-white py-3">{user.name}</p>
@@ -152,7 +152,7 @@ const ProfilePage = ({ user }) => {
                 <div>
                   <label className="block text-sm text-slate-400 mb-2">Subscription Plan</label>
                   <p className="text-white py-3 capitalize flex items-center gap-2">
-                    <Award className="w-4 h-4 text-purple-400" />
+                    <Award className="w-4 h-4 text-blue-400" />
                     {user.subscription_tier || 'free'} Plan
                   </p>
                 </div>
@@ -167,7 +167,7 @@ const ProfilePage = ({ user }) => {
 
               {isEditing && (
                 <div className="mt-6 flex gap-3">
-                  <button className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-white rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition">
+                  <button className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition">
                     Save Changes
                   </button>
                   <button

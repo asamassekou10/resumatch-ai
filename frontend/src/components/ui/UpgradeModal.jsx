@@ -40,7 +40,7 @@ const UpgradeModal = ({
         price: '$24.99/mo',
         credits: 50,
         icon: Zap,
-        color: 'from-purple-500 to-pink-500'
+        color: 'from-blue-500 to-pink-500'
       };
     }
     return {
@@ -109,21 +109,21 @@ const UpgradeModal = ({
             </p>
 
             {/* Recommended plan */}
-            <div className="border-2 border-purple-200 rounded-xl p-4 mb-6 bg-purple-50/50">
+            <div className="border-2 border-blue-200 rounded-xl p-4 mb-6 bg-blue-50/50">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <div className="text-sm text-purple-600 font-semibold uppercase tracking-wide mb-1">
+                  <div className="text-sm text-blue-600 font-semibold uppercase tracking-wide mb-1">
                     Recommended
                   </div>
                   <div className="text-xl font-bold text-gray-900">{recommendation.name} Plan</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-purple-600">{recommendation.price}</div>
+                  <div className="text-2xl font-bold text-blue-600">{recommendation.price}</div>
                   <div className="text-sm text-gray-600">per month</div>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-700">
-                <Zap className="w-4 h-4 text-purple-600" />
+                <Zap className="w-4 h-4 text-blue-600" />
                 <span><strong>{recommendation.credits} credits/month</strong> - analyze {recommendation.credits} resumes</span>
               </div>
             </div>

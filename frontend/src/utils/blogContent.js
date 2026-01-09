@@ -214,7 +214,7 @@ export const BLOG_POSTS = [
         
         <p>Remember: <strong>75% of resumes are rejected by ATS</strong>. But with the right optimization, yours doesn't have to be one of them.</p>
         
-        <div className="bg-gradient-to-r from-purple-500/20 to-blue-600/20 border border-purple-500/30 rounded-lg p-8 my-8">
+        <div className="bg-gradient-to-r from-blue-500/20 to-blue-600/20 border border-blue-500/30 rounded-lg p-8 my-8">
           <h3 className="text-2xl font-bold text-white mb-4 font-display">Ready to Test Your Resume's ATS Compatibility?</h3>
           <p className="text-gray-300 mb-6 leading-relaxed">Don't guess whether your resume will pass ATS screening. Use <strong>ResumeAnalyzer AI</strong> to get instant feedback on your resume's parse rate, keyword optimization, and ATS compatibility. Our tool analyzes your resume against real job descriptions and shows you exactly what to fix—all in under 2 minutes.</p>
           <p className="text-white font-bold text-lg">Scan your resume now and see if it passes the ATS test.</p>
@@ -392,7 +392,7 @@ export const BLOG_POSTS = [
     content: () => (
       <>
         {/* Quick Answer Box - Optimized for Featured Snippet */}
-        <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-2 border-blue-500/50 rounded-xl p-6 mb-8">
+        <div className="bg-gradient-to-r from-blue-600/20 to-blue-600/20 border-2 border-blue-500/50 rounded-xl p-6 mb-8">
           <h2 className="text-xl font-bold text-white mb-3 font-display">Quick Answer: Top 10 Project Manager Resume Keywords</h2>
           <p className="text-gray-300 mb-4">The most important keywords for a project manager resume in 2026 are:</p>
           <ol className="text-gray-200 space-y-1 list-decimal list-inside">
@@ -451,7 +451,7 @@ export const BLOG_POSTS = [
           <h3 className="text-lg font-bold text-white mb-4 font-display">Complete Hard Skills Keyword List</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <p className="text-purple-400 font-semibold mb-2">Planning & Scheduling</p>
+              <p className="text-blue-400 font-semibold mb-2">Planning & Scheduling</p>
               <ol className="text-gray-300 text-sm space-y-1 list-decimal list-inside">
                 <li>Project Planning</li>
                 <li>Resource Allocation</li>
@@ -530,7 +530,7 @@ export const BLOG_POSTS = [
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 my-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <p className="text-purple-400 font-semibold mb-2">Project Management</p>
+              <p className="text-blue-400 font-semibold mb-2">Project Management</p>
               <ul className="text-gray-300 text-sm space-y-1">
                 <li>• Jira</li>
                 <li>• Asana</li>
@@ -650,10 +650,10 @@ export const BLOG_POSTS = [
         <SectionDivider />
 
         {/* CTA before FAQ */}
-        <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 border border-purple-500/50 rounded-xl p-8 my-8 text-center">
+        <div className="bg-gradient-to-r from-blue-600/30 to-blue-600/30 border border-blue-500/50 rounded-xl p-8 my-8 text-center">
           <h3 className="text-2xl font-bold text-white mb-3 font-display">Check Your Resume Now</h3>
           <p className="text-gray-300 mb-6">See exactly which keywords you're missing. Get your free ATS compatibility report in 10 seconds.</p>
-          <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-full transition-all">
+          <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-full transition-all">
             Scan My Resume Free
           </a>
           <p className="text-gray-400 text-sm mt-3">No signup required • 2 free scans daily</p>
@@ -688,19 +688,19 @@ export const BLOG_POSTS = [
         <div className="bg-white/5 border border-white/10 rounded-xl p-6 my-8">
           <h3 className="text-lg font-bold text-white mb-4 font-display">Related PM Resume Guides</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <a href="/blog/agile-project-manager-resume-keywords" className="block p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-purple-500 transition-colors">
+            <a href="/blog/agile-project-manager-resume-keywords" className="block p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-blue-500 transition-colors">
               <p className="text-white font-semibold">Agile PM Resume Keywords</p>
               <p className="text-gray-400 text-sm">Scrum, Kanban, SAFe terminology</p>
             </a>
-            <a href="/blog/it-project-manager-resume-keywords" className="block p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-purple-500 transition-colors">
+            <a href="/blog/it-project-manager-resume-keywords" className="block p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-blue-500 transition-colors">
               <p className="text-white font-semibold">IT PM Resume Keywords</p>
               <p className="text-gray-400 text-sm">SDLC, Cloud, DevOps terms</p>
             </a>
-            <a href="/blog/how-to-beat-ats-2025" className="block p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-purple-500 transition-colors">
+            <a href="/blog/how-to-beat-ats-2025" className="block p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-blue-500 transition-colors">
               <p className="text-white font-semibold">How to Beat the ATS in 2025</p>
               <p className="text-gray-400 text-sm">Complete ATS optimization guide</p>
             </a>
-            <a href="/blog/software-engineer-resume-hiring-managers" className="block p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-purple-500 transition-colors">
+            <a href="/blog/software-engineer-resume-hiring-managers" className="block p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-blue-500 transition-colors">
               <p className="text-white font-semibold">Software Engineer Keywords</p>
               <p className="text-gray-400 text-sm">Technical resume optimization</p>
             </a>
@@ -952,7 +952,7 @@ export const BLOG_POSTS = [
           <h3 className="text-lg font-bold text-white mb-4 font-display">Essential Scrum Keywords</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-purple-400 font-semibold mb-2">Ceremonies & Artifacts</p>
+              <p className="text-blue-400 font-semibold mb-2">Ceremonies & Artifacts</p>
               <ul className="text-gray-300 text-sm space-y-1">
                 <li>• Sprint Planning</li>
                 <li>• Daily Standup / Daily Scrum</li>
@@ -1043,10 +1043,10 @@ export const BLOG_POSTS = [
 
         <SectionDivider />
 
-        <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 border border-purple-500/50 rounded-xl p-8 my-8 text-center">
+        <div className="bg-gradient-to-r from-blue-600/30 to-blue-600/30 border border-blue-500/50 rounded-xl p-8 my-8 text-center">
           <h3 className="text-2xl font-bold text-white mb-3 font-display">Check Your Agile Resume Now</h3>
           <p className="text-gray-300 mb-6">See which Agile keywords you're missing. Free ATS compatibility report in 10 seconds.</p>
-          <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-full transition-all">
+          <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-full transition-all">
             Scan My Resume Free
           </a>
         </div>
@@ -1132,7 +1132,7 @@ export const BLOG_POSTS = [
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 my-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <p className="text-purple-400 font-semibold mb-2">SDLC Phases</p>
+              <p className="text-blue-400 font-semibold mb-2">SDLC Phases</p>
               <ul className="text-gray-300 text-sm space-y-1">
                 <li>• Requirements Gathering</li>
                 <li>• System Design</li>
@@ -1252,10 +1252,10 @@ export const BLOG_POSTS = [
 
         <SectionDivider />
 
-        <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 border border-purple-500/50 rounded-xl p-8 my-8 text-center">
+        <div className="bg-gradient-to-r from-blue-600/30 to-blue-600/30 border border-blue-500/50 rounded-xl p-8 my-8 text-center">
           <h3 className="text-2xl font-bold text-white mb-3 font-display">Check Your IT PM Resume Now</h3>
           <p className="text-gray-300 mb-6">See which technical keywords you're missing. Free ATS compatibility report in 10 seconds.</p>
-          <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-full transition-all">
+          <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-full transition-all">
             Scan My Resume Free
           </a>
         </div>
@@ -1360,37 +1360,37 @@ export const BLOG_POSTS = [
       
       <p>Beyond the basics, here are insider strategies that separate ATS-optimized nursing resumes from the rest:</p>
 
-      <div class="bg-purple-50/10 border-l-4 border-purple-500 rounded-r-lg p-6 my-8 backdrop-blur-sm">
+      <div class="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-8 backdrop-blur-sm">
         <h3 class="font-bold text-white text-lg mb-4 font-display">Insider Secret #1: Put License Numbers at the Top</h3>
         <p class="text-gray-300 leading-relaxed">Your RN license number should be in your header, right after your name. Format: "Jane Smith, RN, BSN | RN License #: [Number] | BLS, ACLS Certified". This ensures ATS systems and hiring managers immediately see you're licensed—a non-negotiable requirement.</p>
       </div>
 
-      <div class="bg-purple-50/10 border-l-4 border-purple-500 rounded-r-lg p-6 my-8 backdrop-blur-sm">
+      <div class="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-8 backdrop-blur-sm">
         <h3 class="font-bold text-white text-lg mb-4 font-display">Insider Secret #2: Use Both Full Names and Abbreviations for Certifications</h3>
         <p class="text-gray-300 leading-relaxed">Write certifications both ways: "Basic Life Support (BLS)" and "Advanced Cardiac Life Support (ACLS)". ATS systems may search for either format, and this ensures you match both. Also include expiration dates if they're current: "BLS (exp. 12/2025)".</p>
       </div>
 
-      <div class="bg-purple-50/10 border-l-4 border-purple-500 rounded-r-lg p-6 my-8 backdrop-blur-sm">
+      <div class="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-8 backdrop-blur-sm">
         <h3 class="font-bold text-white text-lg mb-4 font-display">Insider Secret #3: Name Specific EMR Systems</h3>
         <p class="text-gray-300 leading-relaxed">Don't just say "EMR experience." Name the system: "Epic," "Cerner," "Meditech." Different hospitals use different systems, and hiring managers want to know if you'll need extensive training. If you've used multiple systems, list them all.</p>
       </div>
 
-      <div class="bg-purple-50/10 border-l-4 border-purple-500 rounded-r-lg p-6 my-8 backdrop-blur-sm">
+      <div class="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-8 backdrop-blur-sm">
         <h3 class="font-bold text-white text-lg mb-4 font-display">Insider Secret #4: Quantify Everything—Even If It's an Estimate</h3>
         <p class="text-gray-300 leading-relaxed">Nurses often forget to quantify. Even if you don't have exact numbers, use ranges: "Managed 4-6 patients per shift" is more powerful than "Managed patients." Include patient ratios, unit size, years of experience, number of preceptees, quality metrics—anything that shows scale and impact.</p>
       </div>
 
-      <div class="bg-purple-50/10 border-l-4 border-purple-500 rounded-r-lg p-6 my-8 backdrop-blur-sm">
+      <div class="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-8 backdrop-blur-sm">
         <h3 class="font-bold text-white text-lg mb-4 font-display">Insider Secret #5: Never List Expired Certifications</h3>
         <p class="text-gray-300 leading-relaxed">This is a critical error. If your BLS, ACLS, or other certifications have expired, remove them immediately. Listing expired certifications signals carelessness—a red flag in healthcare. Only list current, valid certifications.</p>
       </div>
 
-      <div class="bg-purple-50/10 border-l-4 border-purple-500 rounded-r-lg p-6 my-8 backdrop-blur-sm">
+      <div class="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-8 backdrop-blur-sm">
         <h3 class="font-bold text-white text-lg mb-4 font-display">Insider Secret #6: Mirror the Job Description's Exact Language</h3>
         <p class="text-gray-300 leading-relaxed">Copy exact phrases from the job description. If they say "patient assessment," use that exact phrase—not "patient evaluation" or "clinical assessment." ATS systems match exact wording, so mirror their language precisely. This is especially important for specialty-specific terms.</p>
       </div>
 
-      <div class="bg-purple-50/10 border-l-4 border-purple-500 rounded-r-lg p-6 my-8 backdrop-blur-sm">
+      <div class="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-8 backdrop-blur-sm">
         <h3 class="font-bold text-white text-lg mb-4 font-display">Insider Secret #7: Test Your Resume's Parse Rate Before Submitting</h3>
         <p class="text-gray-300 leading-relaxed">Before submitting to any hospital, test how well ATS systems can read your resume. Tools like ResumeAnalyzer AI can show you your parse rate and identify formatting issues that might cause problems. Aim for 95%+ parse rate. Healthcare ATS systems are notoriously strict—test first, submit second.</p>
       </div>
@@ -1429,7 +1429,7 @@ export const BLOG_POSTS = [
       
       <p>Focus on your clinical strengths, your measurable impact, and your commitment to patient care. These are the elements that set exceptional nursing resumes apart from the hundreds of generic applications that flood hiring managers' inboxes every day.</p>
       
-      <div class="bg-gradient-to-r from-purple-500/20 to-blue-600/20 border border-purple-500/30 rounded-lg p-8 my-8">
+      <div class="bg-gradient-to-r from-blue-500/20 to-blue-600/20 border border-blue-500/30 rounded-lg p-8 my-8">
         <h3 class="text-2xl font-bold text-white mb-4 font-display">Ready to Ensure Your Nursing Resume Passes ATS Screening?</h3>
         <p class="text-gray-300 mb-6 leading-relaxed">Don't guess whether your resume will pass ATS screening or catch a Nurse Manager's attention. Use <strong>ResumeAnalyzer AI</strong> to scan your resume against specific nursing job descriptions right now. Get instant feedback on keyword optimization, ATS compatibility, healthcare-specific formatting, and areas for improvement—all in under 2 minutes.</p>
         <p class="text-white font-bold text-lg">Test your nursing resume's ATS compatibility now and see if it passes the screening test.</p>
@@ -1533,7 +1533,7 @@ export const BLOG_POSTS = [
         </div>
 
         <h3>Certifications & Credentials</h3>
-        <div className="bg-purple-50/10 border-l-4 border-purple-500 rounded-r-lg p-6 my-6">
+        <div className="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-6">
           <ul className="space-y-2 text-gray-300">
             <li>• <strong>CFA</strong> - Chartered Financial Analyst</li>
             <li>• <strong>CPA</strong> - Certified Public Accountant</li>
@@ -1560,7 +1560,7 @@ export const BLOG_POSTS = [
           Finance is a numbers game. Every bullet should include metrics: deal sizes, portfolio values, forecast accuracy %, cost savings, revenue impact. Hiring managers want to see you think in numbers.
         </InsiderTip>
 
-        <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 border border-purple-500/50 rounded-xl p-8 my-8 text-center">
+        <div className="bg-gradient-to-r from-blue-600/30 to-blue-600/30 border border-blue-500/50 rounded-xl p-8 my-8 text-center">
           <h3 className="text-2xl font-bold text-white mb-3 font-display">Check Your Finance Resume Now</h3>
           <p className="text-gray-300 mb-6">See which keywords you're missing. Free ATS compatibility report in 10 seconds.</p>
           <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold rounded-full transition-all">
@@ -1655,7 +1655,7 @@ export const BLOG_POSTS = [
         </div>
 
         <h3>Tools & Technology</h3>
-        <div className="bg-purple-50/10 border-l-4 border-purple-500 rounded-r-lg p-6 my-6">
+        <div className="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-6">
           <ul className="grid grid-cols-2 gap-2 text-gray-300">
             <li>• Salesforce</li>
             <li>• HubSpot</li>
@@ -1719,7 +1719,7 @@ export const BLOG_POSTS = [
     content: () => (
       <>
         {/* Quick Answer Box */}
-        <div className="bg-gradient-to-r from-pink-600/20 to-purple-600/20 border-2 border-pink-500/50 rounded-xl p-6 mb-8">
+        <div className="bg-gradient-to-r from-pink-600/20 to-blue-600/20 border-2 border-pink-500/50 rounded-xl p-6 mb-8">
           <h2 className="text-xl font-bold text-white mb-3 font-display">Quick Answer: Top 10 Graphic Designer Resume Keywords</h2>
           <ol className="text-gray-200 space-y-1 list-decimal list-inside">
             <li><strong>Adobe Creative Suite</strong> - Industry standard</li>
@@ -1763,7 +1763,7 @@ export const BLOG_POSTS = [
         </div>
 
         <h3>Design Skills Keywords</h3>
-        <div className="bg-purple-50/10 border-l-4 border-purple-500 rounded-r-lg p-6 my-6">
+        <div className="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-6">
           <ul className="grid grid-cols-2 gap-2 text-gray-300">
             <li>• Brand Identity</li>
             <li>• Visual Design</li>
@@ -1800,10 +1800,10 @@ export const BLOG_POSTS = [
           Create two versions of your resume: 1) An ATS-optimized single-column version for online applications, and 2) A beautifully designed PDF for direct emails and in-person interviews. Always submit the ATS version through job portals.
         </InsiderTip>
 
-        <div className="bg-gradient-to-r from-pink-600/30 to-purple-600/30 border border-pink-500/50 rounded-xl p-8 my-8 text-center">
+        <div className="bg-gradient-to-r from-pink-600/30 to-blue-600/30 border border-pink-500/50 rounded-xl p-8 my-8 text-center">
           <h3 className="text-2xl font-bold text-white mb-3 font-display">Check Your Design Resume Now</h3>
           <p className="text-gray-300 mb-6">See which keywords you're missing. Free ATS compatibility report in 10 seconds.</p>
-          <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold rounded-full transition-all">
+          <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-pink-500 to-blue-600 hover:from-pink-600 hover:to-blue-700 text-white font-bold rounded-full transition-all">
             Scan My Resume Free
           </a>
         </div>
@@ -2022,10 +2022,10 @@ export const BLOG_POSTS = [
           <li>• <strong>Experimentation Design</strong> - A/B testing and statistical rigor</li>
         </ul>
 
-        <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 border border-purple-500/50 rounded-xl p-8 my-8 text-center">
+        <div className="bg-gradient-to-r from-blue-600/30 to-blue-600/30 border border-blue-500/50 rounded-xl p-8 my-8 text-center">
           <h3 className="text-2xl font-bold text-white mb-3 font-display">Check Your Data Science Resume</h3>
           <p className="text-gray-300 mb-6">See which keywords you're missing. Free analysis in 10 seconds.</p>
-          <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white font-bold rounded-full transition-all">
+          <a href="/guest-analyze" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-full transition-all">
             Scan My Resume Free
           </a>
         </div>
@@ -2172,7 +2172,7 @@ export const BLOG_POSTS = [
           </ul>
         </div>
 
-        <div className="bg-purple-50/10 border-l-4 border-purple-500 rounded-r-lg p-6 my-8">
+        <div className="bg-blue-50/10 border-l-4 border-blue-500 rounded-r-lg p-6 my-8">
           <h3 className="font-bold text-white text-lg mb-4">Accounting Software</h3>
           <ul className="space-y-2 text-gray-300">
             <li>• <strong>ERP:</strong> SAP, Oracle Financials, NetSuite, Workday, Microsoft Dynamics</li>

@@ -77,7 +77,7 @@ const SettingsPage = ({ user }) => {
               onClick={() => setActiveTab(tab.id)}
               className={`px-6 py-3 font-medium transition flex items-center gap-2 whitespace-nowrap relative z-10 ${
                 activeTab === tab.id
-                  ? 'text-purple-400 border-b-2 border-purple-400'
+                  ? 'text-blue-400 border-b-2 border-blue-400'
                   : 'text-gray-400 hover:text-white'
               }`}
             >

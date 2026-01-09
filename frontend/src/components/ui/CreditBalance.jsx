@@ -105,7 +105,7 @@ const CreditBalance = ({ credits = 0, tier = 'free', showUpgrade = true, size = 
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => navigate('/pricing')}
-          className={`flex items-center gap-1 ${sizeClass.badge} bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full font-semibold hover:shadow-lg transition-shadow`}
+          className={`flex items-center gap-1 ${sizeClass.badge} bg-gradient-to-r from-blue-500 to-pink-500 text-white rounded-full font-semibold hover:shadow-lg transition-shadow`}
         >
           Upgrade
           <TrendingUp className="w-3 h-3" />

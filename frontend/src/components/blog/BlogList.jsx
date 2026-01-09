@@ -42,7 +42,7 @@ const BlogList = () => {
             >
               <SpotlightCard className="rounded-xl p-6 h-full flex flex-col hover:scale-105 transition-transform">
                 <div className="flex-1">
-                  <span className="inline-block px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-xs text-purple-300 mb-3">
+                  <span className="inline-block px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-xs text-blue-300 mb-3">
                     {post.category}
                   </span>
                   <h2 className="text-xl font-bold text-white mb-3 font-display line-clamp-2">
@@ -64,7 +64,7 @@ const BlogList = () => {
                 </div>
                 <Link
                   to={`/blog/${post.slug}`}
-                  className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 font-medium text-sm transition"
+                  className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium text-sm transition"
                 >
                   Read More <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -80,7 +80,7 @@ const BlogList = () => {
           transition={{ delay: 0.5 }}
           className="mt-12"
         >
-          <SpotlightCard className="rounded-xl p-8 bg-gradient-to-r from-purple-500/10 to-blue-600/10 border border-purple-500/20 text-center">
+          <SpotlightCard className="rounded-xl p-8 bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/20 text-center">
             <h2 className="text-2xl font-bold text-white mb-4 font-display">
               Ready to Optimize Your Resume?
             </h2>
@@ -89,7 +89,7 @@ const BlogList = () => {
             </p>
             <Link
               to="/guest-analyze"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold rounded-full transition"
+              className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white font-bold rounded-full transition"
             >
               Analyze Your Resume Free <ArrowRight size={16} />
             </Link>

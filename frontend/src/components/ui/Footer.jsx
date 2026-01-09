@@ -15,7 +15,7 @@ const Footer = () => {
       <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row justify-between items-center mb-12">
           <div className="flex items-center gap-2 mb-6 md:mb-0">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
               <FileText size={18} className="text-white" />
             </div>
             <span className="text-xl font-bold text-white font-display">ResumeAnalyzer AI</span>

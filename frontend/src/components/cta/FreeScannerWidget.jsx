@@ -26,11 +26,11 @@ const FreeScannerWidget = ({
       transition={{ duration: 0.5 }}
     >
       {/* Main Container - Gradient border effect */}
-      <div className="relative rounded-2xl p-[2px] bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
+      <div className="relative rounded-2xl p-[2px] bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-500">
         {/* Inner Container */}
         <div className="relative rounded-2xl bg-slate-900/95 backdrop-blur-sm p-6 md:p-8">
           {/* Background glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-purple-600/10 to-pink-600/10 rounded-2xl pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-blue-600/10 to-cyan-600/10 rounded-2xl pointer-events-none" />
 
           {/* Badge - Top right */}
           <div className="absolute -top-3 right-6 md:right-8">
@@ -48,7 +48,7 @@ const FreeScannerWidget = ({
             {/* Left: Icon/Visual */}
             <div className="flex-shrink-0">
               <motion.div
-                className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/25"
+                className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/25"
                 whileHover={{ scale: 1.05, rotate: 5 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
@@ -87,10 +87,10 @@ const FreeScannerWidget = ({
                   whileTap={{ scale: 0.95 }}
                 >
                   {/* Button gradient background */}
-                  <span className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
+                  <span className="absolute inset-0 bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-500" />
 
                   {/* Shimmer effect */}
-                  <span className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)] opacity-30" />
+                  <span className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#60A5FA_0%,#2563EB_50%,#60A5FA_100%)] opacity-30" />
 
                   {/* Button content */}
                   <span className="relative flex items-center gap-2">

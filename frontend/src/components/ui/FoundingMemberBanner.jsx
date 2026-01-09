@@ -80,13 +80,13 @@ const FoundingMemberBanner = ({ className = '' }) => {
       }}
     >
       {/* Animated gradient border effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 opacity-50 blur-xl" />
+      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-pink-500/20 opacity-50 blur-xl" />
 
       <div className="relative p-5">
         <div className="flex items-start justify-between gap-4 mb-3">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
                 <Users className="w-5 h-5 text-white" />
               </div>
               {urgencyLevel === 'high' && (
@@ -133,7 +133,7 @@ const FoundingMemberBanner = ({ className = '' }) => {
           </div>
           <div className="relative h-2 bg-white/5 rounded-full overflow-hidden border border-white/10">
             <motion.div
-              className="h-full bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"
+              className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-pink-500"
               initial={{ width: 0 }}
               animate={{ width: `${percentClaimed}%` }}
               transition={{ duration: 1.5, ease: 'easeOut' }}

@@ -29,7 +29,7 @@ const EntranceOverlay = ({ onComplete }) => {
         </div>
         <div className="h-1 w-full bg-gray-800 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+            className="h-full bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-500"
             initial={{ x: "-100%" }}
             animate={{ x: "100%" }}
             transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}

@@ -24,7 +24,7 @@ const GuestModeBanner = ({ isGuest, guestCreditsRemaining, timeRemaining, onUpgr
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-gradient-to-r from-purple-600/90 to-cyan-600/90 backdrop-blur-sm border border-purple-400/50 rounded-lg p-4 mb-6"
+      className="bg-gradient-to-r from-blue-600/90 to-cyan-600/90 backdrop-blur-sm border border-blue-400/50 rounded-lg p-4 mb-6"
     >
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between flex-wrap gap-4">
@@ -63,7 +63,7 @@ const GuestModeBanner = ({ isGuest, guestCreditsRemaining, timeRemaining, onUpgr
             </motion.button>
             <motion.button
               onClick={onUpgrade}
-              className="px-4 py-2 rounded-lg bg-white text-purple-600 hover:bg-purple-50 font-semibold text-sm transition-colors flex items-center gap-2"
+              className="px-4 py-2 rounded-lg bg-white text-blue-600 hover:bg-blue-50 font-semibold text-sm transition-colors flex items-center gap-2"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >

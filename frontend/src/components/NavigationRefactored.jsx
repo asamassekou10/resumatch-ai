@@ -47,7 +47,7 @@ const Navigation = ({ token, onLogout, user }) => {
             to={token ? ROUTES.DASHBOARD : ROUTES.LANDING}
             className="text-xl md:text-2xl font-bold tracking-tighter text-white flex items-center gap-2 cursor-pointer group font-display"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
               <FileText size={18} className="text-white" />
             </div>
             <span className="group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-400 transition-all">
@@ -63,7 +63,7 @@ const Navigation = ({ token, onLogout, user }) => {
                 className="text-sm font-medium text-gray-400 hover:text-white transition-colors relative group"
               >
                 Dashboard
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 transition-all duration-300 group-hover:w-full" />
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 group-hover:w-full" />
               </Link>
 
               {/* Market Intelligence Dropdown */}
@@ -82,7 +82,7 @@ const Navigation = ({ token, onLogout, user }) => {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 transition-all duration-300 group-hover:w-full" />
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 group-hover:w-full" />
                 </button>
 
                 <AnimatePresence>
@@ -119,7 +119,7 @@ const Navigation = ({ token, onLogout, user }) => {
                 className="text-sm font-medium text-gray-400 hover:text-white transition-colors relative group"
               >
                 Pricing
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 transition-all duration-300 group-hover:w-full" />
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 group-hover:w-full" />
               </Link>
 
               <UserMenu user={user} onLogout={onLogout} />
@@ -134,29 +134,34 @@ const Navigation = ({ token, onLogout, user }) => {
                 className="text-sm font-medium text-gray-400 hover:text-white transition-colors relative group"
               >
                 Home
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 transition-all duration-300 group-hover:w-full" />
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 group-hover:w-full" />
+              </Link>
+              <Link
+                to="/blog"
+                className="text-sm font-medium text-gray-400 hover:text-white transition-colors relative group"
+              >
+                Blog
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 group-hover:w-full" />
               </Link>
               <Link
                 to={ROUTES.PRICING}
                 className="text-sm font-medium text-gray-400 hover:text-white transition-colors relative group"
               >
                 Pricing
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 transition-all duration-300 group-hover:w-full" />
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 group-hover:w-full" />
               </Link>
-              <div className="flex items-center gap-4 ml-4">
-                <Link
-                  to={ROUTES.LOGIN}
-                  className="text-white text-sm font-medium hover:text-blue-400 transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  to={ROUTES.REGISTER}
-                  className="bg-white text-black px-5 py-2 rounded-full text-sm font-bold hover:bg-gray-200 transition-all transform hover:scale-105 active:scale-95 duration-200 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)]"
-                >
-                  Sign Up
-                </Link>
-              </div>
+              <Link
+                to={ROUTES.LOGIN}
+                className="text-white text-sm font-medium hover:text-blue-400 transition-colors"
+              >
+                Login
+              </Link>
+              <Link
+                to={ROUTES.REGISTER}
+                className="bg-white text-black px-5 py-2 rounded-full text-sm font-bold hover:bg-gray-200 transition-all transform hover:scale-105 active:scale-95 duration-200 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)]"
+              >
+                Sign Up
+              </Link>
             </div>
           )}
 

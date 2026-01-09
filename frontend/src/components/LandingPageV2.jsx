@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, Star, Quote, TrendingUp, BookOpen } from 'lucide-react';
+import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, Star, Quote, TrendingUp, BookOpen, Code, Stethoscope, DollarSign, GraduationCap, Palette, Heart, Globe, Clipboard, ChevronDown, ChevronUp } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import ShimmerButton from './ui/ShimmerButton';
@@ -47,6 +47,7 @@ const CountUp = ({ from = 0, to, duration = 2, suffix = '' }) => {
 const LandingPageV2 = ({ token }) => {
   const navigate = useNavigate();
   const [showEntrance, setShowEntrance] = useState(true);
+  const [openFAQIndex, setOpenFAQIndex] = useState(null);
 
   // Animation variants
   const fadeInUp = {
@@ -181,7 +182,7 @@ const LandingPageV2 = ({ token }) => {
 
         {/* Background blur elements */}
         <div
-          className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-[100px] opacity-30 z-0 pointer-events-none"
+          className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/30 rounded-full blur-[100px] opacity-30 z-0 pointer-events-none"
         />
         <div
           className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] opacity-30 z-0 pointer-events-none"
@@ -216,7 +217,7 @@ const LandingPageV2 = ({ token }) => {
               custom={1}
             >
               ResumeAnalyzer AI <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 animate-gradient-x">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-500 to-cyan-500 animate-gradient-x">
                 Free ATS Resume Scanner & Optimizer
               </span>
             </motion.h1>
@@ -324,7 +325,7 @@ const LandingPageV2 = ({ token }) => {
                 </div>
               </div>
               <div className="col-span-1 space-y-4 relative z-10">
-                <div className="h-24 w-full bg-gradient-to-br from-purple-900/40 to-blue-900/40 rounded border border-white/10 flex items-center justify-center flex-col group hover:border-purple-500/50 transition-colors">
+                <div className="h-24 w-full bg-gradient-to-br from-blue-900/40 to-blue-900/40 rounded border border-white/10 flex items-center justify-center flex-col group hover:border-blue-500/50 transition-colors">
                   <Zap className="text-yellow-400 mb-2 group-hover:scale-110 transition-transform" />
                   <span className="text-xs text-gray-400">ATS Compatible</span>
                 </div>
@@ -372,7 +373,7 @@ const LandingPageV2 = ({ token }) => {
                 >
                   <SpotlightCard className="rounded-2xl p-8 h-full">
                     <motion.div
-                      className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4"
+                      className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4"
                       whileHover={{ scale: 1.1, rotate: 5 }}
                     >
                       <IconComponent className="w-6 h-6 text-white" />
@@ -417,21 +418,10 @@ const LandingPageV2 = ({ token }) => {
                 variants={fadeInUp}
                 custom={i}
               >
-                {/* Connector Line */}
-                {i < steps.length - 1 && (
-                  <motion.div
-                    className="hidden lg:block absolute top-24 left-[50%] w-[calc(100%+24px)] h-1 bg-gradient-to-r from-blue-500 to-purple-600 z-0"
-                    initial={{ scaleX: 0 }}
-                    whileInView={{ scaleX: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8, delay: i * 0.1 }}
-                    style={{ transformOrigin: 'left' }}
-                  />
-                )}
 
                 <SpotlightCard className="rounded-2xl p-8 h-full relative z-10">
                   <motion.div
-                    className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4 mx-auto"
+                    className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mb-4 mx-auto"
                     whileHover={{ scale: 1.1 }}
                   >
                     <span className="text-2xl font-bold text-white">{step.number}</span>
@@ -447,133 +437,6 @@ const LandingPageV2 = ({ token }) => {
         </div>
       </div>
 
-      {/* Stats Section */}
-      <div className="py-12 px-4 sm:px-6 lg:px-8 bg-white/5 border-y border-white/10 relative z-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="relative z-10"
-            >
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display relative z-10">
-                <CountUp to={10000} />+
-              </div>
-              <p className="text-gray-400 relative z-10">Resumes Analyzed</p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative z-10"
-            >
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display relative z-10">
-                <CountUp to={92} suffix="%" />
-              </div>
-              <p className="text-gray-400 relative z-10">Success Rate</p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="relative z-10"
-            >
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display relative z-10">
-                <CountUp to={500} />+
-              </div>
-              <p className="text-gray-400 relative z-10">Companies Hiring</p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="relative z-10"
-            >
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2 font-display relative z-10">
-                <CountUp to={4} suffix=".8" />
-                <Star className="inline w-6 h-6 text-yellow-400 fill-yellow-400 ml-2" />
-              </div>
-              <p className="text-gray-400 relative z-10">Average Rating</p>
-            </motion.div>
-          </div>
-        </div>
-      </div>
-
-      {/* Testimonials Section */}
-      <div className="py-12 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            className="text-center mb-16 relative z-10"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeInUp}
-            custom={0}
-          >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 font-display relative z-10">
-              Success Stories
-            </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto relative z-10">
-              Join thousands of professionals who accelerated their careers
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Sarah Johnson",
-                role: "Software Engineer",
-                text: "After using ResumeAnalyzer, I got 3 interviews in one week. The keyword optimization is a game changer.",
-                stars: 5
-              },
-              {
-                name: "David Chen",
-                role: "Product Manager",
-                text: "The scoring system gave me a clear roadmap. It's like having a professional career coach in your pocket.",
-                stars: 5
-              },
-              {
-                name: "Elena Rodriguez",
-                role: "Marketing Director",
-                text: "Simple, fast, and effective. I didn't realize my formatting was breaking ATS parsers until I ran the scan.",
-                stars: 5
-              }
-            ].map((testimonial, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <SpotlightCard className="p-8 rounded-2xl h-full group">
-                  <Quote className="text-purple-500 mb-4 opacity-50 group-hover:opacity-100 transition-opacity" size={32} />
-                  <p className="text-gray-300 mb-6 leading-relaxed">"{testimonial.text}"</p>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold font-display text-lg">
-                      {testimonial.name[0]}
-                    </div>
-                    <div>
-                      <h4 className="text-white font-bold text-sm font-display">{testimonial.name}</h4>
-                      <p className="text-xs text-gray-500">{testimonial.role}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-1 mt-4 text-yellow-500">
-                    {[...Array(testimonial.stars)].map((_, j) => (
-                      <Star key={j} size={14} fill="currentColor" />
-                    ))}
-                  </div>
-                </SpotlightCard>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* Trusted By Section - Marquee */}
       <div className="py-12 bg-black border-y border-white/5 overflow-hidden relative z-10">
@@ -598,7 +461,7 @@ const LandingPageV2 = ({ token }) => {
 
       {/* Final CTA Section */}
       <div className="py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-purple-900/20 z-0 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-blue-900/20 z-0 pointer-events-none" />
         <motion.div
           className="max-w-4xl mx-auto text-center relative z-10"
           initial="hidden"
@@ -641,22 +504,46 @@ const LandingPageV2 = ({ token }) => {
             </p>
           </motion.div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {homepageFAQs.map((faq, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * 0.05 }}
               >
-                <SpotlightCard className="rounded-xl p-6">
-                  <h3 className="text-lg font-bold text-white mb-3 font-display">
-                    {faq.question}
-                  </h3>
-                  <p className="text-gray-300 leading-relaxed">
-                    {faq.answer}
-                  </p>
+                <SpotlightCard className="rounded-xl overflow-hidden">
+                  <button
+                    onClick={() => setOpenFAQIndex(openFAQIndex === index ? null : index)}
+                    className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors"
+                  >
+                    <h3 className="text-lg font-bold text-white font-display pr-4">
+                      {faq.question}
+                    </h3>
+                    {openFAQIndex === index ? (
+                      <ChevronUp className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                    )}
+                  </button>
+                  <AnimatePresence>
+                    {openFAQIndex === index && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-6 pb-6 pt-0">
+                          <p className="text-gray-300 leading-relaxed">
+                            {faq.answer}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </SpotlightCard>
               </motion.div>
             ))}
@@ -675,9 +562,9 @@ const LandingPageV2 = ({ token }) => {
             variants={fadeInUp}
             custom={0}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 mb-4">
-              <BookOpen className="w-4 h-4 text-purple-400" />
-              <span className="text-sm font-medium text-purple-300">Resume Tips & Guides</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
+              <BookOpen className="w-4 h-4 text-blue-400" />
+              <span className="text-sm font-medium text-blue-300">Resume Tips & Guides</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 font-display">
               Expert Resume Advice by Industry
@@ -698,17 +585,17 @@ const LandingPageV2 = ({ token }) => {
                 transition={{ delay: index * 0.05 }}
               >
                 <Link to={`/blog/${post.slug}`}>
-                  <SpotlightCard className="rounded-xl p-5 h-full hover:border-purple-500/50 transition-all group">
+                  <SpotlightCard className="rounded-xl p-5 h-full hover:border-blue-500/50 transition-all group">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:from-purple-500/30 group-hover:to-blue-500/30 transition-all">
-                        <FileText className="w-5 h-5 text-purple-400" />
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:from-blue-500/30 group-hover:to-blue-500/30 transition-all">
+                        <FileText className="w-5 h-5 text-blue-400" />
                       </div>
                       <div className="flex-grow min-w-0">
-                        <h3 className="text-white font-semibold text-sm mb-1 group-hover:text-purple-300 transition-colors line-clamp-2">
+                        <h3 className="text-white font-semibold text-sm mb-1 group-hover:text-blue-300 transition-colors line-clamp-2">
                           {post.title.replace(' | Free ATS Checker', '').replace(' | ResumeAnalyzer AI', '')}
                         </h3>
                         <p className="text-gray-500 text-xs line-clamp-2">{post.excerpt}</p>
-                        <span className="text-purple-400 text-xs mt-2 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+                        <span className="text-blue-400 text-xs mt-2 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
                           Read more <ArrowRight className="w-3 h-3" />
                         </span>
                       </div>
@@ -728,7 +615,7 @@ const LandingPageV2 = ({ token }) => {
           >
             <Link
               to="/blog"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white font-medium hover:bg-white/10 hover:border-purple-500/50 transition-all group"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white font-medium hover:bg-white/10 hover:border-blue-500/50 transition-all group"
             >
               View All {BLOG_POSTS.length} Articles
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -761,38 +648,43 @@ const LandingPageV2 = ({ token }) => {
           {/* Job Roles Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {[
-              { slug: 'software-engineer', label: 'Software Engineer', icon: '💻' },
-              { slug: 'nursing-student', label: 'Nursing Student', icon: '🩺' },
-              { slug: 'marketing-manager', label: 'Marketing Manager', icon: '📊' },
-              { slug: 'data-analyst', label: 'Data Analyst', icon: '📈' },
-              { slug: 'project-manager', label: 'Project Manager', icon: '📋' },
-              { slug: 'accountant', label: 'Accountant', icon: '💰' },
-              { slug: 'teacher', label: 'Teacher', icon: '📚' },
-              { slug: 'sales-representative', label: 'Sales Rep', icon: '🤝' },
-              { slug: 'graphic-designer', label: 'Graphic Designer', icon: '🎨' },
-              { slug: 'registered-nurse', label: 'Registered Nurse', icon: '👨‍⚕️' },
-              { slug: 'web-developer', label: 'Web Developer', icon: '🌐' },
-              { slug: 'financial-analyst', label: 'Financial Analyst', icon: '💹' }
-            ].map((role, index) => (
-              <motion.div
-                key={role.slug}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.03 }}
-              >
-                <Link to={`/resume-for/${role.slug}`}>
-                  <SpotlightCard className="rounded-lg p-4 h-full hover:border-blue-500/50 transition-all group">
-                    <div className="text-center">
-                      <div className="text-2xl mb-2">{role.icon}</div>
-                      <div className="text-sm font-medium text-white group-hover:text-blue-300 transition-colors">
-                        {role.label}
+              { slug: 'software-engineer', label: 'Software Engineer', icon: Code },
+              { slug: 'nursing-student', label: 'Nursing Student', icon: Stethoscope },
+              { slug: 'marketing-manager', label: 'Marketing Manager', icon: BarChart3 },
+              { slug: 'data-analyst', label: 'Data Analyst', icon: TrendingUp },
+              { slug: 'project-manager', label: 'Project Manager', icon: Clipboard },
+              { slug: 'accountant', label: 'Accountant', icon: DollarSign },
+              { slug: 'teacher', label: 'Teacher', icon: GraduationCap },
+              { slug: 'sales-representative', label: 'Sales Rep', icon: Users },
+              { slug: 'graphic-designer', label: 'Graphic Designer', icon: Palette },
+              { slug: 'registered-nurse', label: 'Registered Nurse', icon: Heart },
+              { slug: 'web-developer', label: 'Web Developer', icon: Globe },
+              { slug: 'financial-analyst', label: 'Financial Analyst', icon: TrendingUp }
+            ].map((role, index) => {
+              const IconComponent = role.icon;
+              return (
+                <motion.div
+                  key={role.slug}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.03 }}
+                >
+                  <Link to={`/resume-for/${role.slug}`}>
+                    <SpotlightCard className="rounded-lg p-4 h-full hover:border-blue-500/50 transition-all group">
+                      <div className="text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          <IconComponent className="w-8 h-8 text-blue-400 group-hover:text-blue-300 transition-colors" />
+                        </div>
+                        <div className="text-sm font-medium text-white group-hover:text-blue-300 transition-colors">
+                          {role.label}
+                        </div>
                       </div>
-                    </div>
-                  </SpotlightCard>
-                </Link>
-              </motion.div>
-            ))}
+                    </SpotlightCard>
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* View All Link */}

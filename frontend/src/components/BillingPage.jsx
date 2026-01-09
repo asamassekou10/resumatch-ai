@@ -85,7 +85,7 @@ const BillingPage = ({ user }) => {
       <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
         <div className="text-center relative z-10">
-          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-300 text-lg relative z-10">Loading billing information...</p>
         </div>
       </div>
@@ -130,7 +130,7 @@ const BillingPage = ({ user }) => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Current Plan - Large Card */}
           <div className="lg:col-span-2 relative z-10">
-            <SpotlightCard className="bg-gradient-to-br from-purple-500/10 to-blue-600/10 border border-purple-500/20 rounded-2xl p-6">
+            <SpotlightCard className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20 rounded-2xl p-6">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

@@ -73,7 +73,7 @@ const TableOfContents = ({ content, slug }) => {
   return (
     <div className="bg-white/5 border border-white/10 rounded-lg p-6 backdrop-blur-sm">
       <div className="flex items-center gap-2 mb-4">
-        <Hash className="w-4 h-4 text-purple-400" />
+        <Hash className="w-4 h-4 text-blue-400" />
         <h3 className="font-bold text-white text-sm uppercase tracking-wide font-display">Table of Contents</h3>
       </div>
       <nav className="space-y-2">
@@ -83,7 +83,7 @@ const TableOfContents = ({ content, slug }) => {
             onClick={() => scrollToHeading(heading.id)}
             className={`block w-full text-left text-sm py-2 px-3 rounded transition-all ${
               activeId === heading.id
-                ? 'bg-purple-500/20 text-purple-300 border-l-2 border-purple-500'
+                ? 'bg-blue-500/20 text-blue-300 border-l-2 border-blue-500'
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
           >

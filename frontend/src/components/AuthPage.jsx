@@ -281,7 +281,7 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
                 <input
                   type="email"
                   placeholder="Email address"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 transition relative z-10"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500/50 transition relative z-10"
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
                 />
@@ -291,7 +291,7 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
                 <input
                   type="password"
                   placeholder="Password"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 transition relative z-10"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500/50 transition relative z-10"
                   value={formData.password}
                   onChange={(e) => {
                     setFormData({...formData, password: e.target.value});
@@ -344,7 +344,7 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
                   <input
                     type="password"
                     placeholder="Confirm Password"
-                    className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 transition relative z-10 ${
+                    className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500/50 transition relative z-10 ${
                       formData.confirmPassword && formData.password !== formData.confirmPassword
                         ? 'border-red-500'
                         : 'border-white/10'
@@ -375,15 +375,15 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
                     id="terms"
                     checked={termsAccepted}
                     onChange={(e) => setTermsAccepted(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-white/20 bg-white/10 text-purple-600 focus:ring-2 focus:ring-purple-500 cursor-pointer"
+                    className="mt-1 w-4 h-4 rounded border-white/20 bg-white/10 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
                   />
                   <label htmlFor="terms" className="text-sm text-gray-300 cursor-pointer">
                     I agree to the{' '}
-                    <a href="/terms" target="_blank" className="text-purple-400 hover:text-purple-300 underline">
+                    <a href="/terms" target="_blank" className="text-blue-400 hover:text-blue-300 underline">
                       Terms of Service
                     </a>
                     {' '}and{' '}
-                    <a href="/privacy" target="_blank" className="text-purple-400 hover:text-purple-300 underline">
+                    <a href="/privacy" target="_blank" className="text-blue-400 hover:text-blue-300 underline">
                       Privacy Policy
                     </a>
                   </label>
@@ -404,7 +404,7 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
                 {isLogin ? "Don't have an account? " : "Already have an account? "}
                 <button
                   onClick={switchMode}
-                  className="text-purple-400 hover:text-purple-300 transition font-medium"
+                  className="text-blue-400 hover:text-blue-300 transition font-medium"
                 >
                   {isLogin ? 'Sign Up' : 'Sign In'}
                 </button>

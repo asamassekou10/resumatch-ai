@@ -21,7 +21,7 @@ const TIER_INFO = {
       'Skills Gap Analysis',
       'Priority Support',
     ],
-    color: 'from-cyan-500 to-purple-600',
+    color: 'from-cyan-500 to-blue-600',
     icon: '⚡',
   },
   elite: {
@@ -111,7 +111,7 @@ const CheckoutForm = ({ tier, clientSecret, onSuccess, onError }) => {
           <div className="border-t border-slate-700 pt-3 mt-3">
             <div className="flex justify-between items-center">
               <span className="text-white font-semibold">Total</span>
-              <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+              <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
                 ${tierInfo.price.toFixed(2)}
               </span>
             </div>
@@ -165,7 +165,7 @@ const CheckoutForm = ({ tier, clientSecret, onSuccess, onError }) => {
       <motion.button
         type="submit"
         disabled={isLoading || !stripe || !elements}
-        className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2"
+        className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         initial={{ opacity: 0, y: 10 }}

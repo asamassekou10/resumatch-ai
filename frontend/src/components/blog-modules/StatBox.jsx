@@ -13,7 +13,7 @@ const StatBox = ({ number, label, color = 'blue' }) => {
   const colorClasses = {
     blue: 'text-blue-400',
     cyan: 'text-cyan-400',
-    purple: 'text-purple-400',
+    purple: 'text-blue-400',
     green: 'text-green-400',
     yellow: 'text-yellow-400',
     red: 'text-red-400',

@@ -464,7 +464,7 @@ const AdminDashboard = ({ token, onLogout, onNavigate }) => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                             user.is_admin
-                              ? 'bg-purple-900/50 text-purple-300 border border-purple-500/30'
+                              ? 'bg-blue-900/50 text-blue-300 border border-blue-500/30'
                               : 'bg-slate-700/50 text-slate-300 border border-slate-600/30'
                           }`}>
                             {user.is_admin ? 'Admin' : 'User'}

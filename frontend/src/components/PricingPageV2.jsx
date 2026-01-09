@@ -247,7 +247,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
             whileHover={{ scale: 1.05 }}
           >
             <motion.div
-              className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full shadow-lg"
+              className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-lg"
               layout
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             />
@@ -257,7 +257,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
           </span>
           {isYearly && (
             <motion.span
-              className="ml-4 px-3 py-1 bg-gradient-to-r from-blue-500/20 to-purple-600/20 text-blue-400 text-xs font-semibold rounded-full border border-blue-500/30"
+              className="ml-4 px-3 py-1 bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-400 text-xs font-semibold rounded-full border border-blue-500/30"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
             >
@@ -295,7 +295,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
               >
                 {plan.highlighted && (
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-600/10 rounded-2xl blur-xl z-0 pointer-events-none"
+                    className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-blue-600/10 rounded-2xl blur-xl z-0 pointer-events-none"
                     animate={{ scale: [1, 1.02, 1] }}
                     transition={{ duration: 3, repeat: Infinity }}
                   />
@@ -304,7 +304,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
                 <SpotlightCard
                   className={`relative h-full rounded-2xl p-8 transition-all duration-300 ${
                     plan.highlighted
-                      ? 'border-2 border-purple-500/50 shadow-2xl shadow-purple-900/20'
+                      ? 'border-2 border-blue-500/50 shadow-2xl shadow-blue-900/20'
                       : ''
                   }`}
                 >
@@ -317,7 +317,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.3 }}
                       >
-                        <span className={`${plan.badge ? 'bg-gradient-to-r from-cyan-600 to-purple-600' : 'bg-purple-600'} text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg`}>
+                        <span className={`${plan.badge ? 'bg-gradient-to-r from-cyan-600 to-blue-600' : 'bg-blue-600'} text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg`}>
                           {plan.badge || 'POPULAR'}
                         </span>
                       </motion.div>
@@ -326,7 +326,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
                     {/* Plan Header */}
                     <div className="flex items-center gap-3 mb-6 relative z-10">
                       <motion.div
-                        className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center"
+                        className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center"
                         whileHover={{ scale: 1.1, rotate: 5 }}
                       >
                         <IconComponent className="w-6 h-6 text-white" />
@@ -435,7 +435,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: j * 0.05 }}
                         >
-                          <CheckCircle size={16} className={plan.highlighted ? 'text-purple-400' : 'text-white'} />
+                          <CheckCircle size={16} className={plan.highlighted ? 'text-blue-400' : 'text-white'} />
                           <span className={`text-sm ${plan.highlighted ? 'text-gray-300' : 'text-gray-400'} relative z-10`}>{feature}</span>
                         </motion.div>
                       ))}

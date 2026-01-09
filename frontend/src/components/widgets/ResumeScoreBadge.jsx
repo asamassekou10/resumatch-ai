@@ -58,8 +58,8 @@ const ResumeScoreBadge = ({
   };
 
   const variantStyles = {
-    dark: 'bg-gradient-to-br from-slate-900 to-purple-900/50 border-purple-500/30',
-    light: 'bg-gradient-to-br from-white to-purple-50 border-purple-200',
+    dark: 'bg-gradient-to-br from-slate-900 to-blue-900/50 border-blue-500/30',
+    light: 'bg-gradient-to-br from-white to-blue-50 border-blue-200',
     minimal: 'bg-transparent border-gray-300'
   };
 
@@ -87,7 +87,7 @@ const ResumeScoreBadge = ({
           <div className={`font-semibold ${textStyles[variant]}`}>
             ATS Score: {score}/100
           </div>
-          <div className="text-purple-400 text-sm flex items-center gap-1">
+          <div className="text-blue-400 text-sm flex items-center gap-1">
             <Award className="w-3 h-3" />
             <span>Verified by ResumeAnalyzer AI</span>
           </div>
@@ -107,7 +107,7 @@ const ResumeScoreBadge = ({
             <h4 className="text-white font-semibold text-sm">Embed This Badge</h4>
             <button
               onClick={handleCopy}
-              className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-lg transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors"
             >
               {copied ? (
                 <>

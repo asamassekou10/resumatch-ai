@@ -185,7 +185,7 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
             {user && (
               <div className="p-4 border-b border-white/10 bg-white/5">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg">
                     {user.name?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -234,7 +234,7 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
                                 onClick={() => handleNavClick(child.route)}
                                 className={`w-full text-left px-4 py-2 rounded-lg transition ${
                                   isActiveRoute(child.route)
-                                    ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                                     : 'text-gray-300 hover:text-white hover:bg-white/5'
                                 }`}
                               >
@@ -251,7 +251,7 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
                       onClick={() => handleNavClick(item.route)}
                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${
                         isActiveRoute(item.route)
-                          ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white border border-purple-500/30'
+                          ? 'bg-gradient-to-r from-blue-500/20 to-blue-500/20 text-white border border-blue-500/30'
                           : 'text-gray-300 hover:text-white hover:bg-white/10'
                       }`}
                     >

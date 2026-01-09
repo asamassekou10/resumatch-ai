@@ -115,7 +115,7 @@ const Dashboard = ({ userProfile }) => {
       <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0 pointer-events-none" />
         <div className="text-center relative z-10">
-          <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-300 relative z-10">Loading dashboard...</p>
         </div>
       </div>
@@ -172,7 +172,7 @@ const Dashboard = ({ userProfile }) => {
             {userProfile.is_admin && (
               <button
                 onClick={() => navigate(ROUTES.ADMIN_ANALYTICS)}
-                className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg hover:shadow-purple-500/25 flex items-center gap-2"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg hover:shadow-blue-500/25 flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -188,7 +188,7 @@ const Dashboard = ({ userProfile }) => {
                 </span>
               </div>
             </div>
-            <div className={`backdrop-blur-sm border rounded-xl px-4 py-2 ${userProfile.subscription_tier === 'elite' ? 'bg-gradient-to-r from-amber-500/20 to-orange-600/20 border-amber-500/30' : (userProfile.subscription_tier === 'pro' || userProfile.subscription_tier === 'pro_founding') ? 'bg-gradient-to-r from-cyan-500/20 to-purple-600/20 border-cyan-500/30' : 'bg-white/10 border-white/20'}`}>
+            <div className={`backdrop-blur-sm border rounded-xl px-4 py-2 ${userProfile.subscription_tier === 'elite' ? 'bg-gradient-to-r from-amber-500/20 to-orange-600/20 border-amber-500/30' : (userProfile.subscription_tier === 'pro' || userProfile.subscription_tier === 'pro_founding') ? 'bg-gradient-to-r from-cyan-500/20 to-blue-600/20 border-cyan-500/30' : 'bg-white/10 border-white/20'}`}>
               <div className="flex items-center gap-2">
                 <svg className={`w-4 h-4 ${userProfile.subscription_tier === 'elite' ? 'text-amber-400' : (userProfile.subscription_tier === 'pro' || userProfile.subscription_tier === 'pro_founding') ? 'text-cyan-400' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -199,7 +199,7 @@ const Dashboard = ({ userProfile }) => {
             {userProfile.subscription_tier === 'free' && (
               <button
                 onClick={() => navigate(ROUTES.PRICING)}
-                className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg hover:shadow-cyan-500/25"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg hover:shadow-cyan-500/25"
               >
                 Upgrade Now
               </button>
@@ -284,7 +284,7 @@ const Dashboard = ({ userProfile }) => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-purple-600/90 to-cyan-600/90 backdrop-blur-sm border border-purple-400/50 rounded-xl p-4 md:p-5 mb-6"
+          className="bg-gradient-to-r from-blue-600/90 to-cyan-600/90 backdrop-blur-sm border border-blue-400/50 rounded-xl p-4 md:p-5 mb-6"
         >
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
@@ -323,7 +323,7 @@ const Dashboard = ({ userProfile }) => {
                   alert('Failed to activate trial. Please try again.');
                 }
               }}
-              className="px-4 py-2 rounded-lg bg-white text-purple-600 hover:bg-purple-50 font-semibold text-sm transition-all hover:scale-105 active:scale-95"
+              className="px-4 py-2 rounded-lg bg-white text-blue-600 hover:bg-blue-50 font-semibold text-sm transition-all hover:scale-105 active:scale-95"
             >
               Activate Free Trial
             </button>
@@ -363,7 +363,7 @@ const Dashboard = ({ userProfile }) => {
       <div className="flex gap-4">
         <button
           onClick={() => navigate(ROUTES.ANALYZE)}
-          className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-cyan-500/25 flex items-center gap-2"
+          className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-cyan-500/25 flex items-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -383,10 +383,10 @@ const Dashboard = ({ userProfile }) => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-cyan-900/20 via-purple-900/20 to-blue-900/20 border border-cyan-500/30 rounded-2xl p-8 md:p-12 mb-6"
+          className="bg-gradient-to-br from-cyan-900/20 via-blue-900/20 to-blue-900/20 border border-cyan-500/30 rounded-2xl p-8 md:p-12 mb-6"
         >
           <div className="text-center max-w-2xl mx-auto">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 mb-6">
               <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -403,7 +403,7 @@ const Dashboard = ({ userProfile }) => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button
                 onClick={() => navigate(ROUTES.ANALYZE)}
-                className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white px-8 py-4 rounded-lg font-semibold transition shadow-lg hover:shadow-cyan-500/25 flex items-center gap-2 text-lg"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-8 py-4 rounded-lg font-semibold transition shadow-lg hover:shadow-cyan-500/25 flex items-center gap-2 text-lg"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -423,8 +423,8 @@ const Dashboard = ({ userProfile }) => {
                 <p className="text-gray-400 text-sm">Upload your resume in PDF, DOCX, or TXT format</p>
               </div>
               <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-                <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center mb-4">
+                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
@@ -569,7 +569,7 @@ const Dashboard = ({ userProfile }) => {
               <p className="text-sm mb-4">Create your first analysis to get started!</p>
               <button
                 onClick={() => navigate(ROUTES.ANALYZE)}
-                className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white px-6 py-2 rounded-lg font-semibold transition"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-6 py-2 rounded-lg font-semibold transition"
               >
                 Start Your First Analysis
               </button>

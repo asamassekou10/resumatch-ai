@@ -66,7 +66,7 @@ const Navigation = ({ token, onLogout, user }) => {
                       to={ROUTES.DASHBOARD}
                       className={`px-4 py-2 rounded-lg font-medium transition ${
                         isActive(ROUTES.DASHBOARD)
-                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-500/30'
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30'
                           : 'text-gray-300 hover:text-white hover:bg-white/10'
                       }`}
                     >
@@ -79,7 +79,7 @@ const Navigation = ({ token, onLogout, user }) => {
                         onClick={() => setShowMarketMenu(!showMarketMenu)}
                         className={`px-4 py-2 rounded-lg font-medium transition flex items-center gap-1 ${
                           isMarketRoute
-                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-500/30'
+                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30'
                             : 'text-gray-300 hover:text-white hover:bg-white/10'
                         }`}
                       >
@@ -134,7 +134,7 @@ const Navigation = ({ token, onLogout, user }) => {
                       to={ROUTES.PRICING}
                       className={`px-4 py-2 rounded-lg font-medium transition ${
                         isActive(ROUTES.PRICING)
-                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-500/30'
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30'
                           : 'text-gray-300 hover:text-white hover:bg-white/10'
                       }`}
                     >
@@ -149,7 +149,7 @@ const Navigation = ({ token, onLogout, user }) => {
 
               {/* Logged Out Navigation */}
               {!token && (
-                <div className="hidden md:flex items-center gap-4">
+                <div className="hidden md:flex items-center gap-6">
                   {!isActive(ROUTES.LANDING) && (
                     <Link
                       to={ROUTES.LANDING}
@@ -172,13 +172,13 @@ const Navigation = ({ token, onLogout, user }) => {
                   </Link>
                   <Link
                     to={ROUTES.LOGIN}
-                    className="px-4 py-2 text-gray-300 hover:text-white transition font-medium rounded-lg hover:bg-white/10"
+                    className="text-gray-300 hover:text-white transition font-medium"
                   >
                     Login
                   </Link>
                   <Link
                     to={ROUTES.REGISTER}
-                    className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition"
+                    className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-500/50 transition"
                   >
                     Sign Up
                   </Link>

@@ -86,7 +86,7 @@ const ScoreBreakdown = ({ scoreBreakdown, overallScore }) => {
           <h3 className="text-2xl font-bold text-white font-display">Score Breakdown</h3>
           <button
             onClick={() => setShowFullBreakdown(!showFullBreakdown)}
-            className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1"
+            className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
           >
             {showFullBreakdown ? (
               <>Hide Details <ChevronUp className="w-4 h-4" /></>
@@ -115,7 +115,7 @@ const ScoreBreakdown = ({ scoreBreakdown, overallScore }) => {
               <div className="mt-2 w-full bg-white/10 rounded-full h-1.5">
                 <div
                   className={`h-1.5 rounded-full ${
-                    factor.color === 'purple' ? 'bg-gradient-to-r from-purple-500 to-purple-600' :
+                    factor.color === 'purple' ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
                     factor.color === 'blue' ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
                     factor.color === 'cyan' ? 'bg-gradient-to-r from-cyan-500 to-cyan-600' :
                     factor.color === 'green' ? 'bg-gradient-to-r from-green-500 to-green-600' :

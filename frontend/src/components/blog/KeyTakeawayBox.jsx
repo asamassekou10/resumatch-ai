@@ -11,7 +11,7 @@ const KeyTakeawayBox = ({ children, variant = 'default', title }) => {
     default: 'bg-blue-50/10 border-l-4 border-blue-500',
     warning: 'bg-yellow-50/10 border-l-4 border-yellow-500',
     success: 'bg-green-50/10 border-l-4 border-green-500',
-    info: 'bg-purple-50/10 border-l-4 border-purple-500',
+    info: 'bg-blue-50/10 border-l-4 border-blue-500',
   };
 
   return (

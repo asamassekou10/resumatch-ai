@@ -37,7 +37,7 @@ const UserMenu = ({ user, onLogout }) => {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800 transition"
       >
-        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm">
           {user.name?.charAt(0).toUpperCase() || 'U'}
         </div>
         <div className="hidden md:block text-left">
@@ -55,7 +55,7 @@ const UserMenu = ({ user, onLogout }) => {
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-white">{user.name}</p>
               {user.is_admin && (
-                <span className="px-2 py-0.5 bg-purple-600/20 text-purple-400 text-xs font-semibold rounded">
+                <span className="px-2 py-0.5 bg-blue-600/20 text-blue-400 text-xs font-semibold rounded">
                   ADMIN
                 </span>
               )}

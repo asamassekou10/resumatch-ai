@@ -139,14 +139,14 @@ const AdminAnalytics = () => {
           <SpotlightCard>
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-purple-500/10 rounded-lg">
-                  <UserCheck className="w-6 h-6 text-purple-400" />
+                <div className="p-3 bg-blue-500/10 rounded-lg">
+                  <UserCheck className="w-6 h-6 text-blue-400" />
                 </div>
                 <div className="text-sm text-gray-400">Verified</div>
               </div>
               <div className="text-3xl font-bold mb-1">{overview.users.email_verified.toLocaleString()}</div>
               <div className="text-sm text-gray-400">Email Verified</div>
-              <div className="mt-2 text-xs text-purple-400">
+              <div className="mt-2 text-xs text-blue-400">
                 {overview.users.verification_rate}% rate
               </div>
             </div>
@@ -189,7 +189,7 @@ const AdminAnalytics = () => {
           <SpotlightCard>
             <div className="p-6">
               <div className="text-sm text-gray-400 mb-2">Guest Conversion Rate</div>
-              <div className="text-2xl font-bold text-purple-400">{overview.guest_activity.conversion_rate}%</div>
+              <div className="text-2xl font-bold text-blue-400">{overview.guest_activity.conversion_rate}%</div>
             </div>
           </SpotlightCard>
         </div>
@@ -315,7 +315,7 @@ const AdminAnalytics = () => {
                       </td>
                       <td className="py-3 px-4 text-sm">
                         <span className={`px-2 py-1 rounded text-xs ${
-                          user.subscription_tier === 'elite' ? 'bg-purple-500/10 text-purple-400' :
+                          user.subscription_tier === 'elite' ? 'bg-blue-500/10 text-blue-400' :
                           user.subscription_tier === 'pro' ? 'bg-green-500/10 text-green-400' :
                           user.subscription_tier === 'student' ? 'bg-blue-500/10 text-blue-400' :
                           user.subscription_tier === 'basic' ? 'bg-yellow-500/10 text-yellow-400' :

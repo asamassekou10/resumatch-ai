@@ -20,11 +20,11 @@ const PromotionBanner = ({ variant = 'trial', className = '' }) => {
   return (
     <div className={`my-8 ${className}`}>
       <SpotlightCard className="rounded-xl overflow-hidden">
-        <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 p-6 sm:p-8">
+        <div className="bg-gradient-to-br from-blue-900/20 to-blue-900/20 p-6 sm:p-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             {/* Icon */}
             <div className="flex-shrink-0">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
                 {isTrial ? (
                   <Sparkles className="w-7 h-7 text-white" />
                 ) : (
@@ -59,7 +59,7 @@ const PromotionBanner = ({ variant = 'trial', className = '' }) => {
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link
                   to={ROUTES.REGISTER}
-                  className="group inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+                  className="group inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
                 >
                   {isTrial ? 'Start Free Trial' : 'Get Student Plan'}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

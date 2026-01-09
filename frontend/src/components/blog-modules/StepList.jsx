@@ -15,7 +15,7 @@ const StepList = ({ title, steps = [], tone = 'default' }) => {
       <ol className="space-y-3">
         {steps.map((step, index) => (
           <li key={index} className="flex gap-4">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-500/20 text-purple-200 font-semibold">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/20 text-blue-200 font-semibold">
               {index + 1}
             </div>
             <div className="space-y-1">

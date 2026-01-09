@@ -30,7 +30,7 @@ const SubscriptionRequired = ({ feature }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-900 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
@@ -52,13 +52,13 @@ const SubscriptionRequired = ({ feature }) => {
             }}
           >
             <div className="relative">
-              <div className="absolute inset-0 bg-purple-500/30 blur-xl rounded-full"></div>
-              <Lock className="w-20 h-20 text-purple-400 relative z-10" />
+              <div className="absolute inset-0 bg-blue-500/30 blur-xl rounded-full"></div>
+              <Lock className="w-20 h-20 text-blue-400 relative z-10" />
             </div>
           </motion.div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
               {feature || 'Market Intelligence'}
             </span>
             <br />
@@ -75,14 +75,14 @@ const SubscriptionRequired = ({ feature }) => {
           {features.map((item, index) => (
             <motion.div
               key={index}
-              className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-purple-500/50 transition-all"
+              className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-blue-500/50 transition-all"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * index, duration: 0.5 }}
               whileHover={{ scale: 1.02 }}
             >
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-gradient-to-br from-purple-500/20 to-cyan-500/20 rounded-lg text-purple-400">
+                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-lg text-blue-400">
                   {item.icon}
                 </div>
                 <div>
@@ -96,13 +96,13 @@ const SubscriptionRequired = ({ feature }) => {
 
         {/* What You Get Card */}
         <motion.div
-          className="bg-gradient-to-br from-purple-900/30 to-cyan-900/30 border border-purple-500/30 rounded-xl p-8 mb-8"
+          className="bg-gradient-to-br from-blue-900/30 to-cyan-900/30 border border-blue-500/30 rounded-xl p-8 mb-8"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}
         >
           <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-purple-400" />
+            <Sparkles className="w-6 h-6 text-blue-400" />
             What You Get with Premium
           </h2>
 
@@ -166,7 +166,7 @@ const SubscriptionRequired = ({ feature }) => {
         >
           <motion.button
             onClick={() => navigate(ROUTES.PRICING)}
-            className="px-8 py-4 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white rounded-lg font-semibold text-lg flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
+            className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-lg font-semibold text-lg flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -194,7 +194,7 @@ const SubscriptionRequired = ({ feature }) => {
         >
           <p className="text-slate-400 mb-2">Starting at</p>
           <p className="text-4xl font-bold text-white mb-1">
-            <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
               $29
             </span>
             <span className="text-xl text-slate-400">/month</span>

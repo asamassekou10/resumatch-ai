@@ -69,7 +69,7 @@ const BlogPost = () => {
       
       {/* Premium Hero Header */}
       <div className="relative z-10 border-b border-white/10">
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-blue-900/20 to-transparent z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-blue-900/20 to-transparent z-0"></div>
         <div className="relative z-10 max-w-3xl mx-auto px-4 pt-16 pb-12">
           {/* Back Button */}
           <Link
@@ -82,7 +82,7 @@ const BlogPost = () => {
 
           {/* Meta Information - Above Title */}
           <div className="flex flex-wrap items-center gap-4 mb-4 text-xs uppercase tracking-wider text-gray-400">
-            <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300">
+            <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300">
               {post.category}
             </span>
             <div className="flex items-center gap-2">
@@ -128,7 +128,7 @@ const BlogPost = () => {
               <PromotionBanner variant="student" className="mt-8" />
 
               {/* Bottom CTA Section */}
-              <SpotlightCard className="rounded-xl p-8 bg-gradient-to-r from-purple-500/10 to-blue-600/10 border border-purple-500/20 mt-12">
+              <SpotlightCard className="rounded-xl p-8 bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/20 mt-12">
                 <div className="text-center">
                   <h2 className="text-2xl font-bold text-white mb-4 font-display">
                     Ready to Optimize Your Resume?
@@ -175,9 +175,9 @@ const BlogPost = () => {
               <TableOfContents content={contentForTOC} slug={post.slug} />
 
               {/* Sticky CTA Card */}
-              <SpotlightCard className="rounded-xl p-6 bg-gradient-to-br from-purple-600/20 to-blue-600/20 border border-purple-500/30">
+              <SpotlightCard className="rounded-xl p-6 bg-gradient-to-br from-blue-600/20 to-blue-600/20 border border-blue-500/30">
                 <div className="text-center">
-                  <FileText className="w-10 h-10 text-purple-400 mx-auto mb-4" />
+                  <FileText className="w-10 h-10 text-blue-400 mx-auto mb-4" />
                   <h3 className="text-lg font-bold text-white mb-2 font-display">
                     Analyze Your Resume
                   </h3>

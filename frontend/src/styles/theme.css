@@ -89,7 +89,7 @@
   --gradient-success: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%);
   --gradient-warning: linear-gradient(135deg, var(--warning-500) 0%, var(--warning-600) 100%);
   --gradient-error: linear-gradient(135deg, var(--error-500) 0%, var(--error-600) 100%);
-  --gradient-purple: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-indigo) 100%);
+  --gradient-purple: linear-gradient(135deg, var(--secondary-500) 0%, var(--secondary-700) 100%);
   --gradient-dark: linear-gradient(135deg, var(--slate-800) 0%, var(--slate-900) 100%);
 
   /* Shadows */

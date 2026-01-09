@@ -98,7 +98,7 @@ const HelpPage = ({ defaultTab = 'help' }) => {
       icon: '💳',
       title: 'Billing & Plans',
       articles: 8,
-      color: 'from-purple-500 to-pink-500'
+      color: 'from-blue-500 to-pink-500'
     },
     {
       icon: '🎯',
@@ -143,7 +143,7 @@ const HelpPage = ({ defaultTab = 'help' }) => {
             onClick={() => setActiveView('help')}
             className={`px-6 py-3 rounded-t-lg transition font-medium relative z-10 ${
               activeView === 'help'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-blue-600 text-white'
                 : 'text-gray-400 hover:text-white hover:bg-white/10'
             }`}
           >
@@ -153,7 +153,7 @@ const HelpPage = ({ defaultTab = 'help' }) => {
             onClick={() => setActiveView('terms')}
             className={`px-6 py-3 rounded-t-lg transition font-medium flex items-center gap-2 relative z-10 ${
               activeView === 'terms'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-blue-600 text-white'
                 : 'text-gray-400 hover:text-white hover:bg-white/10'
             }`}
           >
@@ -164,7 +164,7 @@ const HelpPage = ({ defaultTab = 'help' }) => {
             onClick={() => setActiveView('privacy')}
             className={`px-6 py-3 rounded-t-lg transition font-medium flex items-center gap-2 relative z-10 ${
               activeView === 'privacy'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-blue-600 text-white'
                 : 'text-gray-400 hover:text-white hover:bg-white/10'
             }`}
           >
@@ -188,7 +188,7 @@ const HelpPage = ({ defaultTab = 'help' }) => {
               placeholder="Search for help..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition pr-12 relative z-10"
+              className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition pr-12 relative z-10"
             />
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
           </div>
@@ -239,7 +239,7 @@ const HelpPage = ({ defaultTab = 'help' }) => {
                   >
                     <span className="text-white font-medium pr-4 relative z-10">{faq.question}</span>
                     <ChevronDown
-                      className={`w-5 h-5 text-purple-400 transition-transform flex-shrink-0 relative z-10 ${
+                      className={`w-5 h-5 text-blue-400 transition-transform flex-shrink-0 relative z-10 ${
                         expandedFaq === index ? 'rotate-180' : ''
                       }`}
                     />
@@ -267,19 +267,19 @@ const HelpPage = ({ defaultTab = 'help' }) => {
         </div>
 
         {/* Contact Support */}
-        <SpotlightCard className="bg-gradient-to-r from-purple-500/10 to-blue-600/10 border border-purple-500/20 rounded-2xl p-8 relative z-10">
+        <SpotlightCard className="bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/20 rounded-2xl p-8 relative z-10">
           <h2 className="text-2xl font-bold text-white mb-6 text-center font-display relative z-10">Still need help?</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
             <div className="text-center relative z-10">
-              <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
-                <Mail className="w-8 h-8 text-purple-400" />
+              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
+                <Mail className="w-8 h-8 text-blue-400" />
               </div>
               <h3 className="text-white font-semibold mb-2 relative z-10 font-display">Email Support</h3>
               <p className="text-gray-400 text-sm mb-3 relative z-10">We'll respond within 24 hours</p>
               <a
                 href="mailto:support@resumeanalyzerai.com"
-                className="text-purple-400 hover:text-purple-300 text-sm relative z-10"
+                className="text-blue-400 hover:text-blue-300 text-sm relative z-10"
               >
                 support@resumeanalyzerai.com
               </a>

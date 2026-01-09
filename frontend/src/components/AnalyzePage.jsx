@@ -496,7 +496,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
             >
             <div className="flex flex-col sm:grid sm:grid-cols-2 gap-6">
               <div className="text-center">
-                <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
+                <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 mb-2">
                   {analysisData.match_score || 0}%
                 </div>
                 <p className="text-gray-300 font-semibold text-sm sm:text-base font-display">Overall Match Score</p>
@@ -517,7 +517,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 </div>
                 <div>
                   <p className="text-gray-400 text-xs sm:text-sm mb-1">Resume</p>
-                  <p className="text-purple-400 font-semibold text-sm sm:text-base truncate font-display">{analysisData.resume_filename || 'Unknown'}</p>
+                  <p className="text-blue-400 font-semibold text-sm sm:text-base truncate font-display">{analysisData.resume_filename || 'Unknown'}</p>
                 </div>
               </div>
             </div>
@@ -605,7 +605,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                   </div>
                   <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
                     <motion.div
-                      className="h-full bg-gradient-to-r from-cyan-500 to-purple-600"
+                      className="h-full bg-gradient-to-r from-cyan-500 to-blue-600"
                       initial={{ width: '0%' }}
                       animate={{ width: `${aiFeatureProgress}%` }}
                       transition={{ ease: 'easeOut', duration: 0.3 }}
@@ -619,12 +619,12 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
           {/* AI Feedback Display */}
           {aiFeedback && aiFeedback.length > 0 && (
             <motion.div
-              className="bg-gradient-to-br from-purple-900/20 to-cyan-900/20 border border-purple-700/50 rounded-lg p-6"
+              className="bg-gradient-to-br from-blue-900/20 to-cyan-900/20 border border-blue-700/50 rounded-lg p-6"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
               <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="w-5 h-5 text-purple-400" />
+                <Sparkles className="w-5 h-5 text-blue-400" />
                 <h3 className="text-white font-semibold">AI-Generated Feedback</h3>
               </div>
               <div className="prose prose-invert max-w-none">
@@ -690,7 +690,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 </div>
                 <div className="w-full bg-white/10 rounded-full h-2">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full"
+                    className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full"
                     initial={{ width: '0%' }}
                     animate={{
                       width: `${analysisData.keywords_found ?
@@ -710,7 +710,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 </div>
                 <div className="w-full bg-white/10 rounded-full h-2">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full"
+                    className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full"
                     initial={{ width: '0%' }}
                     animate={{ width: `${Math.max(0, analysisData.match_score - 5)}%` }}
                     transition={{ delay: 0.4, duration: 1 }}
@@ -726,7 +726,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 </div>
                 <div className="w-full bg-white/10 rounded-full h-2">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full"
+                    className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full"
                     initial={{ width: '0%' }}
                     animate={{ width: `${analysisData.match_score}%` }}
                     transition={{ delay: 0.5, duration: 1 }}
@@ -742,7 +742,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 </div>
                 <div className="w-full bg-white/10 rounded-full h-2">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full"
+                    className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full"
                     initial={{ width: '0%' }}
                     animate={{ width: `${Math.min(100, analysisData.match_score + 10)}%` }}
                     transition={{ delay: 0.6, duration: 1 }}
@@ -944,7 +944,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
               <button
                 onClick={handleSendEmail}
                 disabled={sendingEmail || emailSent}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600/20 to-purple-600/20 hover:from-cyan-600/30 hover:to-purple-600/30 border border-cyan-400/30 hover:border-cyan-400/60 disabled:opacity-50 text-white text-sm rounded-lg transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 hover:from-cyan-600/30 hover:to-blue-600/30 border border-cyan-400/30 hover:border-cyan-400/60 disabled:opacity-50 text-white text-sm rounded-lg transition-all"
               >
                 {sendingEmail ? (
                   <>
@@ -968,14 +968,14 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
               <button
                 onClick={handleGenerateFeedback}
                 disabled={!!aiFeatureLoading || !!aiFeedback}
-                className="p-4 bg-gradient-to-br from-purple-600/20 to-cyan-600/20 border border-purple-400/30 rounded-lg hover:border-purple-400/60 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-4 bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-400/30 rounded-lg hover:border-blue-400/60 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="flex flex-col items-center text-center gap-2">
-                  <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition">
+                  <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition">
                     {aiFeedback && aiFeedback.length > 0 ? (
                       <CheckCircle className="w-6 h-6 text-green-400" />
                     ) : (
-                      <Sparkles className="w-6 h-6 text-purple-400" />
+                      <Sparkles className="w-6 h-6 text-blue-400" />
                     )}
                   </div>
                   <div>
@@ -1077,7 +1077,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
       <div className="relative z-10 max-w-6xl mx-auto">
         {/* Credits Banner */}
         {userProfile && (
-          <div className="bg-gradient-to-r from-cyan-600/90 to-purple-600/90 backdrop-blur-sm border border-cyan-400/50 rounded-xl p-4 md:p-5 mb-8">
+          <div className="bg-gradient-to-r from-cyan-600/90 to-blue-600/90 backdrop-blur-sm border border-cyan-400/50 rounded-xl p-4 md:p-5 mb-8">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
                 <div className="animate-pulse">
@@ -1149,7 +1149,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                     />
                     <label
                       htmlFor="resume-upload"
-                      className="flex items-center justify-center w-full px-4 py-10 border-2 border-dashed border-white/20 rounded-xl cursor-pointer hover:border-purple-500 hover:bg-purple-500/5 transition-all bg-white/5 backdrop-blur-sm relative z-10"
+                      className="flex items-center justify-center w-full px-4 py-10 border-2 border-dashed border-white/20 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-500/5 transition-all bg-white/5 backdrop-blur-sm relative z-10"
                     >
                       {resumeFile ? (
                         <div className="text-center">
@@ -1159,7 +1159,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                         </div>
                       ) : (
                         <div className="text-center">
-                          <FileUp className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                          <FileUp className="w-12 h-12 text-blue-400 mx-auto mb-3" />
                           <p className="text-white font-semibold text-lg">Drop your resume here</p>
                           <p className="text-slate-400 text-sm mt-1">or click to browse</p>
                         </div>
@@ -1178,21 +1178,21 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                         placeholder="Company (optional)"
                         value={companyName}
                         onChange={(e) => setCompanyName(e.target.value)}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                       />
                       <input
                         type="text"
                         placeholder="Job Title (optional)"
                         value={jobTitle}
                         onChange={(e) => setJobTitle(e.target.value)}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                       />
                     </div>
                     <textarea
                       placeholder="Paste the job description here (required)"
                       value={jobDescription}
                       onChange={(e) => setJobDescription(e.target.value)}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none h-36 resize-none"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none h-36 resize-none"
                     />
                   </div>
                 </div>
@@ -1207,7 +1207,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                             animate={{ rotate: 360 }}
                             transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                           >
-                            <Loader className="w-5 h-5 text-purple-400" />
+                            <Loader className="w-5 h-5 text-blue-400" />
                           </motion.div>
                           {loadingMessage}
                         </span>
@@ -1215,14 +1215,14 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                       </div>
                       <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
                         <motion.div
-                          className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 transition-all duration-300"
+                          className="h-full bg-gradient-to-r from-blue-500 via-blue-500 to-cyan-500 transition-all duration-300"
                           initial={{ width: '0%' }}
                           animate={{ width: `${loadingProgress}%` }}
                         />
                       </div>
                       {/* Loading step indicators */}
                       <div className="flex justify-between text-xs text-gray-500 pt-2">
-                        <span className={loadingProgress >= 20 ? 'text-purple-400' : ''}>Parsing</span>
+                        <span className={loadingProgress >= 20 ? 'text-blue-400' : ''}>Parsing</span>
                         <span className={loadingProgress >= 40 ? 'text-blue-400' : ''}>Analyzing</span>
                         <span className={loadingProgress >= 60 ? 'text-cyan-400' : ''}>Matching</span>
                         <span className={loadingProgress >= 80 ? 'text-green-400' : ''}>Scoring</span>
@@ -1257,7 +1257,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                     <span>AI-Powered Analysis</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400 text-sm">
-                    <FileText className="w-4 h-4 text-purple-400" />
+                    <FileText className="w-4 h-4 text-blue-400" />
                     <span>PDF, DOCX, or TXT</span>
                   </div>
                 </div>
@@ -1276,12 +1276,12 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 <div className="relative mb-6 p-4 rounded-xl bg-gradient-to-br from-slate-800/80 to-slate-700/80 border border-white/10 overflow-hidden">
                   {/* Decorative blur */}
                   <div className="absolute -top-4 -right-4 w-20 h-20 bg-cyan-500/30 rounded-full blur-xl" />
-                  <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-purple-500/30 rounded-full blur-xl" />
+                  <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-blue-500/30 rounded-full blur-xl" />
 
                   <div className="relative flex items-center justify-between">
                     <div>
                       <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Resume Score</p>
-                      <p className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 font-display">
+                      <p className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 font-display">
                         85/100
                       </p>
                     </div>

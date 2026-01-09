@@ -19,7 +19,7 @@ const TrialOfferBanner = ({ credits = 0, onStartTrial, className = '' }) => {
       initial={{ opacity: 0, y: -20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500 p-1 ${className}`}
+      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-pink-500 to-rose-500 p-1 ${className}`}
     >
       {/* Animated background */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
@@ -28,7 +28,7 @@ const TrialOfferBanner = ({ credits = 0, onStartTrial, className = '' }) => {
         <div className="flex items-start gap-4">
           {/* Icon */}
           <div className="flex-shrink-0">
-            <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-pink-500 rounded-xl">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -52,19 +52,19 @@ const TrialOfferBanner = ({ credits = 0, onStartTrial, className = '' }) => {
             {/* Benefits */}
             <div className="grid grid-cols-2 gap-2 mb-4">
               <div className="flex items-center gap-2 text-sm text-gray-700">
-                <Zap className="w-4 h-4 text-purple-600" />
+                <Zap className="w-4 h-4 text-blue-600" />
                 <span>AI-powered optimization</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-700">
-                <Zap className="w-4 h-4 text-purple-600" />
+                <Zap className="w-4 h-4 text-blue-600" />
                 <span>Cover letter generation</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-700">
-                <Zap className="w-4 h-4 text-purple-600" />
+                <Zap className="w-4 h-4 text-blue-600" />
                 <span>Priority support</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-700">
-                <Zap className="w-4 h-4 text-purple-600" />
+                <Zap className="w-4 h-4 text-blue-600" />
                 <span>Unlimited templates</span>
               </div>
             </div>

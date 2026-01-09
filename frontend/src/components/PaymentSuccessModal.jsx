@@ -6,8 +6,8 @@ const TIER_INFO = {
   pro: {
     name: 'Pro',
     credits: 100,
-    color: 'from-cyan-500 to-purple-600',
-    bgColor: 'bg-gradient-to-r from-cyan-500/20 to-purple-600/20',
+    color: 'from-cyan-500 to-blue-600',
+    bgColor: 'bg-gradient-to-r from-cyan-500/20 to-blue-600/20',
     borderColor: 'border-cyan-500/50',
     textColor: 'text-cyan-400',
     features: [

@@ -21,7 +21,7 @@ const StudentResources = () => {
       icon: <BookOpen className="w-6 h-6" />,
       title: 'Resume Templates',
       description: 'Download professional resume templates designed specifically for students and recent graduates.',
-      color: 'from-purple-500 to-pink-500',
+      color: 'from-blue-500 to-pink-500',
     },
     {
       icon: <CheckCircle className="w-6 h-6" />,
@@ -73,7 +73,7 @@ const StudentResources = () => {
             </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 font-display">
               Free Resume Resources for{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-500 to-pink-500">
                 Students
               </span>
             </h1>
@@ -110,9 +110,9 @@ const StudentResources = () => {
           </div>
 
           {/* Benefits Section */}
-          <SpotlightCard className="rounded-xl p-8 mb-12 bg-gradient-to-r from-purple-500/10 to-blue-600/10 border border-purple-500/20">
+          <SpotlightCard className="rounded-xl p-8 mb-12 bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/20">
             <div className="flex items-center gap-3 mb-6">
-              <Users className="w-6 h-6 text-purple-400" />
+              <Users className="w-6 h-6 text-blue-400" />
               <h2 className="text-2xl font-bold text-white font-display">Why Students Love ResumeAnalyzer AI</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -126,7 +126,7 @@ const StudentResources = () => {
           </SpotlightCard>
 
           {/* CTA Section */}
-          <SpotlightCard className="rounded-xl p-8 bg-gradient-to-r from-blue-500/10 to-purple-600/10 border border-blue-500/20 text-center">
+          <SpotlightCard className="rounded-xl p-8 bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/20 text-center">
             <Zap className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-white mb-4 font-display">
               Ready to Create Your Professional Resume?

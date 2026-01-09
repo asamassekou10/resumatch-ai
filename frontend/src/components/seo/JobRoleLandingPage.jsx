@@ -65,7 +65,7 @@ const JobRoleLandingPage = () => {
           >
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 font-display">
               Create a Winning Resume for{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-500 to-pink-500">
                 {jobRole.name}
               </span>
             </h1>
@@ -82,14 +82,14 @@ const JobRoleLandingPage = () => {
             {/* Industry Keywords */}
             <SpotlightCard className="rounded-xl p-6">
               <div className="flex items-center gap-3 mb-4">
-                <TrendingUp className="w-6 h-6 text-purple-400" />
+                <TrendingUp className="w-6 h-6 text-blue-400" />
                 <h2 className="text-xl font-bold text-white font-display">Key Keywords to Include</h2>
               </div>
               <div className="flex flex-wrap gap-2">
                 {jobRole.keywords.map((keyword, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-sm text-purple-300"
+                    className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-sm text-blue-300"
                   >
                     {keyword}
                   </span>
@@ -163,7 +163,7 @@ const JobRoleLandingPage = () => {
           <PromotionBanner variant="student" className="mt-8" />
 
           {/* CTA Section */}
-          <SpotlightCard className="rounded-xl p-8 bg-gradient-to-r from-purple-500/10 to-blue-600/10 border border-purple-500/20">
+          <SpotlightCard className="rounded-xl p-8 bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/20">
             <div className="text-center">
               <h2 className="text-2xl font-bold text-white mb-4 font-display">
                 Ready to Optimize Your {jobRole.name} Resume?

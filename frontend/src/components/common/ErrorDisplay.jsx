@@ -133,11 +133,11 @@ const colorClasses = {
     button: 'bg-amber-500 hover:bg-amber-600'
   },
   purple: {
-    bg: 'bg-purple-500/10',
-    border: 'border-purple-500/30',
-    icon: 'text-purple-400',
-    title: 'text-purple-300',
-    button: 'bg-purple-500 hover:bg-purple-600'
+    bg: 'bg-blue-500/10',
+    border: 'border-blue-500/30',
+    icon: 'text-blue-400',
+    title: 'text-blue-300',
+    button: 'bg-blue-500 hover:bg-blue-600'
   },
   slate: {
     bg: 'bg-slate-500/10',
@@ -189,7 +189,7 @@ const ErrorDisplay = ({
         return onUpgrade && (
           <button
             onClick={onUpgrade}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-medium rounded-lg transition-opacity hover:opacity-90"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium rounded-lg transition-opacity hover:opacity-90"
           >
             Upgrade Plan
           </button>
