@@ -9,6 +9,7 @@ import EntranceOverlay from './ui/EntranceOverlay';
 import Footer from './ui/Footer';
 import SpotlightCard from './ui/SpotlightCard';
 import FreeTrialBanner from './ui/FreeTrialBanner';
+import FoundingMemberBanner from './ui/FoundingMemberBanner';
 import { generateFAQSchema } from '../utils/structuredData';
 import BLOG_POSTS from '../utils/blogContent';
 
@@ -125,7 +126,7 @@ const LandingPageV2 = ({ token }) => {
   const homepageFAQs = [
     {
       question: 'Is ResumeAnalyzer AI free?',
-      answer: 'Yes! We offer a free tier that includes 5 resume analysis credits. You can analyze your resume and get basic feedback at no cost. Upgrade to Pro or Elite plans for more credits and advanced features like job matching and career path analysis.'
+      answer: 'Yes! We offer a free tier that includes 10 resume analysis credits per month. You can analyze your resume and get basic feedback at no cost. Upgrade to Pro or Elite plans for more credits and advanced features like AI-powered optimization and cover letter generation.'
     },
     {
       question: 'How accurate is the AI resume analysis?',
@@ -222,18 +223,41 @@ const LandingPageV2 = ({ token }) => {
             </motion.h1>
 
             <motion.p
-              className="text-lg sm:text-xl text-gray-400 mb-8 max-w-2xl mx-auto leading-relaxed relative z-10 font-light"
+              className="text-lg sm:text-xl text-gray-400 mb-4 max-w-2xl mx-auto leading-relaxed relative z-10 font-light"
               variants={fadeInUp}
               custom={2}
             >
               Beat the ATS and land your dream job. Our advanced AI analyzes your resume against millions of data points to ensure you stand out.
             </motion.p>
 
+            {/* Free Credits Badge */}
+            <motion.div
+              className="mb-6 max-w-2xl mx-auto relative z-10"
+              variants={fadeInUp}
+              custom={2.5}
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20">
+                <CheckCircle className="w-5 h-5 text-green-400" />
+                <span className="text-white font-semibold">10 Free Analyses</span>
+                <span className="text-gray-400">•</span>
+                <span className="text-gray-300">No Credit Card Required</span>
+              </div>
+            </motion.div>
+
+            {/* Founding Member Banner */}
+            <motion.div
+              className="mb-8 max-w-2xl mx-auto relative z-10"
+              variants={fadeInUp}
+              custom={3}
+            >
+              <FoundingMemberBanner />
+            </motion.div>
+
             {/* CTA Buttons */}
             <motion.div
               className="flex flex-col sm:flex-row gap-4 justify-center items-center relative z-10"
               variants={fadeInUp}
-              custom={3}
+              custom={4}
             >
               <ShimmerButton onClick={() => navigate(ROUTES.GUEST_ANALYZE)}>
                 Try For Free <ArrowRight size={16} />
@@ -253,7 +277,7 @@ const LandingPageV2 = ({ token }) => {
             <motion.div
               className="mt-12 flex justify-center items-center text-gray-400 text-sm relative z-10"
               variants={fadeInUp}
-              custom={4}
+              custom={5}
             >
               <div className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-yellow-400" />
