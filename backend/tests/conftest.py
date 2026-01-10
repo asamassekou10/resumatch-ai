@@ -14,10 +14,22 @@ os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
 # --- AGGRESSIVE MOCKING ---
 # Mock ALL external services to prevent network calls during test collection
 # This must run BEFORE 'app' is imported
+
+# Mock Google modules properly with submodules
+mock_google = MagicMock()
+mock_google_auth = MagicMock()
+mock_google_oauth2 = MagicMock()
+mock_google_auth_transport = MagicMock()
+mock_google_auth_transport.requests = MagicMock()
+
+sys.modules["google"] = mock_google
 sys.modules["google.generativeai"] = MagicMock()
-sys.modules["google.auth"] = MagicMock()
-sys.modules["google.oauth2"] = MagicMock()
-sys.modules["google.auth.transport.requests"] = MagicMock()
+sys.modules["google.auth"] = mock_google_auth
+sys.modules["google.auth.transport"] = mock_google_auth_transport
+sys.modules["google.auth.transport.requests"] = mock_google_auth_transport.requests
+sys.modules["google.oauth2"] = mock_google_oauth2
+sys.modules["google.oauth2.id_token"] = MagicMock()
+
 sys.modules["sentry_sdk"] = MagicMock()
 sys.modules["stripe"] = MagicMock()
 

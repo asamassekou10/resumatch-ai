@@ -10,8 +10,16 @@ from errors import ValidationError, AuthenticationError, AuthorizationError
 import logging
 import os
 import secrets
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
+
+# Google OAuth imports
+try:
+    from google.oauth2 import id_token
+    from google.auth.transport import requests as google_requests
+    GOOGLE_AUTH_AVAILABLE = True
+except ImportError:
+    GOOGLE_AUTH_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning("Google Auth libraries not available - OAuth will not work")
 
 logger = logging.getLogger(__name__)
 
@@ -222,6 +230,13 @@ def change_password():
 def google_auth():
     """Authenticate user with Google ID token"""
     try:
+        # Check if Google Auth is available
+        if not GOOGLE_AUTH_AVAILABLE:
+            return jsonify({
+                'status': 'error',
+                'error': 'Google authentication is not configured on this server'
+            }), 503
+
         # Get the ID token from the request
         data = request.get_json()
         token = data.get('token')
