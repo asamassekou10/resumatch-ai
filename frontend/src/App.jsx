@@ -231,6 +231,7 @@ function App() {
           token={token}
           handleLogin={handleLogin}
           handleLogout={handleLogout}
+          setToken={setToken}
         />
 
         {/* Payment Success Modal */}

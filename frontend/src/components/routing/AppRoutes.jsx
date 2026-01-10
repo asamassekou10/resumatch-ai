@@ -18,6 +18,7 @@ const GuestAnalyze = lazy(() => import('../GuestAnalyze'));
 const PricingPage = lazy(() => import('../PricingPageV2'));
 const HelpPage = lazy(() => import('../HelpPage'));
 const Unsubscribe = lazy(() => import('../Unsubscribe'));
+const VerifySuccess = lazy(() => import('../VerifySuccess'));
 
 // SEO Pages
 const JobRoleLandingPage = lazy(() => import('../seo/JobRoleLandingPage'));
@@ -75,8 +76,9 @@ const AdminAnalytics = lazy(() => import('../AdminAnalytics'));
  * @param {string} props.token - Authentication token
  * @param {Function} props.handleLogout - Logout callback
  * @param {Function} props.handleLogin - Login callback
+ * @param {Function} props.setToken - Set token callback for auto-login
  */
-const AppRoutes = ({ userProfile, token, handleLogout, handleLogin }) => {
+const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) => {
   return (
     <Suspense fallback={<div className="min-h-screen bg-black" />}>
       <RouteTracker />
@@ -131,6 +133,12 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin }) => {
           />
 
           <Route path="/unsubscribe" element={<Unsubscribe />} />
+
+          {/* Email Verification Success Page */}
+          <Route
+            path="/verify-success"
+            element={<VerifySuccess setToken={setToken} />}
+          />
 
           {/* Programmatic SEO: Job Role Landing Pages */}
           <Route
