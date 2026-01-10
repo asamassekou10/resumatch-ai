@@ -249,6 +249,10 @@ const GuestAnalyze = () => {
     navigate(ROUTES.PRICING);
   };
 
+  const handleSignUp = () => {
+    navigate(ROUTES.REGISTER);
+  };
+
   const handleSignIn = () => {
     navigate(ROUTES.LOGIN);
   };
@@ -880,7 +884,7 @@ const GuestAnalyze = () => {
 
               <div className="text-center">
                 <button
-                  onClick={handleUpgrade}
+                  onClick={handleSignUp}
                   className="px-8 py-3 bg-gradient-to-r from-cyan-500 via-blue-600 to-pink-600 hover:from-cyan-600 hover:via-blue-700 hover:to-pink-700 text-white font-semibold rounded-lg inline-flex items-center gap-2 text-lg shadow-lg shadow-blue-500/50 transition-transform hover:scale-105 active:scale-95"
                 >
                   Sign Up & Get Started
