@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, redirect
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 from flask_bcrypt import check_password_hash, generate_password_hash
 from flask_limiter import Limiter
@@ -8,6 +8,10 @@ from models import db, User, user_schema
 from validators import TextValidator, RequestValidator
 from errors import ValidationError, AuthenticationError, AuthorizationError
 import logging
+import os
+import secrets
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 logger = logging.getLogger(__name__)
 
@@ -210,5 +214,86 @@ def change_password():
         raise
     except Exception as e:
         logger.error(f"Change password error: {e}")
+        db.session.rollback()
+        raise
+
+@auth_bp.route('/google', methods=['POST'])
+@limiter.limit("10 per minute")
+def google_auth():
+    """Authenticate user with Google ID token"""
+    try:
+        # Get the ID token from the request
+        data = request.get_json()
+        token = data.get('token')
+
+        if not token:
+            raise ValidationError("Google token is required")
+
+        # Verify the token with Google
+        try:
+            # Specify the CLIENT_ID of the app that accesses the backend
+            idinfo = id_token.verify_oauth2_token(
+                token,
+                google_requests.Request(),
+                os.getenv('GOOGLE_CLIENT_ID')
+            )
+
+            # ID token is valid. Get the user's Google Account ID and email
+            google_user_id = idinfo['sub']
+            email = idinfo.get('email')
+            name = idinfo.get('name', '')
+
+            if not email:
+                raise ValidationError("Email not provided by Google")
+
+            # Check if user exists
+            user = User.query.filter_by(email=email).first()
+
+            if user:
+                # Update last login
+                user.last_login = datetime.utcnow()
+                if not user.google_id:
+                    user.google_id = google_user_id
+            else:
+                # Create new user
+                user = User(
+                    email=email,
+                    google_id=google_user_id,
+                    credits=10,  # Launch: 10 free credits
+                    subscription_tier='free',
+                    subscription_status='inactive',
+                    created_at=datetime.utcnow(),
+                    is_active=True
+                )
+                db.session.add(user)
+
+            db.session.commit()
+
+            # Generate access token
+            access_token = create_access_token(identity=str(user.id))
+
+            logger.info(f"Google auth successful for: {email}")
+
+            return create_success_response(
+                "Google authentication successful",
+                {
+                    'access_token': access_token,
+                    'user': user.to_dict()
+                }
+            )
+
+        except ValueError as e:
+            # Invalid token
+            logger.warning(f"Invalid Google token: {e}")
+            raise AuthenticationError("Invalid Google token")
+
+    except ValidationError as e:
+        logger.warning(f"Google auth validation error: {e.message}")
+        raise
+    except AuthenticationError as e:
+        logger.warning(f"Google auth error: {e.message}")
+        raise
+    except Exception as e:
+        logger.error(f"Google auth error: {e}")
         db.session.rollback()
         raise

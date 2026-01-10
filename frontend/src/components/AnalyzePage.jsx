@@ -316,7 +316,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
       if (companyName) formData.append('company_name', companyName);
 
       // Try streaming endpoint first, fallback to regular if not available
-      const useStreaming = true; // Enable streaming by default
+      const useStreaming = false; // Disable streaming - backend doesn't support SSE yet
       
       if (useStreaming) {
         // Use SSE streaming for progressive updates

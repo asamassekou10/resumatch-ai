@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Shield, Lock, CheckCircle2 } from 'lucide-react';
@@ -136,8 +136,67 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
     }
   };
 
+  // Initialize Google Sign-In
+  useEffect(() => {
+    // Load Google Sign-In script
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
   const handleGoogleLogin = () => {
-    window.location.href = `${API_URL}/auth/google`;
+    // Use Google Identity Services
+    if (window.google) {
+      window.google.accounts.id.initialize({
+        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || '535154830356-36e2i2u5rj74tsk0s0hib3d1f3kpkqvj.apps.googleusercontent.com',
+        callback: handleGoogleResponse
+      });
+      window.google.accounts.id.prompt();
+    } else {
+      setError('Google Sign-In is not loaded. Please refresh and try again.');
+    }
+  };
+
+  const handleGoogleResponse = async (response) => {
+    try {
+      setLoading(true);
+      setError('');
+
+      // Send the ID token to your backend
+      const res = await fetch(`${API_URL}/v1/auth/google`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token: response.credential
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Google authentication failed');
+      }
+
+      // Store the token and redirect
+      localStorage.setItem('token', data.data.access_token);
+      if (onLogin) {
+        onLogin(data.data.access_token);
+      }
+      navigate(ROUTES.DASHBOARD);
+    } catch (err) {
+      console.error('Google auth error:', err);
+      setError(err.message || 'Failed to authenticate with Google. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLinkedInLogin = () => {
