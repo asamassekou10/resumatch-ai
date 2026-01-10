@@ -38,15 +38,8 @@ const ProfilePage = lazy(() => import('../ProfilePage'));
 const SettingsPage = lazy(() => import('../SettingsPage'));
 const BillingPage = lazy(() => import('../BillingPage'));
 
-// Market Intelligence Pages
-const MarketDashboard = lazy(() => import('../MarketIntelligenceDashboard'));
-const SkillGap = lazy(() => import('../SkillGapAnalysis'));
-const JobMarketStats = lazy(() => import('../JobMarketStats'));
-const SkillRelationships = lazy(() => import('../SkillRelationships'));
-const MarketInsights = lazy(() => import('../JobSeekerInsights'));
-const InterviewPrep = lazy(() => import('../InterviewPrep'));
-const CompanyIntel = lazy(() => import('../CompanyIntel'));
-const CareerPath = lazy(() => import('../CareerPath'));
+// Market Intelligence Pages (Coming Soon)
+const ComingSoon = lazy(() => import('../ComingSoon'));
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('../AdminDashboard'));
@@ -250,8 +243,11 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) 
           <Route
             path={ROUTES.MARKET_DASHBOARD}
             element={
-              <ProtectedRoute requireSubscription={true}>
-                <MarketDashboard userProfile={userProfile} />
+              <ProtectedRoute>
+                <ComingSoon
+                  title="Market Intelligence Dashboard"
+                  description="We're building a powerful dashboard to give you real-time insights into the job market."
+                />
               </ProtectedRoute>
             }
           />
@@ -259,8 +255,11 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) 
           <Route
             path={ROUTES.MARKET_SKILL_GAP}
             element={
-              <ProtectedRoute requireSubscription={true}>
-                <SkillGap userProfile={userProfile} />
+              <ProtectedRoute>
+                <ComingSoon
+                  title="Skill Gap Analysis"
+                  description="Discover the skills you need to advance your career and stand out in the job market."
+                />
               </ProtectedRoute>
             }
           />
@@ -268,8 +267,11 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) 
           <Route
             path={ROUTES.MARKET_JOB_STATS}
             element={
-              <ProtectedRoute requireSubscription={true}>
-                <JobMarketStats userProfile={userProfile} />
+              <ProtectedRoute>
+                <ComingSoon
+                  title="Job Market Statistics"
+                  description="Get access to comprehensive data on job trends, salaries, and hiring patterns."
+                />
               </ProtectedRoute>
             }
           />
@@ -277,8 +279,11 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) 
           <Route
             path={ROUTES.MARKET_SKILL_RELATIONSHIPS}
             element={
-              <ProtectedRoute requireSubscription={true}>
-                <SkillRelationships userProfile={userProfile} />
+              <ProtectedRoute>
+                <ComingSoon
+                  title="Skill Relationships"
+                  description="Understand how skills connect and which combinations are most valuable in the market."
+                />
               </ProtectedRoute>
             }
           />
@@ -286,8 +291,11 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) 
           <Route
             path={ROUTES.MARKET_INSIGHTS}
             element={
-              <ProtectedRoute requireSubscription={true}>
-                <MarketInsights userProfile={userProfile} />
+              <ProtectedRoute>
+                <ComingSoon
+                  title="Market Insights"
+                  description="Personalized insights tailored to your career goals and industry trends."
+                />
               </ProtectedRoute>
             }
           />
@@ -295,8 +303,11 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) 
           <Route
             path={ROUTES.MARKET_INTERVIEW_PREP}
             element={
-              <ProtectedRoute requireSubscription={true}>
-                <InterviewPrep userProfile={userProfile} />
+              <ProtectedRoute>
+                <ComingSoon
+                  title="Interview Preparation"
+                  description="AI-powered interview prep with company-specific questions and best practices."
+                />
               </ProtectedRoute>
             }
           />
@@ -304,8 +315,11 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) 
           <Route
             path={ROUTES.MARKET_COMPANY_INTEL}
             element={
-              <ProtectedRoute requireSubscription={true}>
-                <CompanyIntel userProfile={userProfile} />
+              <ProtectedRoute>
+                <ComingSoon
+                  title="Company Intelligence"
+                  description="Deep insights into companies, their culture, hiring patterns, and employee reviews."
+                />
               </ProtectedRoute>
             }
           />
@@ -313,8 +327,11 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) 
           <Route
             path={ROUTES.MARKET_CAREER_PATH}
             element={
-              <ProtectedRoute requireSubscription={true}>
-                <CareerPath userProfile={userProfile} />
+              <ProtectedRoute>
+                <ComingSoon
+                  title="Career Path Planning"
+                  description="Map your career journey with AI-powered recommendations and progression insights."
+                />
               </ProtectedRoute>
             }
           />
