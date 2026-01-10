@@ -277,6 +277,56 @@ const LandingPageV2 = ({ token }) => {
             </motion.div>
           </motion.div>
 
+          {/* Demo Video Section */}
+          <motion.div
+            className="mt-16 mx-auto max-w-4xl"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1, duration: 0.8 }}
+          >
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 mb-3">
+                <Play className="w-3.5 h-3.5 text-blue-400" />
+                <span className="text-xs font-medium text-blue-300">See It In Action</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 font-display">
+                Watch How It Works
+              </h3>
+            </div>
+
+            <div className="relative rounded-xl overflow-hidden border border-white/10 bg-gray-900/50 backdrop-blur-sm shadow-2xl group">
+              {/* Glow effect on hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-transparent to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10" />
+
+              {/* Video Container */}
+              <div className="relative aspect-video bg-black">
+                <video
+                  className="w-full h-full object-contain"
+                  controls
+                  preload="metadata"
+                >
+                  <source src="/demo-video.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </div>
+
+            {/* CTA Button */}
+            <div className="text-center mt-8">
+              <ShimmerButton
+                onClick={() => navigate(token ? ROUTES.DASHBOARD : ROUTES.GUEST_ANALYZE)}
+                className="px-8 py-3 h-12 text-sm"
+              >
+                {token ? 'Go to Dashboard' : 'Start Analyzing Now'} <ArrowRight size={16} />
+              </ShimmerButton>
+              {!token && (
+                <p className="text-gray-500 text-xs mt-3">
+                  No credit card required • 10 free analyses
+                </p>
+              )}
+            </div>
+          </motion.div>
+
           {/* Dashboard Preview Mockup */}
           <motion.div
             className="mt-20 mx-auto max-w-5xl rounded-xl border border-white/10 bg-gray-900/50 backdrop-blur-sm shadow-2xl overflow-hidden relative z-10"
@@ -335,119 +385,6 @@ const LandingPageV2 = ({ token }) => {
                 </div>
               </div>
             </div>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Demo Video Section */}
-      <div className="py-20 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            className="text-center mb-12 relative z-10"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeInUp}
-            custom={0}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
-              <Play className="w-4 h-4 text-blue-400" />
-              <span className="text-sm font-medium text-blue-300">See It In Action</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 font-display relative z-10">
-              Watch ResumeAnalyzer AI in Action
-            </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto relative z-10">
-              Discover how our AI-powered platform transforms resumes in minutes
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="relative rounded-2xl overflow-hidden border border-white/10 bg-gray-900/50 backdrop-blur-sm shadow-2xl group"
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            {/* Glow effect on hover */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-transparent to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10" />
-
-            {/* Video Container */}
-            <div className="relative aspect-video bg-black">
-              <video
-                className="w-full h-full object-contain"
-                controls
-                preload="metadata"
-                poster="/api/placeholder/1200/675"
-              >
-                <source src="/demo-video.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
-
-            {/* Bottom gradient overlay */}
-            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-gray-900/50 to-transparent pointer-events-none" />
-          </motion.div>
-
-          {/* Feature highlights below video */}
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeInUp}
-            custom={1}
-          >
-            <div className="flex items-center gap-3 text-left">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
-                <Zap className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold text-sm">Lightning Fast</h3>
-                <p className="text-gray-500 text-xs">Results in under 2 minutes</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 text-left">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
-                <BarChart3 className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold text-sm">Detailed Insights</h3>
-                <p className="text-gray-500 text-xs">Comprehensive analysis & scoring</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 text-left">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
-                <CheckCircle className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold text-sm">ATS Optimized</h3>
-                <p className="text-gray-500 text-xs">Beat applicant tracking systems</p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* CTA Button */}
-          <motion.div
-            className="text-center mt-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-          >
-            <ShimmerButton
-              onClick={() => navigate(token ? ROUTES.DASHBOARD : ROUTES.GUEST_ANALYZE)}
-              className="px-10 py-4 h-14 text-base"
-            >
-              {token ? 'Go to Dashboard' : 'Start Analyzing Now'} <ArrowRight size={18} />
-            </ShimmerButton>
-            {!token && (
-              <p className="text-gray-500 text-sm mt-4">
-                No credit card required • 10 free analyses
-              </p>
-            )}
           </motion.div>
         </div>
       </div>
