@@ -76,3 +76,7 @@ python-magic==0.4.27
 # Text matching and fuzzy logic
 fuzzywuzzy==0.18.0
 python-Levenshtein==0.21.1
+
+# Web scraping
+beautifulsoup4==4.12.2
+requests==2.31.0

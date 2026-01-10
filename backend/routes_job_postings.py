@@ -400,3 +400,124 @@ def get_job_postings_statistics():
     except Exception as e:
         logger.error(f"Error getting statistics: {str(e)}")
         return jsonify({'error': 'Failed to retrieve statistics'}), 500
+
+
+@job_bp.route('/fetch', methods=['POST'])
+def fetch_job_description_from_url():
+    """
+    Fetch job description from a job posting URL
+
+    Supports: LinkedIn, Indeed, Glassdoor
+
+    Request body:
+    {
+        "url": "https://www.linkedin.com/jobs/view/..."
+    }
+
+    Response:
+    {
+        "status": "success",
+        "message": "Job description fetched successfully",
+        "data": {
+            "description": "Full job description text...",
+            "source": "linkedin"
+        }
+    }
+    """
+    import requests
+    from bs4 import BeautifulSoup
+    from urllib.parse import urlparse
+
+    try:
+        data = request.get_json()
+        url = data.get('url', '').strip()
+
+        if not url:
+            return jsonify({'error': 'Job posting URL is required'}), 400
+
+        # Validate URL
+        try:
+            parsed = urlparse(url)
+            if not parsed.scheme or not parsed.netloc:
+                return jsonify({'error': 'Invalid URL format'}), 400
+        except Exception:
+            return jsonify({'error': 'Invalid URL format'}), 400
+
+        # Detect job board
+        domain = parsed.netloc.lower()
+        job_board = 'unknown'
+
+        if 'linkedin.com' in domain:
+            job_board = 'linkedin'
+        elif 'indeed.com' in domain:
+            job_board = 'indeed'
+        elif 'glassdoor.com' in domain:
+            job_board = 'glassdoor'
+
+        logger.info(f"Fetching job from {job_board}: {url}")
+
+        # Fetch page content
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+
+        response = requests.get(url, headers=headers, timeout=15)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+        description = None
+
+        # Extract based on job board
+        if job_board == 'linkedin':
+            desc_div = soup.find('div', {'class': 'description__text'}) or \
+                      soup.find('div', {'class': 'show-more-less-html__markup'}) or \
+                      soup.find('div', {'class': 'jobs-description__content'})
+            if desc_div:
+                description = desc_div.get_text(strip=True, separator='\n\n')
+
+        elif job_board == 'indeed':
+            desc_div = soup.find('div', {'id': 'jobDescriptionText'}) or \
+                      soup.find('div', {'class': 'jobsearch-jobDescriptionText'})
+            if desc_div:
+                description = desc_div.get_text(strip=True, separator='\n\n')
+
+        elif job_board == 'glassdoor':
+            desc_div = soup.find('div', {'class': 'jobDescriptionContent'}) or \
+                      soup.find('div', {'class': 'desc'})
+            if desc_div:
+                description = desc_div.get_text(strip=True, separator='\n\n')
+
+        if not description:
+            return jsonify({
+                'error': 'Unable to extract job description from this URL. '
+                        'The page structure may have changed or the URL may be invalid. '
+                        'Please try copying and pasting the job description manually.'
+            }), 400
+
+        # Clean up the description
+        description = description.strip()
+
+        logger.info(f"Successfully fetched {len(description)} characters from {job_board}")
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Job description fetched successfully',
+            'data': {
+                'description': description,
+                'source': job_board,
+                'url': url
+            }
+        }), 200
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Request error fetching job: {e}")
+        return jsonify({
+            'error': 'Failed to fetch job posting. The site may be blocking automated requests. '
+                    'Please copy and paste the job description manually.'
+        }), 400
+
+    except Exception as e:
+        logger.error(f"Error fetching job description: {e}")
+        return jsonify({
+            'error': 'Failed to fetch job description. Please try again or paste the description manually.'
+        }), 500

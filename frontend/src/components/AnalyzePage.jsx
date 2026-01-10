@@ -6,6 +6,7 @@ import { ROUTES } from '../config/routes';
 import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
 import ScoreBreakdown from './ScoreBreakdown';
+import JobDescriptionInput from './ui/JobDescriptionInput';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -1188,14 +1189,16 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                         className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                       />
                     </div>
-                    <textarea
-                      placeholder="Paste the job description here (required)"
-                      value={jobDescription}
-                      onChange={(e) => setJobDescription(e.target.value)}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none h-36 resize-none"
-                    />
                   </div>
                 </div>
+
+                {/* Job Description Input with Link Support */}
+                <JobDescriptionInput
+                  value={jobDescription}
+                  onChange={setJobDescription}
+                  label="3. Enter Job Description"
+                  placeholder="Paste the job description here...\n\nInclude job responsibilities, qualifications, required skills, and company information for best results."
+                />
 
                 {/* Progress Section */}
                 {loading && (
