@@ -48,6 +48,22 @@ const LandingPageV2 = ({ token }) => {
   const navigate = useNavigate();
   const [showEntrance, setShowEntrance] = useState(true);
   const [openFAQIndex, setOpenFAQIndex] = useState(null);
+  const videoRef = useRef(null);
+  const videoInView = useInView(videoRef, { once: false, margin: "-100px" });
+
+  // Autoplay video when it comes into view
+  useEffect(() => {
+    if (videoRef.current) {
+      if (videoInView) {
+        videoRef.current.play().catch(err => {
+          // Autoplay was prevented, user will need to click play
+          console.log('Autoplay prevented:', err);
+        });
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [videoInView]);
 
   // Animation variants
   const fadeInUp = {
@@ -301,9 +317,12 @@ const LandingPageV2 = ({ token }) => {
               {/* Video Container */}
               <div className="relative aspect-video bg-black">
                 <video
+                  ref={videoRef}
                   className="w-full h-full object-contain"
                   controls
                   preload="metadata"
+                  muted
+                  playsInline
                 >
                   <source src="/demo-video.mp4" type="video/mp4" />
                   Your browser does not support the video tag.
