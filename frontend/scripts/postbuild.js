@@ -1,10 +1,16 @@
 /**
  * Postbuild script - runs react-snap for prerendering
- * Skips on Vercel since Puppeteer requires system libraries not available there
+ * Skips on Vercel and CI environments since Puppeteer requires system libraries
+ * and can have port conflicts in CI
  */
 
 if (process.env.VERCEL) {
   console.log('Skipping react-snap on Vercel (Puppeteer not supported)');
+  process.exit(0);
+}
+
+if (process.env.CI) {
+  console.log('Skipping react-snap on CI environment (port conflicts and resource limitations)');
   process.exit(0);
 }
 

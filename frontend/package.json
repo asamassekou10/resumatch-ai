@@ -78,7 +78,6 @@
   },
   "reactSnap": {
     "inlineCss": false,
-    "port": 0,
     "minifyHtml": {
       "collapseWhitespace": true,
       "removeComments": true
