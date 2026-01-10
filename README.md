@@ -6,9 +6,9 @@
 
 **Live Application**: [https://resumeanalyzerai.com](https://resumeanalyzerai.com)
 
-A production-grade AI resume analysis and job matching platform (Flask backend + React frontend). It analyzes resumes against job descriptions using machine learning, extracts skills with NLP, provides AI-powered feedback, and offers intelligent job matching with market intelligence insights.
+An enterprise-grade AI resume optimization platform that helps job seekers land their dream jobs through intelligent resume analysis, ATS optimization, and personalized job matching. Built with production-ready Flask backend and React frontend, featuring advanced machine learning algorithms, NLP-powered skill extraction, and real-time market intelligence.
 
-This repository contains the complete full-stack application: backend API, frontend React app, PostgreSQL database, comprehensive tests, and production deployment configuration.
+ResumeAnalyzer AI streamlines the job search process by providing data-driven insights, identifying resume gaps, and connecting candidates with the most relevant opportunities.
 
 ## ✨ Key Features
 
@@ -193,7 +193,7 @@ docker-compose up --build
 
 3. **Admin Account Setup**:
    ```bash
-   # Create/update admin accounts
+   # Configure admin accounts via environment variables or database
    cd /app && python update_admin_passwords.py
    ```
 
@@ -203,11 +203,9 @@ docker-compose up --build
    cd /app && python insert_sample_jobs.py
    ```
 
-### Admin Credentials
+### Admin Access
 
-Two admin accounts are pre-configured:
-- **Admin 1**: alhassane.samassekou@gmail.com / AdminResuMatch2024!
-- **Admin 2**: sitaram.ayyagari@project.review / ProfessorReview2024!
+Admin dashboard provides comprehensive system diagnostics, user management, and analytics.
 
 Access admin diagnostics at: `/api/v1/admin/diagnostics/full-diagnostic`
 
@@ -215,31 +213,39 @@ Access admin diagnostics at: `/api/v1/admin/diagnostics/full-diagnostic`
 
 Edit environment variables in `docker-compose.yml` or in a local `.env` file. Important variables include `DATABASE_URL`, `JWT_SECRET_KEY`, `GEMINI_API_KEY`, and `RESEND_API_KEY` for email. See `SETUP_GUIDE.md` for more details.
 
+## 🏗️ Architecture & Technical Implementation
+
+ResumeAnalyzer AI demonstrates enterprise-level software engineering practices:
+
+- **AI/ML Integration**: Google Gemini 1.5 for intelligent resume feedback, spaCy for NLP, scikit-learn for semantic job matching
+- **Full-Stack Architecture**: RESTful API with Flask + modern React SPA with responsive design
+- **Database Design**: PostgreSQL with 28+ tables, optimized indexing, and proper relationships
+- **Cloud Infrastructure**: Production deployment on Render with automated CI/CD pipelines
+- **Security & Authentication**: JWT tokens, OAuth 2.0 (Google), bcrypt password hashing, CSRF protection, input validation
+- **Software Engineering**: Comprehensive test coverage (pytest), Docker containerization, Git version control
+- **Data Visualization**: Interactive dashboards with historical analysis tracking
+- **Scalability**: Rate limiting, caching, async processing, connection pooling
+- **Monitoring & Logging**: Structured logging, performance metrics, error tracking
+
 ## 🙏 Acknowledgments
 
-- spaCy for NLP capabilities
-- scikit-learn for ML algorithms
-- Flask and React communities
+Built with powerful open-source technologies:
+- **Google Gemini** for advanced AI capabilities
+- **spaCy** for natural language processing
+- **scikit-learn** for machine learning algorithms
+- **Flask** and **React** communities for robust frameworks
+- **PostgreSQL** for reliable data storage
 
 ## 📧 Support
 
-For issues or questions:
-1. Check the Troubleshooting section
-2. Review the API documentation
-3. Check Docker logs: `docker-compose logs backend`
+For technical support or questions:
+1. Check the comprehensive documentation in `SETUP_GUIDE.md`
+2. Review API documentation for integration details
+3. Check application logs: `docker-compose logs backend`
+4. Visit the help center at [resumeanalyzerai.com/help](https://resumeanalyzerai.com/help)
 
-## 🎓 Academic Context
+## 📄 License
 
-**Course**: ITAI 2277 – Artificial Intelligence
-**Institution**: HOUSTON COMMUNITY COLLEGE
-**Project Phase**: Complete Full-Stack AI Application
+This project is proprietary software. All rights reserved.
 
-This project demonstrates mastery of:
-- **AI/ML Integration**: Gemini 1.5 for resume feedback, spaCy for NLP, scikit-learn for job matching
-- **Full-Stack Development**: Flask REST API + React SPA architecture
-- **Database Design**: PostgreSQL with 28+ tables, proper indexing and relationships
-- **Cloud Deployment**: Production-ready deployment on Render with CI/CD
-- **Authentication & Security**: JWT tokens, OAuth 2.0, password hashing, input validation
-- **Software Engineering**: Testing (pytest), version control (Git), Docker containerization
-- **Data Visualization**: Interactive dashboards and analytics
-- **Ethical AI**: Transparent scoring, user feedback loops, bias consideration
+For licensing inquiries, please contact the development team.
