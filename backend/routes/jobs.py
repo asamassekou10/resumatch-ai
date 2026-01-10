@@ -70,10 +70,37 @@ def fetch_indeed_job(url):
 
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # Try to find job description
-        description_div = soup.find('div', {'id': 'jobDescriptionText'})
+        # Try multiple selectors (Indeed changes their HTML frequently)
+        description_div = None
+
+        # Try ID-based selectors
+        if not description_div:
+            description_div = soup.find('div', {'id': 'jobDescriptionText'})
+
+        # Try class-based selectors
         if not description_div:
             description_div = soup.find('div', {'class': 'jobsearch-jobDescriptionText'})
+        if not description_div:
+            description_div = soup.find('div', {'class': 'job-description'})
+        if not description_div:
+            description_div = soup.find('div', {'class': 'jobsearch-JobComponent-description'})
+
+        # Try data attribute selectors
+        if not description_div:
+            description_div = soup.find('div', {'data-testid': 'job-description'})
+        if not description_div:
+            description_div = soup.find('div', {'data-testid': 'jobDescriptionText'})
+
+        # Try finding any div with job description text
+        if not description_div:
+            # Look for divs with lots of text that might be the description
+            all_divs = soup.find_all('div')
+            for div in all_divs:
+                text = div.get_text(strip=True)
+                # If div has substantial text (likely a description)
+                if len(text) > 200 and 'responsibilities' in text.lower() or 'qualifications' in text.lower() or 'requirements' in text.lower():
+                    description_div = div
+                    break
 
         if description_div:
             return description_div.get_text(strip=True, separator='\n')

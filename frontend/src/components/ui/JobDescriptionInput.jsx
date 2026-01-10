@@ -93,7 +93,7 @@ const JobDescriptionInput = ({
           onClick={() => setMode('paste')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-all ${
             mode === 'paste'
-              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+              ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
               : 'text-gray-400 hover:text-white hover:bg-white/5'
           }`}
         >
@@ -105,7 +105,7 @@ const JobDescriptionInput = ({
           onClick={() => setMode('link')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-all ${
             mode === 'link'
-              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+              ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
               : 'text-gray-400 hover:text-white hover:bg-white/5'
           }`}
         >
@@ -162,7 +162,7 @@ const JobDescriptionInput = ({
                   type="button"
                   onClick={handleFetchFromLink}
                   disabled={fetching || !jobUrl.trim()}
-                  className="px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {fetching ? (
                     <>
