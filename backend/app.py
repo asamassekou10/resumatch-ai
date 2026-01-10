@@ -2301,7 +2301,6 @@ def create_checkout_session():
         elif tier_param == 'pro_founding':
             price_id = STRIPE_PRO_FOUNDING_PRICE_ID
             # Check founding member limit (first 100 only)
-            from models import User
             founding_members_count = User.query.filter_by(subscription_tier='pro_founding').count()
             if founding_members_count >= 100:
                 return jsonify({
