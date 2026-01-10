@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
-jobs_bp = Blueprint('jobs', __name__, url_prefix='/api/v1/jobs')
+jobs_bp = Blueprint('jobs_v1', __name__, url_prefix='/api/v1/jobs')
 
 # Rate limiting
 limiter = Limiter(
