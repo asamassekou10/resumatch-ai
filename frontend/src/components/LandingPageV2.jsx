@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, TrendingUp, BookOpen, Code, Stethoscope, DollarSign, GraduationCap, Palette, Heart, Globe, Clipboard, ChevronDown, ChevronUp } from 'lucide-react';
+import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, TrendingUp, BookOpen, Code, Stethoscope, DollarSign, GraduationCap, Palette, Heart, Globe, Clipboard, ChevronDown, ChevronUp, Play } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import ShimmerButton from './ui/ShimmerButton';
@@ -333,6 +333,98 @@ const LandingPageV2 = ({ token }) => {
                   <TrendingUp className="text-blue-400 mb-2 group-hover:scale-110 transition-transform" />
                   <span className="text-xs text-gray-400">Job Match: High</span>
                 </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Demo Video Section */}
+      <div className="py-20 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            className="text-center mb-12 relative z-10"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            custom={0}
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
+              <Play className="w-4 h-4 text-blue-400" />
+              <span className="text-sm font-medium text-blue-300">See It In Action</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 font-display relative z-10">
+              Watch ResumeAnalyzer AI in Action
+            </h2>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto relative z-10">
+              Discover how our AI-powered platform transforms resumes in minutes
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative rounded-2xl overflow-hidden border border-white/10 bg-gray-900/50 backdrop-blur-sm shadow-2xl group"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            {/* Glow effect on hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-transparent to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10" />
+
+            {/* Video Container */}
+            <div className="relative aspect-video bg-black">
+              <video
+                className="w-full h-full object-contain"
+                controls
+                preload="metadata"
+                poster="/api/placeholder/1200/675"
+              >
+                <source src="/demo-video.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+
+            {/* Bottom gradient overlay */}
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-gray-900/50 to-transparent pointer-events-none" />
+          </motion.div>
+
+          {/* Feature highlights below video */}
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            custom={1}
+          >
+            <div className="flex items-center gap-3 text-left">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <Zap className="w-5 h-5 text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-semibold text-sm">Lightning Fast</h3>
+                <p className="text-gray-500 text-xs">Results in under 2 minutes</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 text-left">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <BarChart3 className="w-5 h-5 text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-semibold text-sm">Detailed Insights</h3>
+                <p className="text-gray-500 text-xs">Comprehensive analysis & scoring</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 text-left">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-5 h-5 text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-semibold text-sm">ATS Optimized</h3>
+                <p className="text-gray-500 text-xs">Beat applicant tracking systems</p>
               </div>
             </div>
           </motion.div>
