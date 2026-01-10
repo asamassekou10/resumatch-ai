@@ -53,17 +53,23 @@ const LandingPageV2 = ({ token }) => {
 
   // Autoplay video when it comes into view
   useEffect(() => {
-    if (videoRef.current) {
+    if (videoRef.current && !showEntrance) {
       if (videoInView) {
-        videoRef.current.play().catch(err => {
-          // Autoplay was prevented, user will need to click play
-          console.log('Autoplay prevented:', err);
-        });
+        // Ensure video is muted for autoplay
+        videoRef.current.muted = true;
+        const playPromise = videoRef.current.play();
+
+        if (playPromise !== undefined) {
+          playPromise.catch(err => {
+            // Autoplay was prevented, user will need to click play
+            console.log('Autoplay prevented:', err);
+          });
+        }
       } else {
         videoRef.current.pause();
       }
     }
-  }, [videoInView]);
+  }, [videoInView, showEntrance]);
 
   // Animation variants
   const fadeInUp = {
@@ -321,8 +327,9 @@ const LandingPageV2 = ({ token }) => {
                   className="w-full h-full object-contain"
                   controls
                   preload="metadata"
-                  muted
+                  poster="/demo-video-cover.png"
                   playsInline
+                  loop
                 >
                   <source src="/demo-video.mp4" type="video/mp4" />
                   Your browser does not support the video tag.
