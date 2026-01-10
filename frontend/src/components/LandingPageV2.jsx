@@ -428,6 +428,27 @@ const LandingPageV2 = ({ token }) => {
               </div>
             </div>
           </motion.div>
+
+          {/* CTA Button */}
+          <motion.div
+            className="text-center mt-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+          >
+            <ShimmerButton
+              onClick={() => navigate(token ? ROUTES.DASHBOARD : ROUTES.GUEST_ANALYZE)}
+              className="px-10 py-4 h-14 text-base"
+            >
+              {token ? 'Go to Dashboard' : 'Start Analyzing Now'} <ArrowRight size={18} />
+            </ShimmerButton>
+            {!token && (
+              <p className="text-gray-500 text-sm mt-4">
+                No credit card required • 10 free analyses
+              </p>
+            )}
+          </motion.div>
         </div>
       </div>
 
