@@ -143,21 +143,57 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.defer = true;
+    script.onload = () => {
+      // Initialize Google Sign-In when script loads
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || '535154830356-36e2i2u5rj74tsk0s0hib3d1f3kpkqvj.apps.googleusercontent.com',
+          callback: handleGoogleResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true
+        });
+      }
+    };
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
     };
   }, []);
 
   const handleGoogleLogin = () => {
-    // Use Google Identity Services
+    // Use Google Identity Services - render button popup instead of FedCM prompt
     if (window.google) {
-      window.google.accounts.id.initialize({
-        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || '535154830356-36e2i2u5rj74tsk0s0hib3d1f3kpkqvj.apps.googleusercontent.com',
-        callback: handleGoogleResponse
+      // Use renderButton instead of prompt() to avoid FedCM
+      const buttonDiv = document.createElement('div');
+      buttonDiv.style.position = 'absolute';
+      buttonDiv.style.opacity = '0';
+      buttonDiv.style.pointerEvents = 'none';
+      document.body.appendChild(buttonDiv);
+
+      window.google.accounts.id.renderButton(buttonDiv, {
+        type: 'standard',
+        theme: 'outline',
+        size: 'large',
+        text: 'continue_with',
+        shape: 'rectangular',
       });
-      window.google.accounts.id.prompt();
+
+      // Trigger click on the rendered button
+      setTimeout(() => {
+        const googleButton = buttonDiv.querySelector('div[role="button"]');
+        if (googleButton) {
+          googleButton.click();
+        }
+        // Clean up
+        setTimeout(() => {
+          if (document.body.contains(buttonDiv)) {
+            document.body.removeChild(buttonDiv);
+          }
+        }, 100);
+      }, 100);
     } else {
       setError('Google Sign-In is not loaded. Please refresh and try again.');
     }
