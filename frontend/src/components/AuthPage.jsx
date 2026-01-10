@@ -161,6 +161,7 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
         document.body.removeChild(script);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleGoogleLogin = () => {
