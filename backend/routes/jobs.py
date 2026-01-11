@@ -1,7 +1,5 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 import logging
 import re
 from urllib.parse import urlparse
@@ -11,12 +9,6 @@ from bs4 import BeautifulSoup
 logger = logging.getLogger(__name__)
 
 jobs_bp = Blueprint('jobs_v1', __name__, url_prefix='/api/v1/jobs')
-
-# Rate limiting
-limiter = Limiter(
-    key_func=get_remote_address,
-    default_limits=["100 per day", "20 per hour"]
-)
 
 def create_success_response(message: str, data: dict = None, status_code: int = 200):
     """Create standardized success response"""
@@ -153,7 +145,6 @@ def detect_job_board(url):
         return 'unknown'
 
 @jobs_bp.route('/fetch', methods=['POST'])
-@limiter.limit("10 per minute")
 def fetch_job_description():
     """
     Fetch job description from a job posting URL
