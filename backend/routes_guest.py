@@ -1,5 +1,6 @@
 """
-Guest mode routes - allow users to try the app with 5 free credits without login.
+Guest mode routes - allow users to try the app with 1 free analysis without login.
+Designed to show value and drive conversions to paid tiers.
 """
 
 from flask import Blueprint, request, jsonify, g

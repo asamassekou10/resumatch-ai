@@ -1342,11 +1342,72 @@ class CareerPath(db.Model):
         }
 
 
+class Purchase(db.Model):
+    """Purchase model for tracking micro-transactions and one-time purchases"""
+    __tablename__ = 'purchases'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+
+    # Purchase details
+    purchase_type = db.Column(db.String(50), nullable=False, index=True)  # 'single_rescan', 'weekly_pass', 'credits_pack'
+    amount_usd = db.Column(db.Float, nullable=False)  # Amount paid in USD
+    credits_granted = db.Column(db.Integer, default=0)  # Credits added to account
+
+    # For time-limited purchases (weekly pass)
+    access_expires_at = db.Column(db.DateTime, nullable=True, index=True)  # When the pass expires
+    is_active = db.Column(db.Boolean, default=True, nullable=False)  # Is the purchase still active/valid
+
+    # Payment details
+    stripe_payment_intent_id = db.Column(db.String(255), unique=True, nullable=True)
+    stripe_charge_id = db.Column(db.String(255), unique=True, nullable=True)
+    payment_status = db.Column(db.String(50), default='pending', nullable=False)  # pending, succeeded, failed, refunded
+    payment_method = db.Column(db.String(50), nullable=True)  # card, apple_pay, google_pay
+
+    # Metadata
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    user = db.relationship('User', backref=db.backref('purchases', lazy=True))
+
+    # Indexes for common queries
+    __table_args__ = (
+        db.Index('idx_user_purchase_type', 'user_id', 'purchase_type'),
+        db.Index('idx_purchase_expires', 'user_id', 'access_expires_at'),
+        db.Index('idx_payment_intent', 'stripe_payment_intent_id'),
+    )
+
+    def __repr__(self):
+        return f'<Purchase {self.id} - {self.purchase_type} for User {self.user_id}>'
+
+    def is_expired(self):
+        """Check if time-limited purchase has expired"""
+        if not self.access_expires_at:
+            return False
+        return datetime.utcnow() > self.access_expires_at
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'purchase_type': self.purchase_type,
+            'amount_usd': self.amount_usd,
+            'credits_granted': self.credits_granted,
+            'access_expires_at': self.access_expires_at.isoformat() if self.access_expires_at else None,
+            'is_active': self.is_active and not self.is_expired(),
+            'payment_status': self.payment_status,
+            'payment_method': self.payment_method,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
+        }
+
+
 class UserSchema(SQLAlchemyAutoSchema):
     """Marshmallow schema for User serialization"""
     email = fields.Email(required=True, validate=validate.Length(max=120))
     password = fields.Str(required=True, load_only=True, validate=validate.Length(min=6, max=128))
-    
+
     class Meta:
         model = User
         load_instance = True

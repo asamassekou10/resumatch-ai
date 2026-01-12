@@ -44,6 +44,7 @@ from routes.auth import auth_bp
 from routes.analysis import analysis_bp
 from routes.dashboard import dashboard_bp
 from routes.jobs import jobs_bp
+from routes.payments import payments_bp
 from routes_admin_diagnostics import admin_diag_bp
 from scheduled_ingestion_tasks import init_scheduler
 from email_automation import init_email_scheduler
@@ -2749,6 +2750,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(analysis_bp)
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(jobs_bp)
+app.register_blueprint(payments_bp)
 app.register_blueprint(config_bp)
 app.register_blueprint(keyword_bp)
 app.register_blueprint(skill_bp)
