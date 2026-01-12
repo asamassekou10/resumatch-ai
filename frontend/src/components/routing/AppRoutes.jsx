@@ -37,6 +37,7 @@ const AnalyzePage = lazy(() => import('../AnalyzePage'));
 const ProfilePage = lazy(() => import('../ProfilePage'));
 const SettingsPage = lazy(() => import('../SettingsPage'));
 const BillingPage = lazy(() => import('../BillingPage'));
+const StripeCheckout = lazy(() => import('../StripeCheckout'));
 
 // Market Intelligence Pages (Coming Soon)
 const ComingSoon = lazy(() => import('../ComingSoon'));
@@ -206,6 +207,15 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) 
             element={
               <ProtectedRoute>
                 <BillingPage user={userProfile} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path={ROUTES.CHECKOUT}
+            element={
+              <ProtectedRoute>
+                <StripeCheckout token={token} />
               </ProtectedRoute>
             }
           />

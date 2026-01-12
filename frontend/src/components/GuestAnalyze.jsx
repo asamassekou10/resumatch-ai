@@ -255,7 +255,7 @@ const GuestAnalyze = () => {
   const handleSelectPlan = (plan) => {
     // For guests, store plan in localStorage and redirect to signup
     localStorage.setItem('selected_plan', JSON.stringify(plan));
-    navigate(ROUTES.AUTH + '?mode=signup&redirect=checkout');
+    navigate(`${ROUTES.REGISTER}?redirect=checkout`);
   };
 
   const handleSignUp = () => {
@@ -739,7 +739,7 @@ const GuestAnalyze = () => {
                       title="Additional Missing Keywords"
                       blurredCount={analysisResults.match_analysis.blurred_keywords_count}
                       upgradeOptions={analysisResults.upgrade_options || []}
-                      onUpgrade={() => navigate(ROUTES.AUTH + '?mode=signup')}
+                      onUpgrade={() => navigate(ROUTES.REGISTER)}
                       message={analysisResults.upgrade_message || "Sign up to see all missing keywords"}
                     />
                   </div>
@@ -793,7 +793,7 @@ const GuestAnalyze = () => {
                   title="ATS Optimization Tips"
                   blurredCount={5}
                   upgradeOptions={analysisResults.upgrade_options || []}
-                  onUpgrade={() => navigate(ROUTES.AUTH + '?mode=signup')}
+                  onUpgrade={() => navigate(ROUTES.REGISTER)}
                   message="Sign up to unlock professional ATS strategies"
                   icon={Target}
                 />

@@ -66,11 +66,6 @@ const PricingPageV2 = ({ token, userProfile }) => {
   // Handle upgrade to Elite
   const handleUpgradeToElite = () => handleUpgrade('elite');
 
-  // Normalize subscription tier
-  const normalizedTier = userProfile?.subscription_tier === 'premium'
-    ? 'pro'
-    : (userProfile?.subscription_tier || 'free');
-
   // Determine button configuration based on user's current plan
   const getButtonConfig = (planName) => {
     const lowerPlan = planName.toLowerCase();

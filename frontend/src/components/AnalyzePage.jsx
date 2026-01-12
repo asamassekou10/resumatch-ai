@@ -290,6 +290,39 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
 
   // Payment handlers
   const handleUpgradeClick = (plan) => {
+    // Check if this is a subscription plan that should go to checkout
+    // Subscription plans: pro_founding, elite, monthly_pro (if it's a subscription)
+    // Micro-purchases: single_rescan, weekly_pass
+    const subscriptionPlans = ['pro_founding', 'elite'];
+    const microPurchasePlans = ['single_rescan', 'weekly_pass'];
+    
+    // If it's a subscription plan, redirect to checkout
+    if (subscriptionPlans.includes(plan.type)) {
+      const tier = plan.type === 'elite' ? 'elite' : 'pro_founding';
+      navigate(`${ROUTES.CHECKOUT}?tier=${tier}`, { replace: false });
+      setShowPricingModal(false);
+      return;
+    }
+    
+    // For micro-purchases, use payment modal
+    if (microPurchasePlans.includes(plan.type)) {
+      setSelectedPlan(plan);
+      setShowPricingModal(false);
+      setShowPaymentModal(true);
+      return;
+    }
+    
+    // Default: if monthly_pro is a subscription, redirect to checkout
+    // Otherwise, treat as micro-purchase
+    if (plan.type === 'monthly_pro') {
+      // Check if it's a subscription or one-time purchase based on plan data
+      // For now, assume monthly_pro subscriptions should go to checkout
+      navigate(`${ROUTES.CHECKOUT}?tier=pro_founding`, { replace: false });
+      setShowPricingModal(false);
+      return;
+    }
+    
+    // Fallback: use payment modal
     setSelectedPlan(plan);
     setShowPricingModal(false);
     setShowPaymentModal(true);

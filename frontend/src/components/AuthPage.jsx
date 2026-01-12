@@ -125,6 +125,31 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
         if (onLogin) {
           onLogin(token, data.user);
         }
+        
+        // Check for redirect parameter and selected plan
+        const searchParams = new URLSearchParams(location.search);
+        const redirect = searchParams.get('redirect');
+        const selectedPlan = localStorage.getItem('selected_plan');
+        
+        // If redirect is checkout and we have a selected plan, go to checkout
+        if (redirect === 'checkout' && selectedPlan) {
+          try {
+            const plan = JSON.parse(selectedPlan);
+            // Map plan type to tier for checkout
+            let tier = 'pro';
+            if (plan.type === 'monthly_pro' || plan.type === 'pro_founding') {
+              tier = 'pro_founding';
+            } else if (plan.type === 'elite') {
+              tier = 'elite';
+            }
+            navigate(`${ROUTES.CHECKOUT}?tier=${tier}`, { replace: true });
+            return;
+          } catch (e) {
+            console.error('Error parsing selected plan:', e);
+            localStorage.removeItem('selected_plan');
+          }
+        }
+        
         // Redirect to dashboard or intended destination
         const from = location.state?.from?.pathname || ROUTES.DASHBOARD;
         navigate(from, { replace: true });
@@ -223,10 +248,36 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
       }
 
       // Store the token and redirect
-      localStorage.setItem('token', data.data.access_token);
+      const token = data.data.access_token;
+      localStorage.setItem('token', token);
       if (onLogin) {
-        onLogin(data.data.access_token);
+        onLogin(token);
       }
+      
+      // Check for redirect parameter and selected plan
+      const searchParams = new URLSearchParams(location.search);
+      const redirect = searchParams.get('redirect');
+      const selectedPlan = localStorage.getItem('selected_plan');
+      
+      // If redirect is checkout and we have a selected plan, go to checkout
+      if (redirect === 'checkout' && selectedPlan) {
+        try {
+          const plan = JSON.parse(selectedPlan);
+          // Map plan type to tier for checkout
+          let tier = 'pro';
+          if (plan.type === 'monthly_pro' || plan.type === 'pro_founding') {
+            tier = 'pro_founding';
+          } else if (plan.type === 'elite') {
+            tier = 'elite';
+          }
+          navigate(`${ROUTES.CHECKOUT}?tier=${tier}`, { replace: true });
+          return;
+        } catch (e) {
+          console.error('Error parsing selected plan:', e);
+          localStorage.removeItem('selected_plan');
+        }
+      }
+      
       navigate(ROUTES.DASHBOARD);
     } catch (err) {
       console.error('Google auth error:', err);

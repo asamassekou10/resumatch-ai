@@ -15,6 +15,7 @@ export const ROUTES = {
   REGISTER: '/register',
   GUEST_ANALYZE: '/guest-analyze',
   PRICING: '/pricing',
+  CHECKOUT: '/checkout',
   HELP: '/help',
   HELP_TERMS: '/help/terms',
   HELP_PRIVACY: '/help/privacy',
