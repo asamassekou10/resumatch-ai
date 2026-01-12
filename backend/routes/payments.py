@@ -1,6 +1,6 @@
 """
 Micro-transaction payment routes
-Handles $2 single re-scans and $7 weekly passes
+Handles $1.99 single re-scans and $6.99 weekly passes
 """
 
 from flask import Blueprint, request, jsonify
@@ -24,12 +24,12 @@ if STRIPE_API_KEY:
 # Pricing configuration
 PRICING = {
     'single_rescan': {
-        'amount': 200,  # $2.00 in cents
+        'amount': 199,  # $1.99 in cents
         'description': 'Single Resume Re-Scan',
         'credits': 1
     },
     'weekly_pass': {
-        'amount': 700,  # $7.00 in cents
+        'amount': 699,  # $6.99 in cents
         'description': '7-Day Unlimited Pass',
         'duration_days': 7,
         'credits': 0  # Unlimited during the period
@@ -41,7 +41,7 @@ PRICING = {
 @jwt_required()
 def create_micro_purchase():
     """
-    Create a Stripe payment intent for micro-transactions ($2 re-scan or $7 weekly pass)
+    Create a Stripe payment intent for micro-transactions ($1.99 re-scan or $6.99 weekly pass)
 
     Request body:
         - purchase_type: 'single_rescan' or 'weekly_pass'
@@ -281,13 +281,13 @@ def get_pricing():
     return jsonify({
         'micro_transactions': {
             'single_rescan': {
-                'price': 2.00,
+                'price': 1.99,
                 'currency': 'USD',
                 'description': 'Single Resume Re-Scan',
                 'best_for': 'Quick check after making changes'
             },
             'weekly_pass': {
-                'price': 7.00,
+                'price': 6.99,
                 'currency': 'USD',
                 'description': '7-Day Unlimited Pass',
                 'best_for': 'Active job seekers',

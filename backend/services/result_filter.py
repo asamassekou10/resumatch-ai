@@ -149,12 +149,12 @@ class ResultFilter:
             'upgrade_options': [
                 {
                     'type': 'single_rescan',
-                    'price': 2.00,
+                    'price': 1.99,
                     'description': 'Re-scan once to see improvements'
                 },
                 {
                     'type': 'weekly_pass',
-                    'price': 7.00,
+                    'price': 6.99,
                     'description': '7 days unlimited scans',
                     'recommended': True
                 },

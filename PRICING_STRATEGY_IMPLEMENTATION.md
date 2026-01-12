@@ -13,7 +13,7 @@ Implementing a conversion-optimized pricing strategy that transforms the free ti
 ### The Solution
 1. **Reduce friction, increase pain**: Keep no-credit-card signup, but show value without giving away the solution
 2. **The "Blur" Strategy**: Show users they have problems, charge to see the specific solutions
-3. **Micro-transactions**: Lower commitment with $2 re-scan and $7 weekly pass
+3. **Micro-transactions**: Lower commitment with $1.99 re-scan and $6.99 weekly pass
 4. **Multiple conversion points**: Capture users at different price sensitivity levels
 
 ## New Pricing Tiers
@@ -34,16 +34,18 @@ Implementing a conversion-optimized pricing strategy that transforms the free ti
 
 ### Micro-Transactions
 
-**$2 - Single Re-Scan**
+**$1.99 - Single Re-Scan**
 - 1 credit for re-analysis
 - Perfect for: "Did my changes work?"
 - Impulse buy for quick validation
+- Under $2 = pocket change psychology
 - Many will buy multiple before realizing weekly pass is better
 
-**$7 - 7-Day Unlimited Pass** ⭐ RECOMMENDED
+**$6.99 - 7-Day Unlimited Pass** ⭐ RECOMMENDED
 - Unlimited scans for 7 days
 - Perfect for: Active job seekers
-- Best value perception
+- Best value perception (3.5x scans vs buying individual)
+- Under $7 = impulse purchase threshold
 - Captures users during job search intensity
 
 ### Subscription
@@ -80,11 +82,11 @@ Implementing a conversion-optimized pricing strategy that transforms the free ti
 ```python
 PRICING = {
     'single_rescan': {
-        'amount': 200,  # $2.00
+        'amount': 199,  # $1.99
         'credits': 1
     },
     'weekly_pass': {
-        'amount': 700,  # $7.00
+        'amount': 699,  # $6.99
         'duration_days': 7
     }
 }
@@ -170,8 +172,8 @@ Visit Site
 │   └─> BLURRED: +9 more keywords 🔒
 └─> Paywall Options:
     ├─> Sign up (free account = 1 more scan)
-    ├─> $2 for this result
-    └─> $7 for 7 days unlimited
+    ├─> $1.99 for this result
+    └─> $6.99 for 7 days unlimited
 ```
 
 ### Registered User (Free Tier)
@@ -183,8 +185,8 @@ Login
 ├─> Edit resume
 ├─> Want to re-scan
 └─> PAYWALL 🔒
-    ├─> $2 - Single re-scan
-    ├─> $7 - Weekly pass (save $$$)
+    ├─> $1.99 - Single re-scan
+    ├─> $6.99 - Weekly pass (save $$$)
     └─> $19.99/month - Pro
 ```
 
@@ -195,7 +197,7 @@ Login
 ├─> "Expires in 4 days, 12 hours"
 ├─> Unlimited scans
 ├─> Full results always
-└─> Prompt before expiry: "Extend for $7 or upgrade to Pro"
+└─> Prompt before expiry: "Extend for $6.99 or upgrade to Pro"
 ```
 
 ## Conversion Optimization
@@ -205,15 +207,15 @@ Login
 1. **Loss Aversion**: "Your analysis expires in 48 hours"
 2. **Scarcity**: "Limited time: $5.60 (20% off)"
 3. **Social Proof**: "1,247 upgraded this week"
-4. **Anchoring**: Show $19.99/month first, then $7 looks cheap
-5. **Pain of Paying**: $7 < $10 feels like "pocket change"
+4. **Anchoring**: Show $19.99/month first, then $6.99 looks cheap
+5. **Pain of Paying**: $6.99 < $7 feels "under $7", $1.99 < $2 = "basically free"
 6. **Immediate Gratification**: "Unlock now" not "Subscribe"
 
 ### Strategic Placement
 
 1. **After Score Display**: "See what's holding you back →"
-2. **After Resume Edit**: "Did your score improve? Check now →"
-3. **Keyword Tease**: "You're missing: Python, AWS, Docker, +9 more 🔒"
+2. **After Resume Edit**: "Did your score improve? Re-scan for $1.99 →"
+3. **Keyword Tease**: "You're missing: Python, AWS, Docker, +9 more 🔒 - Unlock for $1.99"
 4. **Countdown Timer**: "Analysis expires in 23:45:12"
 
 ### Value Demonstration
@@ -279,21 +281,27 @@ const { error } = await stripe.confirmPayment({
 - 100 signups → 0 paying users (0% conversion)
 - $0 revenue per 100 users
 
-### After Implementation
-- 100 signups → 15-25% upgrade
-  - 10% buy $2 re-scans (~$20)
-  - 5% buy $7 pass (~$35)
-  - 2% buy $19.99/month (~$40)
-- **$80-120 revenue per 100 users**
+### After Implementation (New Pricing)
+- 100 signups → 18-25% upgrade
+  - 12% buy $1.99 re-scans (~$24)
+  - 7% buy $6.99 pass (~$49)
+  - 2.5% buy $19.99/month (~$50)
+- **$123 revenue per 100 users** (30% increase from lower friction)
 
-### 30-Day Projection
+### 30-Day Projection (Updated Pricing)
 - 1,000 users/month
-- 15% conversion = 150 paying customers
-- Revenue mix:
-  - 100 × $2 = $200
-  - 50 × $7 = $350
-  - 20 × $19.99 = $400
-- **~$950/month minimum**
+- **18-25% conversion** (lower price = higher conversion)
+- Revenue mix with new pricing:
+  - 120 × $1.99 = $239
+  - 70 × $6.99 = $489
+  - 25 × $19.99 = $500
+- **~$1,228/month minimum** (29% increase vs old pricing)
+
+**Why lower prices = more revenue:**
+- $1.99 crosses impulse buy threshold ($2 feels expensive, $1.99 feels cheap)
+- $6.99 stays under $7 psychological barrier
+- Higher conversion rate offsets lower unit price
+- More users buying multiple $1.99 scans before upgrading
 
 ## Next Steps
 
