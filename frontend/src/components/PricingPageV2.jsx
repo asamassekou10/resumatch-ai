@@ -375,9 +375,17 @@ const PricingPageV2 = ({ token, userProfile }) => {
                       >
                         <span className="text-4xl font-bold text-white font-display relative z-10">${price.toFixed(2)}</span>
                         <span className="text-gray-400 text-base font-normal font-sans ml-2 relative z-10">
-                          {price === 0 ? '/mo' : isYearly ? '/mo' : '/mo'}
+                          {price === 0 ? '' : plan.name === 'Pay Per Scan' || plan.name === '7-Day Pass' ? '' : isYearly ? '/year' : '/mo'}
                         </span>
                       </motion.div>
+
+                      {/* One-time payment label */}
+                      {(plan.name === 'Pay Per Scan' || plan.name === '7-Day Pass') && (
+                        <p className="text-cyan-400 text-sm font-semibold mt-2 relative z-10">
+                          One-time payment
+                        </p>
+                      )}
+
                       {showSavings && (
                         <motion.p
                           className="text-green-400 text-sm font-semibold mt-2 relative z-10"

@@ -11,6 +11,7 @@ import ScoreBreakdown from './ScoreBreakdown';
 import { generateFAQSchema } from '../utils/structuredData';
 import { isPrerendering } from '../utils/prerender';
 import BlurredSection from './pricing/BlurredSection';
+import PricingModal from './pricing/PricingModal';
 
 // FAQ Accordion Component - Using CSS transitions instead of Framer Motion
 const FAQItem = ({ question, answer, isOpen, onClick }) => (
@@ -51,6 +52,7 @@ const GuestAnalyze = () => {
   const [, setSessionInfo] = useState(null);
   const [openFAQ, setOpenFAQ] = useState(null);
   const [showComplete, setShowComplete] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
 
   // FAQ data for the page
   const faqData = [
@@ -232,12 +234,12 @@ const GuestAnalyze = () => {
       const errorMessage = err.message || 'Analysis failed. Please try again.';
 
       if (errorMessage.includes('No guest credits remaining') || errorMessage.includes('INSUFFICIENT_CREDITS')) {
-        setError('🎯 You\'ve used your free guest analysis! Ready for more? Sign up now and get 10 free analyses per month, AI-powered insights, and exclusive features. No credit card required!');
         setGuestCredits(0);
+        setShowPricingModal(true);
       } else if (errorMessage.includes('Daily guest analysis limit reached') || errorMessage.includes('DAILY_LIMIT_EXCEEDED') || errorMessage.includes('Guest analysis limit reached')) {
-        setError('📊 You\'ve used your free guest analysis! Want more? Sign up now for 10 free analyses per month plus AI optimization, cover letter generation, and premium features. No credit card required!');
+        setShowPricingModal(true);
       } else if (errorMessage.includes('Too many guest sessions') || errorMessage.includes('RATE_LIMIT_EXCEEDED')) {
-        setError('⏰ Too many sessions created. Sign up for a free account to get 10 analyses per month and unlock premium features!');
+        setError('⏰ Too many sessions created. Please try again later or sign up for a free account!');
       } else {
         setError(errorMessage);
       }
@@ -247,7 +249,12 @@ const GuestAnalyze = () => {
   };
 
   const handleUpgrade = () => {
-    navigate(ROUTES.PRICING);
+    setShowPricingModal(true);
+  };
+
+  const handleSelectPlan = (plan) => {
+    // For guests, redirect to signup with pricing info
+    navigate(ROUTES.AUTH + '?mode=signup&plan=' + plan.type);
   };
 
   const handleSignUp = () => {
@@ -941,6 +948,19 @@ const GuestAnalyze = () => {
         )}
         </div>
       </div>
+
+      {/* Pricing Modal for guests who run out of credits */}
+      <PricingModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        onSelectPlan={handleSelectPlan}
+        upgradeOptions={[
+          { type: 'single_rescan', price: 1.99, description: 'Re-scan once to see improvements' },
+          { type: 'weekly_pass', price: 6.99, description: '7 days unlimited scans', recommended: true },
+          { type: 'monthly_pro', price: 19.99, description: 'Full Pro features + templates' }
+        ]}
+        creditsRemaining={guestCredits}
+      />
     </>
   );
 };
