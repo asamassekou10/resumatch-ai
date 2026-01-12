@@ -119,10 +119,19 @@ const PricingPageV2 = ({ token, userProfile }) => {
       };
     }
 
-    if (lowerPlan === 'pro monthly') {
+    if (lowerPlan === 'pro founding') {
       return {
-        text: 'Subscribe to Pro',
-        action: () => handleUpgrade('pro'),
+        text: 'Join as Founding Member',
+        action: handleUpgradeToProFounding,
+        variant: 'primary',
+        disabled: loading
+      };
+    }
+
+    if (lowerPlan === 'elite') {
+      return {
+        text: 'Choose Elite',
+        action: handleUpgradeToElite,
         variant: 'secondary',
         disabled: loading
       };
@@ -191,24 +200,46 @@ const PricingPageV2 = ({ token, userProfile }) => {
       specialNote: 'Save $3+ compared to 4 single scans'
     },
     {
-      name: 'Pro Monthly',
-      description: 'For serious job seekers',
+      name: 'Pro Founding',
+      description: 'Lock in $19.99 forever',
       monthlyPrice: 19.99,
       yearlyPrice: 199.99,
-      credits: 'unlimited',
+      credits: 50,
       features: [
-        'Unlimited scans forever',
-        'Everything in 7-Day Pass',
-        'Premium resume templates',
+        '50 analyses/month',
+        'Full ATS scanning',
+        'AI feedback generation',
+        'Resume optimization',
         'Cover letter generation',
-        'Priority AI processing',
+        'Unlimited templates',
+        'Priority support',
+        '🏆 Founding Member badge',
+        '🔒 Price locked forever'
+      ],
+      notIncluded: ['API access', 'Bulk uploads'],
+      highlighted: false,
+      icon: Zap,
+      badge: 'Limited: First 100 Only',
+      specialNote: 'Regular price $24.99 - Save $5/month forever'
+    },
+    {
+      name: 'Elite',
+      description: 'For recruiters & coaches',
+      monthlyPrice: 49.99,
+      yearlyPrice: 499.99,
+      credits: 200,
+      features: [
+        '200 analyses/month',
+        'Everything in Pro',
+        'API access',
+        'Bulk uploads',
+        'White-label options',
         'Advanced analytics',
-        'Priority support'
+        'Dedicated support'
       ],
       notIncluded: [],
       highlighted: false,
-      icon: Crown,
-      specialNote: 'Cancel anytime - no commitments'
+      icon: Crown
     }
   ];
 
