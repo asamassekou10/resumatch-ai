@@ -135,9 +135,8 @@ def linkedin_callback():
             user.email_verified = profile.get('email_verified', True)
             logger.info(f"Existing user logged in via LinkedIn: {email}")
         else:
-            # Create new user with automatic trial activation
+            # Create new user - free tier by default, no automatic trial
             now = datetime.utcnow()
-            trial_end = now + timedelta(days=7)
             
             user = User(
                 email=email,
@@ -147,14 +146,14 @@ def linkedin_callback():
                 auth_provider='linkedin',
                 email_verified=profile.get('email_verified', True),
                 last_login=datetime.utcnow(),
-                # Automatic 7-day free trial activation
-                subscription_tier='pro',  # Trial mode - Pro tier
-                subscription_status='trial',
-                credits=100,  # Pro tier credits during trial
-                is_trial_active=True,
-                trial_start_date=now,
-                trial_end_date=trial_end,
-                trial_credits_granted=100,
+                # Free tier by default - no automatic trial
+                subscription_tier='free',
+                subscription_status='inactive',
+                credits=10,  # Free tier credits
+                is_trial_active=False,
+                trial_start_date=None,  # No trial until Stripe subscription
+                trial_end_date=None,
+                trial_credits_granted=0,
                 email_sequence_step=0
             )
             db.session.add(user)
@@ -169,7 +168,6 @@ def linkedin_callback():
                 frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
                 unsubscribe_link = f"{frontend_url}/unsubscribe?token={token}"
             email_service.send_welcome_email(recipient_email=email, recipient_name=recipient_name, verification_required=False, unsubscribe_link=unsubscribe_link)
-            email_service.send_trial_activation_email(recipient_email=email, recipient_name=recipient_name, trial_end_date=trial_end, unsubscribe_link=unsubscribe_link)
             
             # Update email tracking
             user.last_email_sent_date = now

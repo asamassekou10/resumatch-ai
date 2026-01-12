@@ -253,9 +253,18 @@ const GuestAnalyze = () => {
   };
 
   const handleSelectPlan = (plan) => {
-    // For guests, store plan in localStorage and redirect to signup
-    localStorage.setItem('selected_plan', JSON.stringify(plan));
-    navigate(`${ROUTES.REGISTER}?redirect=checkout`);
+    const microPurchases = ['single_rescan', 'weekly_pass'];
+    
+    if (microPurchases.includes(plan.type)) {
+      // Store plan and flag to skip trial
+      localStorage.setItem('selected_plan', JSON.stringify(plan));
+      localStorage.setItem('skip_trial', 'true');
+      navigate(`${ROUTES.REGISTER}?redirect=payment`);
+    } else {
+      // Subscription plans go to checkout
+      localStorage.setItem('selected_plan', JSON.stringify(plan));
+      navigate(`${ROUTES.REGISTER}?redirect=checkout`);
+    }
   };
 
   const handleSignUp = () => {
@@ -298,7 +307,7 @@ const GuestAnalyze = () => {
                     <p className="text-gray-300 mb-6 text-lg leading-relaxed">{error}</p>
                     <div className="flex flex-col sm:flex-row gap-3 justify-center relative z-10">
                       <ShimmerButton onClick={() => navigate(ROUTES.REGISTER)}>
-                        Start 7-Day Free Trial <ArrowRight className="ml-1" size={16} />
+                        Sign Up Free <ArrowRight className="ml-1" size={16} />
                       </ShimmerButton>
                       <button
                         onClick={handleSignIn}
@@ -926,7 +935,7 @@ const GuestAnalyze = () => {
                   <ArrowRight className="w-5 h-5" />
                 </button>
                 <p className="text-slate-400 text-sm mt-4">
-                  No credit card required • Start your free trial today
+                  Get started with 10 free credits today
                 </p>
               </div>
             </div>

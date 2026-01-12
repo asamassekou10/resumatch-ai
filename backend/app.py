@@ -545,22 +545,28 @@ def register():
     # Create user (NOT verified yet)
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     now = datetime.utcnow()
-    trial_end = now + timedelta(days=7)
     
+    # Check if skip_trial flag is set (for micro-purchases)
+    skip_trial = data.get('skip_trial', False)
+    
+    # New system: No automatic trial activation
+    # Trial only activates when user subscribes via Stripe with credit card
+    # Honor existing trials: If user already has trial_start_date, keep it (for existing users)
+    # For new signups: Create with free tier only
     user = User(
         email=email,
         password_hash=hashed_password,
         auth_provider='email',
         email_verified=False,  # Not verified yet
         verification_token=verification_token,
-        # Automatic 7-day free trial activation
-        subscription_tier='pro',  # Trial mode - Pro tier
-        subscription_status='trial',
-        credits=100,  # Pro tier credits during trial
-        is_trial_active=True,
-        trial_start_date=now,
-        trial_end_date=trial_end,
-        trial_credits_granted=100,
+        # Free tier by default - no automatic trial
+        subscription_tier='free',
+        subscription_status='inactive',
+        credits=10,  # Free tier credits
+        is_trial_active=False,
+        trial_start_date=None,  # No trial until Stripe subscription
+        trial_end_date=None,
+        trial_credits_granted=0,
         email_sequence_step=0
     )
 
@@ -580,11 +586,10 @@ def register():
         if unsubscribe_token:
             unsubscribe_link = f"{frontend_url}/unsubscribe?token={unsubscribe_token}"
 
-        # Send emails: verification, welcome, and trial activation
+        # Send emails: verification and welcome (no trial activation email)
         recipient_name = email.split('@')[0]
         email_sent = False
         welcome_sent = False
-        trial_email_sent = False
         
         try:
             # Send verification email
@@ -602,23 +607,15 @@ def register():
                 unsubscribe_link=unsubscribe_link
             )
             
-            # Send trial activation email
-            trial_email_sent = email_service.send_trial_activation_email(
-                recipient_email=email,
-                recipient_name=recipient_name,
-                trial_end_date=trial_end,
-                unsubscribe_link=unsubscribe_link
-            )
-            
             # Update email tracking
             user.last_email_sent_date = now
-            user.email_sequence_step = 1  # Welcome and trial emails sent
+            user.email_sequence_step = 1  # Welcome email sent
             db.session.commit()
 
             if email_sent:
-                logging.info(f"New user registered: {email}, verification email sent, trial activated")
+                logging.info(f"New user registered: {email}, verification email sent")
                 response = {
-                    'message': 'Registration successful! Your 7-day free trial has been activated. Please check your email to verify your account.',
+                    'message': 'Registration successful! Please check your email to verify your account.',
                     'email': email,
                     'verification_required': True,
                     'trial_active': True,
@@ -637,23 +634,19 @@ def register():
                 
                 # Still allow registration, but inform user email failed
                 response = {
-                    'message': 'Registration successful! Your 7-day free trial has been activated. However, we could not send the verification email. Please use the resend verification feature or contact support@resumeanalyzerai.com.',
+                    'message': 'Registration successful! However, we could not send the verification email. Please use the resend verification feature or contact support@resumeanalyzerai.com.',
                     'email': email,
                     'verification_required': True,
                     'email_sent': False,
-                    'trial_active': True,
-                    'trial_end_date': trial_end.isoformat(),
                     'verification_link': verification_link  # Provide link as fallback
                 }
         except Exception as e:
             logging.error(f"Exception during email sending for {email}: {str(e)}", exc_info=True)
             response = {
-                'message': 'Registration successful! Your 7-day free trial has been activated. However, we encountered an error sending the verification email. Please use the resend verification feature or contact support@resumeanalyzerai.com.',
+                'message': 'Registration successful! However, we encountered an error sending the verification email. Please use the resend verification feature or contact support@resumeanalyzerai.com.',
                 'email': email,
                 'verification_required': True,
                 'email_sent': False,
-                'trial_active': True,
-                'trial_end_date': trial_end.isoformat(),
                 'verification_link': verification_link
             }
 
@@ -1062,27 +1055,26 @@ def google_callback():
                 auth_provider='google',
                 last_login=datetime.utcnow(),
                 email_verified=True,  # Google OAuth users are pre-verified
-                # Automatic 7-day free trial activation
-                subscription_tier='pro',  # Trial mode - Pro tier
-                subscription_status='trial',
-                credits=100,  # Pro tier credits during trial
-                is_trial_active=True,
-                trial_start_date=now,
-                trial_end_date=trial_end,
-                trial_credits_granted=100,
+                # Free tier by default - no automatic trial
+                subscription_tier='free',
+                subscription_status='inactive',
+                credits=10,  # Free tier credits
+                is_trial_active=False,
+                trial_start_date=None,  # No trial until Stripe subscription
+                trial_end_date=None,
+                trial_credits_granted=0,
                 email_sequence_step=0
             )
             db.session.add(user)
             db.session.commit()
             
-            # Send welcome emails for new Google OAuth users
+            # Send welcome email for new Google OAuth users (no trial activation email)
             recipient_name = name or email.split('@')[0]
             unsubscribe_link = None
             unsubscribe_token = email_service.generate_unsubscribe_token(user.id)
             if unsubscribe_token:
                 unsubscribe_link = f"{frontend_url}/unsubscribe?token={unsubscribe_token}"
             email_service.send_welcome_email(recipient_email=email, recipient_name=recipient_name, verification_required=False, unsubscribe_link=unsubscribe_link)
-            email_service.send_trial_activation_email(recipient_email=email, recipient_name=recipient_name, trial_end_date=trial_end, unsubscribe_link=unsubscribe_link)
             
             # Update email tracking
             user.last_email_sent_date = now
@@ -2350,23 +2342,35 @@ def create_checkout_session():
                 logging.error(f"Stripe customer creation error: {str(e)}")
                 return jsonify({'error': 'Failed to create customer account. Please try again.'}), 500
         
+        # Check if user already has a trial (honor existing trials)
+        has_existing_trial = user.trial_start_date is not None and user.trial_end_date and user.trial_end_date > datetime.utcnow()
+        
         # Create checkout session with actual Price ID
+        # Add 7-day trial period for new subscriptions (credit card required)
+        checkout_params = {
+            'customer': customer_id,
+            'payment_method_types': ['card'],
+            'line_items': [{
+                'price': price_id,
+                'quantity': 1,
+            }],
+            'mode': 'subscription',
+            'success_url': f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/dashboard?payment=success&tier={tier_param}",
+            'cancel_url': f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/pricing?payment=cancel",
+            'metadata': {
+                'user_id': str(user_id),
+                'tier': tier_param
+            }
+        }
+        
+        # Add trial period only if user doesn't have an existing trial
+        if not has_existing_trial:
+            checkout_params['subscription_data'] = {
+                'trial_period_days': 7
+            }
+        
         try:
-            checkout_session = stripe.checkout.Session.create(
-                customer=customer_id,
-                payment_method_types=['card'],
-                line_items=[{
-                    'price': price_id,
-                    'quantity': 1,
-                }],
-                mode='subscription',
-                success_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/dashboard?payment=success&tier={tier_param}",
-                cancel_url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/pricing?payment=cancel",
-                metadata={
-                    'user_id': str(user_id),
-                    'tier': tier_param
-                }
-            )
+            checkout_session = stripe.checkout.Session.create(**checkout_params)
             
             logging.info(f"Checkout session created for user {user_id}, tier {tier_param}: {checkout_session.id}")
             
@@ -2439,31 +2443,99 @@ def stripe_webhook():
                 from config_manager import ConfigManager
                 config_manager = ConfigManager()
 
-                user.subscription_id = session.get('subscription')
+                subscription_id = session.get('subscription')
+                user.subscription_id = subscription_id
                 user.subscription_tier = tier
-                user.subscription_status = 'active'
+                
+                # Check if subscription is in trial period
+                if subscription_id:
+                    try:
+                        subscription = stripe.Subscription.retrieve(subscription_id)
+                        is_trialing = subscription.status == 'trialing'
+                        
+                        if is_trialing:
+                            # Trial period: grant 10 credits and set trial dates
+                            user.subscription_status = 'trialing'
+                            user.is_trial_active = True
+                            now = datetime.utcnow()
+                            user.trial_start_date = now
+                            user.trial_end_date = datetime.fromtimestamp(subscription.trial_end, tz=None) if subscription.trial_end else (now + timedelta(days=7))
+                            user.trial_credits_granted = 10
+                            user.credits = 10  # Grant 10 credits during trial
+                            logging.info(f"User {user_id} started 7-day trial for {tier} tier (10 credits)")
+                        else:
+                            # Active subscription (trial ended or no trial)
+                            user.subscription_status = 'active'
+                            # Allocate credits based on tier from database
+                            tier_config = config_manager.get_subscription_tier(tier)
+                            if tier_config:
+                                user.credits = tier_config.monthly_credits
+                                logging.info(f"User {user_id} upgraded to {tier} tier ({tier_config.monthly_credits} credits)")
+                            else:
+                                # Fallback for backward compatibility
+                                if tier == 'elite':
+                                    user.credits = 1000
+                                elif tier == 'pro' or tier == 'pro_founding':
+                                    user.credits = 100
+                                else:
+                                    user.credits = 20
+                                logging.warning(f"Tier config not found for {tier}, using fallback credits")
+                    except Exception as e:
+                        logging.error(f"Error checking subscription status: {str(e)}")
+                        # Fallback: assume active subscription
+                        user.subscription_status = 'active'
+                        tier_config = config_manager.get_subscription_tier(tier)
+                        if tier_config:
+                            user.credits = tier_config.monthly_credits
+                        elif tier == 'elite':
+                            user.credits = 1000
+                        elif tier == 'pro' or tier == 'pro_founding':
+                            user.credits = 100
+                        else:
+                            user.credits = 20
 
                 # Set subscription start date for billing anniversary
                 if not user.subscription_start_date:
                     user.subscription_start_date = datetime.utcnow()
 
-                # Allocate credits based on tier from database
+                db.session.commit()
+
+    elif event['type'] == 'customer.subscription.updated':
+        subscription = event['data']['object']
+        subscription_id = subscription['id']
+        
+        # Find user by subscription ID
+        user = User.query.filter_by(subscription_id=subscription_id).first()
+        if user:
+            # Check if trial ended and subscription is now active
+            if subscription.status == 'active' and user.subscription_status == 'trialing':
+                # Trial ended, subscription is now active - grant full credits
+                from config_manager import ConfigManager
+                config_manager = ConfigManager()
+                tier = user.subscription_tier
+                
                 tier_config = config_manager.get_subscription_tier(tier)
                 if tier_config:
                     user.credits = tier_config.monthly_credits
-                    logging.info(f"User {user_id} upgraded to {tier} tier ({tier_config.monthly_credits} credits)")
                 else:
-                    # Fallback for backward compatibility
+                    # Fallback
                     if tier == 'elite':
                         user.credits = 1000
-                    elif tier == 'pro':
+                    elif tier == 'pro' or tier == 'pro_founding':
                         user.credits = 100
                     else:
                         user.credits = 20
-                    logging.warning(f"Tier config not found for {tier}, using fallback credits")
-
+                
+                user.subscription_status = 'active'
+                user.is_trial_active = False
                 db.session.commit()
-
+                logging.info(f"User {user.id} trial ended, subscription now active ({user.credits} credits)")
+            elif subscription.status == 'trialing':
+                # Still in trial
+                user.subscription_status = 'trialing'
+                user.is_trial_active = True
+                db.session.commit()
+    
     elif event['type'] == 'customer.subscription.deleted':
         subscription = event['data']['object']
         subscription_id = subscription['id']
@@ -2474,11 +2546,12 @@ def stripe_webhook():
             # Downgrade to free tier
             user.subscription_tier = 'free'
             user.subscription_status = 'cancelled'
-            user.credits = 3  # Free tier gets 3 credits
+            user.credits = 10  # Free tier gets 10 credits (updated from 3)
             user.subscription_id = None
+            user.is_trial_active = False
             db.session.commit()
 
-            logging.info(f"User {user.id} downgraded to free tier (3 credits)")
+            logging.info(f"User {user.id} downgraded to free tier (10 credits)")
     
     return jsonify({'status': 'success'}), 200
 

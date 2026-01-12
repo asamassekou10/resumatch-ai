@@ -146,7 +146,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
         'ATS score & feedback',
         'See all missing keywords',
         'AI recommendations',
-        'No credit card required'
+        '10 free credits to start'
       ],
       notIncluded: ['Additional scans', 'Unlimited access'],
       highlighted: false,

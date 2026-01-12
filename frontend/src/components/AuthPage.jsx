@@ -85,10 +85,20 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
 
     try {
       const endpoint = isLogin ? 'login' : 'register';
+      
+      // Check if skip_trial flag is set (for micro-purchase signups)
+      const skipTrial = localStorage.getItem('skip_trial') === 'true';
+      const requestBody = { ...formData };
+      if (skipTrial && !isLogin) {
+        requestBody.skip_trial = true;
+        // Clear the flag after using it
+        localStorage.removeItem('skip_trial');
+      }
+      
       const response = await fetch(`${API_URL}/auth/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(requestBody)
       });
       const data = await response.json();
 
@@ -130,6 +140,15 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
         const searchParams = new URLSearchParams(location.search);
         const redirect = searchParams.get('redirect');
         const selectedPlan = localStorage.getItem('selected_plan');
+        const skipTrial = localStorage.getItem('skip_trial');
+        
+        // If redirect is payment (micro-purchase), go to analyze page which will show payment modal
+        if (redirect === 'payment' && selectedPlan) {
+          // Keep selected_plan in localStorage for AnalyzePage to pick up
+          // skip_trial flag is already set, will be used by backend
+          navigate(ROUTES.ANALYZE, { replace: true });
+          return;
+        }
         
         // If redirect is checkout and we have a selected plan, go to checkout
         if (redirect === 'checkout' && selectedPlan) {
@@ -258,6 +277,15 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
       const searchParams = new URLSearchParams(location.search);
       const redirect = searchParams.get('redirect');
       const selectedPlan = localStorage.getItem('selected_plan');
+      const skipTrial = localStorage.getItem('skip_trial');
+      
+      // If redirect is payment (micro-purchase), go to analyze page which will show payment modal
+      if (redirect === 'payment' && selectedPlan) {
+        // Keep selected_plan in localStorage for AnalyzePage to pick up
+        // skip_trial flag is already set, will be used by backend
+        navigate(ROUTES.ANALYZE, { replace: true });
+        return;
+      }
       
       // If redirect is checkout and we have a selected plan, go to checkout
       if (redirect === 'checkout' && selectedPlan) {
@@ -350,7 +378,7 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
                 {isLogin ? 'Welcome Back' : 'Create Account'}
               </h1>
               <p className="text-gray-400 relative z-10 mb-4">
-                {isLogin ? 'Sign in to continue' : 'Start your 7-day free trial - No credit card required'}
+                {isLogin ? 'Sign in to continue' : 'Create your free account'}
               </p>
 
               {/* Security Badges */}
