@@ -8,6 +8,7 @@ from validators import FileValidator, TextValidator, RequestValidator, RateLimit
 from errors import ValidationError, NotFoundError, AIProcessingError, FileProcessingError
 from ai_processor import ai_processor
 from gemini_service import gemini_service
+from services.result_filter import ResultFilter
 import logging
 
 logger = logging.getLogger(__name__)
@@ -114,17 +115,24 @@ def analyze_resume():
         deduction_result = SubscriptionService.deduct_credits(user.id, 'resume_analysis')
         logger.info(f"Analysis completed for user {user.id}, score: {result['match_score']}%. Credits remaining: {deduction_result['credits_remaining']}")
 
+        # Get user's analysis count to determine if this is their first scan
+        analysis_count = Analysis.query.filter_by(user_id=user.id).count()
+
+        # Apply blur strategy based on user tier and analysis count
+        filtered_result = ResultFilter.filter_analysis_result(
+            analysis_result=result,
+            user=user,
+            analysis_count=analysis_count - 1  # Subtract 1 because we just added this analysis
+        )
+
+        # Add analysis metadata
+        filtered_result['analysis_id'] = analysis.id
+        filtered_result['credits_remaining'] = deduction_result['credits_remaining']
+        filtered_result['created_at'] = analysis.created_at.isoformat()
+
         return create_success_response(
             "Analysis completed successfully",
-            {
-                'analysis_id': analysis.id,
-                'match_score': result['match_score'],
-                'credits_remaining': deduction_result['credits_remaining'],
-                'keywords_found': result['keywords_found'],
-                'keywords_missing': result['keywords_missing'],
-                'suggestions': result['suggestions'],
-                'created_at': analysis.created_at.isoformat()
-            }
+            filtered_result
         )
         
     except (ValidationError, FileProcessingError, AIProcessingError) as e:

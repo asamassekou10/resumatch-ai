@@ -12,6 +12,7 @@ import json
 from models import db, GuestSession, GuestAnalysis
 from ai_processor import process_resume_analysis
 from security_config import sanitize_text_input, validate_file_upload
+from services.result_filter import ResultFilter
 import logging
 
 guest_bp = Blueprint('guest', __name__, url_prefix='/api/guest')
@@ -301,22 +302,32 @@ def analyze_resume_guest():
 
         logger.info(f"Guest analysis created: {analysis_id} for session {guest_session.id}")
 
-        return jsonify({
-            'analysis_id': analysis_id,
-            'overall_score': analysis_result.get('overall_score'),
-            'interpretation': analysis_result.get('interpretation'),
-            'match_analysis': analysis_result.get('match_analysis'),
-            'ats_optimization': analysis_result.get('ats_optimization'),
-            'recommendations': analysis_result.get('recommendations'),
-            'score_breakdown': analysis_result.get('score_breakdown'),
-            'job_industry': analysis_result.get('job_industry'),
-            'job_level': analysis_result.get('job_level'),
-            'resume_level': analysis_result.get('resume_level'),
-            'expected_ats_pass_rate': analysis_result.get('expected_ats_pass_rate'),
-            'credits_remaining': guest_session.credits_remaining,
-            'expires_at': expires_at.isoformat(),
-            'message': 'Analysis complete - create account to save results'
-        }), 200
+        # Count guest analyses for this session (for blur strategy)
+        analyses_count = len(guest_session.analyses)
+
+        # Apply blur strategy for guest users
+        # Guests always see full results on first scan (to hook them), then need to sign up
+        filtered_result = ResultFilter.filter_analysis_result(
+            analysis_result=analysis_result,
+            user=None,  # Guest user
+            analysis_count=analyses_count - 1  # Subtract 1 because we just added this analysis
+        )
+
+        # Add guest-specific metadata
+        filtered_result['analysis_id'] = analysis_id
+        filtered_result['credits_remaining'] = guest_session.credits_remaining
+        filtered_result['expires_at'] = expires_at.isoformat()
+        filtered_result['is_guest'] = True
+
+        # Add upgrade messaging for guests
+        if analyses_count == 1:  # First scan
+            filtered_result['message'] = 'Analysis complete! Sign up to save your results and get 1 more free scan.'
+            filtered_result['upgrade_cta'] = 'Create free account for 1 more scan'
+        else:
+            filtered_result['message'] = 'Sign up now to unlock full results and get more scans!'
+            filtered_result['upgrade_cta'] = 'Sign up to unlock'
+
+        return jsonify(filtered_result), 200
 
     except Exception as e:
         logger.error(f"Error in guest analysis: {str(e)}")
