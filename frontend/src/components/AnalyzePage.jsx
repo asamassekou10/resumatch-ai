@@ -7,6 +7,9 @@ import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
 import ScoreBreakdown from './ScoreBreakdown';
 import JobDescriptionInput from './ui/JobDescriptionInput';
+import BlurredSection from './pricing/BlurredSection';
+import PricingModal from './pricing/PricingModal';
+import PaymentModal from './pricing/PaymentModal';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -47,6 +50,11 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
   // Email state
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+
+  // Pricing/Payment state
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
 
   const fetchAnalysisResult = useCallback(async () => {
     setResultLoading(true);
@@ -260,6 +268,29 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
     } finally {
       setSendingEmail(false);
     }
+  };
+
+  // Payment handlers
+  const handleUpgradeClick = (plan) => {
+    setSelectedPlan(plan);
+    setShowPricingModal(false);
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = async (purchaseData) => {
+    // Close modals
+    setShowPaymentModal(false);
+    setShowPricingModal(false);
+
+    // Reload the analysis to get unblurred results
+    await fetchAnalysisResult();
+
+    // Show success message
+    setError('');
+  };
+
+  const handlePaymentError = (error) => {
+    setError(error.message || 'Payment failed. Please try again.');
   };
 
   const handleFileUpload = (e) => {
@@ -788,7 +819,7 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
             >
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-amber-400" />
-                Keywords to Add ({analysisData.keywords_missing.length})
+                Keywords to Add ({analysisData.match_analysis?.blurred_keywords_count ? analysisData.keywords_missing.length + analysisData.match_analysis.blurred_keywords_count : analysisData.keywords_missing.length})
               </h3>
               <p className="text-gray-400 text-sm mb-3">
                 Adding these keywords could improve your match score
@@ -796,19 +827,19 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
               <div className="flex flex-wrap gap-2">
                 {analysisData.keywords_missing.map((keyword, idx) => {
                   // Handle both string and object formats
-                  const keywordText = typeof keyword === 'string' 
-                    ? keyword 
+                  const keywordText = typeof keyword === 'string'
+                    ? keyword
                     : (keyword.keyword || keyword.name || JSON.stringify(keyword));
-                  const importance = typeof keyword === 'object' && keyword.importance 
-                    ? keyword.importance 
+                  const importance = typeof keyword === 'object' && keyword.importance
+                    ? keyword.importance
                     : 'preferred';
-                  
+
                   return (
                     <span
                       key={idx}
                       className={`px-3 py-1 rounded-full text-sm border ${
-                        importance === 'required' 
-                          ? 'bg-red-900/30 text-red-300 border-red-700/50' 
+                        importance === 'required'
+                          ? 'bg-red-900/30 text-red-300 border-red-700/50'
                           : 'bg-amber-900/30 text-amber-300 border-amber-700/50'
                       }`}
                       title={typeof keyword === 'object' && keyword.why_matters ? keyword.why_matters : ''}
@@ -821,6 +852,19 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                   );
                 })}
               </div>
+
+              {/* Blur Overlay for Additional Keywords */}
+              {analysisData.is_blurred && analysisData.match_analysis?.blurred_keywords_count > 0 && (
+                <div className="mt-4">
+                  <BlurredSection
+                    title="Additional Missing Keywords"
+                    blurredCount={analysisData.match_analysis.blurred_keywords_count}
+                    upgradeOptions={analysisData.upgrade_options || []}
+                    onUpgrade={handleUpgradeClick}
+                    message={analysisData.upgrade_message}
+                  />
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -883,54 +927,89 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
           </motion.div>
 
           {/* ATS Optimization Tips */}
-          <motion.div
-            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.19 }}
-          >
-            <h3 className="text-white font-semibold mb-3">ATS Optimization Tips</h3>
-            <div className="mb-3">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-gray-400 text-sm">Expected ATS Pass Rate</span>
-                <span className="text-cyan-400 font-semibold">
-                  {analysisData.match_score >= 70 ? 'High' : analysisData.match_score >= 50 ? 'Medium' : 'Low'}
-                </span>
+          {analysisData.is_blurred && analysisData.ats_optimization?.blurred ? (
+            <motion.div
+              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.19 }}
+            >
+              <BlurredSection
+                title="ATS Optimization Tips"
+                blurredCount={5}
+                upgradeOptions={analysisData.upgrade_options || []}
+                onUpgrade={handleUpgradeClick}
+                message="Unlock professional ATS optimization strategies"
+                icon={Target}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.19 }}
+            >
+              <h3 className="text-white font-semibold mb-3">ATS Optimization Tips</h3>
+              <div className="mb-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-gray-400 text-sm">Expected ATS Pass Rate</span>
+                  <span className="text-cyan-400 font-semibold">
+                    {analysisData.match_score >= 70 ? 'High' : analysisData.match_score >= 50 ? 'Medium' : 'Low'}
+                  </span>
+                </div>
               </div>
-            </div>
-            <ul className="space-y-2">
-              <li className="text-gray-300 text-sm flex gap-2">
-                <span className="text-cyan-400">✓</span>
-                Use standard section headings (Experience, Education, Skills)
-              </li>
-              <li className="text-gray-300 text-sm flex gap-2">
-                <span className="text-cyan-400">✓</span>
-                Include exact keywords from the job description
-              </li>
-              <li className="text-gray-300 text-sm flex gap-2">
-                <span className="text-cyan-400">✓</span>
-                Avoid tables, graphics, and complex formatting
-              </li>
-              <li className="text-gray-300 text-sm flex gap-2">
-                <span className="text-cyan-400">✓</span>
-                Use common file formats (PDF or DOCX)
-              </li>
-            </ul>
-          </motion.div>
+              <ul className="space-y-2">
+                <li className="text-gray-300 text-sm flex gap-2">
+                  <span className="text-cyan-400">✓</span>
+                  Use standard section headings (Experience, Education, Skills)
+                </li>
+                <li className="text-gray-300 text-sm flex gap-2">
+                  <span className="text-cyan-400">✓</span>
+                  Include exact keywords from the job description
+                </li>
+                <li className="text-gray-300 text-sm flex gap-2">
+                  <span className="text-cyan-400">✓</span>
+                  Avoid tables, graphics, and complex formatting
+                </li>
+                <li className="text-gray-300 text-sm flex gap-2">
+                  <span className="text-cyan-400">✓</span>
+                  Use common file formats (PDF or DOCX)
+                </li>
+              </ul>
+            </motion.div>
+          )}
 
           {/* AI Suggestions */}
-          {analysisData.suggestions && (
+          {analysisData.is_blurred && analysisData.recommendations?.blurred ? (
             <motion.div
               className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.21 }}
             >
-              <h3 className="text-white font-semibold mb-4">AI Feedback & Suggestions</h3>
-              <div className="prose prose-invert max-w-none">
-                <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{analysisData.suggestions}</div>
-              </div>
+              <BlurredSection
+                title="AI Recommendations"
+                upgradeOptions={analysisData.upgrade_options || []}
+                onUpgrade={handleUpgradeClick}
+                message="Unlock detailed AI-powered resume recommendations"
+                icon={Sparkles}
+              />
             </motion.div>
+          ) : (
+            analysisData.suggestions && (
+              <motion.div
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.21 }}
+              >
+                <h3 className="text-white font-semibold mb-4">AI Feedback & Suggestions</h3>
+                <div className="prose prose-invert max-w-none">
+                  <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{analysisData.suggestions}</div>
+                </div>
+              </motion.div>
+            )
           )}
 
           {/* AI Features Buttons */}
@@ -1351,6 +1430,25 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
           </div>
         </div>
       </div>
+
+      {/* Pricing Modal */}
+      <PricingModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        onSelectPlan={handleUpgradeClick}
+        upgradeOptions={analysisData?.upgrade_options || []}
+        userEmail={userProfile?.email}
+        creditsRemaining={userProfile?.credits || 0}
+      />
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        selectedPlan={selectedPlan}
+        onSuccess={handlePaymentSuccess}
+        onError={handlePaymentError}
+      />
     </div>
   );
 };

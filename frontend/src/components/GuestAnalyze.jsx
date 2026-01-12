@@ -10,6 +10,7 @@ import ShimmerButton from './ui/ShimmerButton';
 import ScoreBreakdown from './ScoreBreakdown';
 import { generateFAQSchema } from '../utils/structuredData';
 import { isPrerendering } from '../utils/prerender';
+import BlurredSection from './pricing/BlurredSection';
 
 // FAQ Accordion Component - Using CSS transitions instead of Framer Motion
 const FAQItem = ({ question, answer, isOpen, onClick }) => (
@@ -704,13 +705,13 @@ const GuestAnalyze = () => {
               <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
                 <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
                   <AlertCircle className="w-5 h-5 text-amber-400" />
-                  Keywords to Add ({analysisResults.match_analysis.keywords_missing?.length || 0})
+                  Keywords to Add ({analysisResults.match_analysis?.blurred_keywords_count ? analysisResults.match_analysis.keywords_missing.length + analysisResults.match_analysis.blurred_keywords_count : analysisResults.match_analysis.keywords_missing.length})
                 </h3>
                 <p className="text-slate-400 text-sm mb-3">
                   Adding these keywords could improve your match score
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {analysisResults.match_analysis.keywords_missing?.slice(0, 15).map((keyword, i) => {
+                  {analysisResults.match_analysis.keywords_missing.map((keyword, i) => {
                     const keywordText = typeof keyword === 'object' ? (keyword.keyword || keyword.name || 'N/A') : keyword;
                     return (
                       <span
@@ -722,6 +723,19 @@ const GuestAnalyze = () => {
                     );
                   })}
                 </div>
+
+                {/* Blur Overlay for Additional Keywords */}
+                {analysisResults.is_blurred && analysisResults.match_analysis?.blurred_keywords_count > 0 && (
+                  <div className="mt-4">
+                    <BlurredSection
+                      title="Additional Missing Keywords"
+                      blurredCount={analysisResults.match_analysis.blurred_keywords_count}
+                      upgradeOptions={analysisResults.upgrade_options || []}
+                      onUpgrade={() => navigate(ROUTES.AUTH + '?mode=signup')}
+                      message={analysisResults.upgrade_message || "Sign up to see all missing keywords"}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
@@ -765,18 +779,31 @@ const GuestAnalyze = () => {
             )}
 
             {/* ATS Optimization Tips */}
-            {analysisResults.ats_optimization?.natural_integration_tips && (
+            {analysisResults.is_blurred && analysisResults.ats_optimization?.blurred ? (
               <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-                <h3 className="text-white font-semibold mb-3">ATS Optimization Tips</h3>
-                <ul className="space-y-2">
-                  {analysisResults.ats_optimization.natural_integration_tips?.slice(0, 3).map((tip, i) => (
-                    <li key={i} className="text-slate-300 text-sm flex gap-2">
-                      <span className="text-cyan-400">✓</span>
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
+                <BlurredSection
+                  title="ATS Optimization Tips"
+                  blurredCount={5}
+                  upgradeOptions={analysisResults.upgrade_options || []}
+                  onUpgrade={() => navigate(ROUTES.AUTH + '?mode=signup')}
+                  message="Sign up to unlock professional ATS strategies"
+                  icon={Target}
+                />
               </div>
+            ) : (
+              analysisResults.ats_optimization?.natural_integration_tips && (
+                <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                  <h3 className="text-white font-semibold mb-3">ATS Optimization Tips</h3>
+                  <ul className="space-y-2">
+                    {analysisResults.ats_optimization.natural_integration_tips?.slice(0, 3).map((tip, i) => (
+                      <li key={i} className="text-slate-300 text-sm flex gap-2">
+                        <span className="text-cyan-400">✓</span>
+                        {tip}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
             )}
 
             {/* Premium Features Section */}
