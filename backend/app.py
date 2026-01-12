@@ -617,9 +617,7 @@ def register():
                 response = {
                     'message': 'Registration successful! Please check your email to verify your account.',
                     'email': email,
-                    'verification_required': True,
-                    'trial_active': True,
-                    'trial_end_date': trial_end.isoformat()
+                    'verification_required': True
                 }
             else:
                 logging.error(f"User registered but verification email failed: {email}. User ID: {user.id}")
@@ -1043,9 +1041,8 @@ def google_callback():
                 user.profile_picture = picture
             user.last_login = datetime.utcnow()
         else:
-            # Create new user with automatic trial activation
+            # Create new user - free tier by default, no automatic trial
             now = datetime.utcnow()
-            trial_end = now + timedelta(days=7)
             
             user = User(
                 email=email,

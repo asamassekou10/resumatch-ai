@@ -140,7 +140,6 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
         const searchParams = new URLSearchParams(location.search);
         const redirect = searchParams.get('redirect');
         const selectedPlan = localStorage.getItem('selected_plan');
-        const skipTrial = localStorage.getItem('skip_trial');
         
         // If redirect is payment (micro-purchase), go to analyze page which will show payment modal
         if (redirect === 'payment' && selectedPlan) {
@@ -277,7 +276,6 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
       const searchParams = new URLSearchParams(location.search);
       const redirect = searchParams.get('redirect');
       const selectedPlan = localStorage.getItem('selected_plan');
-      const skipTrial = localStorage.getItem('skip_trial');
       
       // If redirect is payment (micro-purchase), go to analyze page which will show payment modal
       if (redirect === 'payment' && selectedPlan) {
