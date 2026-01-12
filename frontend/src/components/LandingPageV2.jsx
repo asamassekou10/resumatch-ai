@@ -148,7 +148,7 @@ const LandingPageV2 = ({ token }) => {
   const homepageFAQs = [
     {
       question: 'Is ResumeAnalyzer AI free?',
-      answer: 'Yes! We offer a free tier that includes 10 resume analysis credits per month. You can analyze your resume and get basic feedback at no cost. Upgrade to Pro or Elite plans for more credits and advanced features like AI-powered optimization and cover letter generation.'
+      answer: 'Yes! Your first resume analysis is completely free with full results. After that, unlock additional scans for just $1.99 per re-scan, or get unlimited scans for 7 days with our $6.99 weekly pass. No monthly commitments required - pay only when you need it!'
     },
     {
       question: 'How accurate is the AI resume analysis?',
@@ -260,9 +260,9 @@ const LandingPageV2 = ({ token }) => {
             >
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20">
                 <CheckCircle className="w-5 h-5 text-green-400" />
-                <span className="text-white font-semibold">10 Free Analyses</span>
+                <span className="text-white font-semibold">First Scan Free</span>
                 <span className="text-gray-400">•</span>
-                <span className="text-gray-300">No Credit Card Required</span>
+                <span className="text-gray-300">Then $1.99 per scan</span>
               </div>
             </motion.div>
 
@@ -347,7 +347,7 @@ const LandingPageV2 = ({ token }) => {
               </ShimmerButton>
               {!token && (
                 <p className="text-gray-500 text-xs mt-3">
-                  No credit card required • 10 free analyses
+                  No credit card required • First scan completely free
                 </p>
               )}
             </div>

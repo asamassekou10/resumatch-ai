@@ -76,46 +76,53 @@ const PricingPageV2 = ({ token, userProfile }) => {
     const lowerPlan = planName.toLowerCase();
 
     if (!token) {
+      if (lowerPlan === 'free') {
+        return {
+          text: 'Start Free',
+          action: () => navigate(ROUTES.GUEST_ANALYZE),
+          variant: 'secondary',
+          disabled: false
+        };
+      }
       return {
-        text: 'Sign Up',
+        text: 'Sign Up to Purchase',
         action: () => navigate(ROUTES.REGISTER),
-        variant: lowerPlan === 'pro' ? 'primary' : 'secondary',
+        variant: lowerPlan === '7-day pass' ? 'primary' : 'secondary',
         disabled: false
-      };
-    }
-
-    if (normalizedTier === lowerPlan) {
-      return {
-        text: 'Current Plan',
-        action: () => navigate(ROUTES.DASHBOARD),
-        variant: 'secondary',
-        disabled: true
       };
     }
 
     if (lowerPlan === 'free') {
       return {
-        text: normalizedTier === 'free' ? 'Current Plan' : 'Get Started',
-        action: () => navigate(ROUTES.DASHBOARD),
+        text: 'Start Analyzing',
+        action: () => navigate(ROUTES.ANALYZE),
         variant: 'secondary',
-        disabled: normalizedTier === 'free'
+        disabled: false
       };
     }
 
-    // Upgrade buttons
-    if (lowerPlan === 'pro founding') {
+    if (lowerPlan === 'pay per scan') {
       return {
-        text: 'Join as Founding Member',
-        action: handleUpgradeToProFounding,
+        text: 'Buy $1.99 Scan',
+        action: () => navigate(ROUTES.ANALYZE),
+        variant: 'secondary',
+        disabled: loading
+      };
+    }
+
+    if (lowerPlan === '7-day pass') {
+      return {
+        text: 'Get 7-Day Pass',
+        action: () => navigate(ROUTES.ANALYZE),
         variant: 'primary',
         disabled: loading
       };
     }
 
-    if (lowerPlan === 'elite') {
+    if (lowerPlan === 'pro monthly') {
       return {
-        text: 'Choose Elite',
-        action: handleUpgradeToElite,
+        text: 'Subscribe to Pro',
+        action: () => handleUpgrade('pro'),
         variant: 'secondary',
         disabled: loading
       };
@@ -125,62 +132,83 @@ const PricingPageV2 = ({ token, userProfile }) => {
   const plans = [
     {
       name: 'Free',
-      description: 'Try before you buy',
+      description: 'Perfect to get started',
       monthlyPrice: 0,
       yearlyPrice: 0,
-      credits: 10,
+      credits: 1,
       features: [
-        '10 free analyses',
-        'Resume scanning',
-        'Keyword matching',
-        'Basic feedback',
-        'Community support'
+        'First scan completely free',
+        'Full analysis with results',
+        'ATS score & feedback',
+        'See all missing keywords',
+        'AI recommendations',
+        'No credit card required'
       ],
-      notIncluded: ['AI-powered optimization', 'Cover letter generation', 'Priority support', 'Advanced analytics'],
+      notIncluded: ['Additional scans', 'Unlimited access'],
       highlighted: false,
       icon: Sparkles
     },
     {
-      name: 'Pro Founding',
-      description: 'Lock in $19.99 forever',
-      monthlyPrice: 19.99,
-      yearlyPrice: 199.99,
-      credits: 50,
+      name: 'Pay Per Scan',
+      description: 'Quick unlock when you need it',
+      monthlyPrice: 1.99,
+      yearlyPrice: 0,
+      credits: 1,
       features: [
-        '50 analyses/month',
-        'Full ATS scanning',
-        'AI feedback generation',
-        'Resume optimization',
-        'Cover letter generation',
-        'Unlimited templates',
-        'Priority support',
-        '🏆 Founding Member badge',
-        '🔒 Price locked forever'
+        'One-time payment',
+        'Unlock single analysis',
+        'All missing keywords revealed',
+        'Full AI recommendations',
+        'ATS optimization tips',
+        'No subscription needed',
+        '💰 Under $2 - instant access'
       ],
-      notIncluded: ['API access', 'Bulk uploads'],
-      highlighted: true,
+      notIncluded: ['Unlimited scans'],
+      highlighted: false,
       icon: Zap,
-      badge: 'Limited: First 100 Only',
-      specialNote: 'Regular price $24.99 - Save $5/month forever'
+      badge: 'MOST POPULAR',
+      specialNote: 'Perfect for quick resume updates'
     },
     {
-      name: 'Elite',
-      description: 'For recruiters & coaches',
-      monthlyPrice: 49.99,
-      yearlyPrice: 499.99,
-      credits: 200,
+      name: '7-Day Pass',
+      description: 'Best for active job hunting',
+      monthlyPrice: 6.99,
+      yearlyPrice: 0,
+      credits: 'unlimited',
       features: [
-        '200 analyses/month',
-        'Everything in Pro',
-        'API access',
-        'Bulk uploads',
-        'White-label options',
+        'Unlimited scans for 7 days',
+        'Test multiple resume versions',
+        'Try different job descriptions',
+        'Full analysis every time',
+        'All keywords & recommendations',
+        'ATS optimization included',
+        '🚀 Best value - save vs 3+ scans'
+      ],
+      notIncluded: ['Monthly subscription'],
+      highlighted: true,
+      icon: Crown,
+      badge: 'BEST VALUE',
+      specialNote: 'Save $3+ compared to 4 single scans'
+    },
+    {
+      name: 'Pro Monthly',
+      description: 'For serious job seekers',
+      monthlyPrice: 19.99,
+      yearlyPrice: 199.99,
+      credits: 'unlimited',
+      features: [
+        'Unlimited scans forever',
+        'Everything in 7-Day Pass',
+        'Premium resume templates',
+        'Cover letter generation',
+        'Priority AI processing',
         'Advanced analytics',
-        'Dedicated support'
+        'Priority support'
       ],
       notIncluded: [],
       highlighted: false,
-      icon: Crown
+      icon: Crown,
+      specialNote: 'Cancel anytime - no commitments'
     }
   ];
 
@@ -203,8 +231,8 @@ const PricingPageV2 = ({ token, userProfile }) => {
     <>
       <SEO
         title="Pricing Plans"
-        description="Choose the perfect ResumeAnalyzer AI plan for your job search. Free, Pro, and Elite plans with AI-powered resume analysis, job matching, and career tools."
-        keywords="pricing, subscription, resume analyzer pricing, AI career tools pricing"
+        description="Start free, then pay only when you need it. $1.99 per scan or $6.99 for 7-day unlimited access. No monthly commitments required. AI-powered resume analysis with ATS scoring."
+        keywords="pricing, pay per scan, resume analyzer pricing, AI career tools pricing, affordable resume analysis, $1.99 resume scan"
         url="https://resumeanalyzerai.com/pricing"
       />
       <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
@@ -223,10 +251,10 @@ const PricingPageV2 = ({ token, userProfile }) => {
           custom={0}
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 font-display relative z-10">
-            Simple, transparent pricing.
+            Pay only when you need it
           </h1>
           <p className="text-lg text-gray-400 max-w-2xl mx-auto relative z-10">
-            Start for free, upgrade when you're ready to scale your applications.
+            Start free. Then unlock scans for $1.99 each, or get unlimited access for 7 days at $6.99. No monthly commitments.
           </p>
         </motion.div>
 
