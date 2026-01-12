@@ -103,6 +103,24 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
     }
   }, [viewMode, id, token, fetchAnalysisResult]);
 
+  // Check for selected plan after signup and open payment modal
+  useEffect(() => {
+    if (token) {
+      const storedPlan = localStorage.getItem('selected_plan');
+      if (storedPlan) {
+        try {
+          const plan = JSON.parse(storedPlan);
+          setSelectedPlan(plan);
+          setShowPaymentModal(true);
+          localStorage.removeItem('selected_plan'); // Clear after using
+        } catch (e) {
+          console.error('Error parsing stored plan:', e);
+          localStorage.removeItem('selected_plan');
+        }
+      }
+    }
+  }, [token]);
+
   const handleGenerateFeedback = async () => {
     setAiFeatureLoading('feedback');
     setAiFeatureProgress(0);

@@ -253,8 +253,9 @@ const GuestAnalyze = () => {
   };
 
   const handleSelectPlan = (plan) => {
-    // For guests, redirect to signup with pricing info
-    navigate(ROUTES.AUTH + '?mode=signup&plan=' + plan.type);
+    // For guests, store plan in localStorage and redirect to signup
+    localStorage.setItem('selected_plan', JSON.stringify(plan));
+    navigate(ROUTES.AUTH + '?mode=signup&redirect=checkout');
   };
 
   const handleSignUp = () => {
