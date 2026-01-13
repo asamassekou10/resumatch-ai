@@ -114,6 +114,12 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
       // Handle registration success
       if (!isLogin && data.verification_required) {
         setError('');
+        // Preserve redirect info for after email verification
+        const searchParams = new URLSearchParams(location.search);
+        const redirect = searchParams.get('redirect') || localStorage.getItem('redirect_after_auth');
+        if (redirect) {
+          localStorage.setItem('redirect_after_auth', redirect);
+        }
         if (data.email_sent === false) {
           // Email failed to send
           alert(`Registration successful! However, we couldn't send the verification email.\n\nPlease use the "Resend Verification" feature on the login page, or contact support@resumeanalyzerai.com for assistance.`);
@@ -136,10 +142,15 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
           onLogin(token, data.user);
         }
         
-        // Check for redirect parameter and selected plan
+        // Check for redirect parameter and selected plan (check both URL and localStorage)
         const searchParams = new URLSearchParams(location.search);
-        const redirect = searchParams.get('redirect');
+        const redirect = searchParams.get('redirect') || localStorage.getItem('redirect_after_auth');
         const selectedPlan = localStorage.getItem('selected_plan');
+        
+        // Clear redirect from localStorage after use
+        if (localStorage.getItem('redirect_after_auth')) {
+          localStorage.removeItem('redirect_after_auth');
+        }
         
         // If redirect is payment (micro-purchase), go to analyze page which will show payment modal
         if (redirect === 'payment' && selectedPlan) {
@@ -154,12 +165,14 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
           try {
             const plan = JSON.parse(selectedPlan);
             // Map plan type to tier for checkout
-            let tier = 'pro';
+            let tier = 'pro_founding'; // Default to pro_founding
             if (plan.type === 'monthly_pro' || plan.type === 'pro_founding') {
               tier = 'pro_founding';
             } else if (plan.type === 'elite') {
               tier = 'elite';
             }
+            // Clear selected_plan after use
+            localStorage.removeItem('selected_plan');
             navigate(`${ROUTES.CHECKOUT}?tier=${tier}`, { replace: true });
             return;
           } catch (e) {
@@ -272,10 +285,15 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
         onLogin(token);
       }
       
-      // Check for redirect parameter and selected plan
-      const searchParams = new URLSearchParams(location.search);
-      const redirect = searchParams.get('redirect');
+      // Check for redirect parameter and selected plan (check both URL and localStorage)
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirect = searchParams.get('redirect') || localStorage.getItem('redirect_after_auth');
       const selectedPlan = localStorage.getItem('selected_plan');
+      
+      // Clear redirect from localStorage after use
+      if (localStorage.getItem('redirect_after_auth')) {
+        localStorage.removeItem('redirect_after_auth');
+      }
       
       // If redirect is payment (micro-purchase), go to analyze page which will show payment modal
       if (redirect === 'payment' && selectedPlan) {
@@ -290,12 +308,14 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
         try {
           const plan = JSON.parse(selectedPlan);
           // Map plan type to tier for checkout
-          let tier = 'pro';
+          let tier = 'pro_founding'; // Default to pro_founding
           if (plan.type === 'monthly_pro' || plan.type === 'pro_founding') {
             tier = 'pro_founding';
           } else if (plan.type === 'elite') {
             tier = 'elite';
           }
+          // Clear selected_plan after use
+          localStorage.removeItem('selected_plan');
           navigate(`${ROUTES.CHECKOUT}?tier=${tier}`, { replace: true });
           return;
         } catch (e) {

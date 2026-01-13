@@ -259,10 +259,12 @@ const GuestAnalyze = () => {
       // Store plan and flag to skip trial
       localStorage.setItem('selected_plan', JSON.stringify(plan));
       localStorage.setItem('skip_trial', 'true');
+      localStorage.setItem('redirect_after_auth', 'payment'); // Store redirect in localStorage
       navigate(`${ROUTES.REGISTER}?redirect=payment`);
     } else {
       // Subscription plans go to checkout
       localStorage.setItem('selected_plan', JSON.stringify(plan));
+      localStorage.setItem('redirect_after_auth', 'checkout'); // Store redirect in localStorage
       navigate(`${ROUTES.REGISTER}?redirect=checkout`);
     }
   };

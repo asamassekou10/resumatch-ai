@@ -33,7 +33,7 @@ const FreeTrialBanner = () => {
           </div>
           <div className="flex items-center gap-3">
             <Link
-              to={ROUTES.PRICING}
+              to={`${ROUTES.CHECKOUT}?tier=pro_founding`}
               className="group px-5 py-2 bg-white text-slate-900 font-semibold text-sm rounded-lg hover:bg-gray-100 transition-all flex items-center gap-2 flex-shrink-0 shadow-lg hover:shadow-xl"
             >
               Start Free Trial
