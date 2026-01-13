@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, CheckCircle, AlertCircle, Shield, Zap, Crown, Loader2, Sparkles, Gift, ArrowLeft } from 'lucide-react';
+import { Lock, CheckCircle, AlertCircle, Shield, Zap, Crown, Loader2, Gift, ArrowLeft } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -104,8 +104,6 @@ const CheckoutForm = ({ tier, clientSecret, onSuccess, onError }) => {
   const trialEndDate = new Date();
   trialEndDate.setDate(trialEndDate.getDate() + 7);
   const firstChargeDate = trialEndDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
-  const IconComponent = tierInfo.icon;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
