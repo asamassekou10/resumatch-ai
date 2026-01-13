@@ -1,10 +1,18 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Settings, Bell, Shield, Lock, Globe, Mail, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Settings, Bell, Shield, Lock, Globe, Mail, Eye, CreditCard, X, AlertCircle } from 'lucide-react';
 import SpotlightCard from './ui/SpotlightCard';
+import { ROUTES } from '../config/routes';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const SettingsPage = ({ user }) => {
+  const navigate = useNavigate();
+  const token = localStorage.getItem('token');
   const [activeTab, setActiveTab] = useState('general');
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [canceling, setCanceling] = useState(false);
   const [settings, setSettings] = useState({
     // General
     language: 'en',
@@ -28,6 +36,7 @@ const SettingsPage = ({ user }) => {
   const tabs = [
     { id: 'general', label: 'General', icon: Settings },
     { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'subscription', label: 'Subscription', icon: CreditCard },
     { id: 'privacy', label: 'Privacy', icon: Shield },
     { id: 'security', label: 'Security', icon: Lock },
   ];
@@ -35,6 +44,40 @@ const SettingsPage = ({ user }) => {
   const updateSetting = (key, value) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
+
+  const handleCancelSubscription = async () => {
+    setCanceling(true);
+    try {
+      const response = await fetch(`${API_URL}/billing/cancel-subscription`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Subscription will be canceled at the end of the billing period. You will retain access until then.');
+        setShowCancelModal(false);
+        // Refresh page to update user data
+        window.location.reload();
+      } else {
+        alert(data.error || 'Failed to cancel subscription. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error canceling subscription:', error);
+      alert('Failed to cancel subscription. Please try again.');
+    } finally {
+      setCanceling(false);
+    }
+  };
+
+  // Normalize subscription tier
+  const normalizedTier = user?.subscription_tier === 'premium' ? 'pro' : (user?.subscription_tier || 'free');
+  const hasActiveSubscription = normalizedTier !== 'free' && user?.subscription_status === 'active';
+  const isTrialing = user?.subscription_status === 'trialing' || user?.is_trial_active;
 
   // Toggle Switch Component
   const ToggleSwitch = ({ enabled, onChange, label, description }) => (
@@ -240,6 +283,105 @@ const SettingsPage = ({ user }) => {
             </div>
           )}
 
+          {/* SUBSCRIPTION SETTINGS */}
+          {activeTab === 'subscription' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-cyan-400" />
+                  Subscription & Billing
+                </h3>
+
+                <div className="space-y-4">
+                  {/* Current Plan */}
+                  <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="text-white font-semibold capitalize">
+                          {normalizedTier === 'pro_founding' ? 'Pro Founding Member' : normalizedTier} Plan
+                        </p>
+                        {isTrialing && (
+                          <p className="text-blue-400 text-sm mt-1">
+                            Free Trial Active {user?.trial_end_date && `- Ends ${new Date(user.trial_end_date).toLocaleDateString()}`}
+                          </p>
+                        )}
+                        {hasActiveSubscription && !isTrialing && (
+                          <p className="text-green-400 text-sm mt-1">Active Subscription</p>
+                        )}
+                        {normalizedTier === 'free' && (
+                          <p className="text-slate-400 text-sm mt-1">Free tier with {user?.credits || 10} credits</p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-white font-bold">
+                          {normalizedTier === 'free' ? '$0' : normalizedTier === 'pro_founding' ? '$19.99' : normalizedTier === 'pro' ? '$24.99' : '$49.99'}
+                          {normalizedTier !== 'free' && <span className="text-slate-400 text-sm font-normal">/month</span>}
+                        </p>
+                      </div>
+                    </div>
+
+                    {normalizedTier !== 'free' && (
+                      <div className="mt-4 pt-4 border-t border-slate-700">
+                        <div className="flex items-center justify-between text-sm mb-2">
+                          <span className="text-slate-400">Credits Remaining</span>
+                          <span className="text-cyan-400 font-semibold">{user?.credits || 0}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="mt-4 flex gap-3">
+                      {normalizedTier === 'free' && (
+                        <button
+                          onClick={() => navigate(ROUTES.PRICING)}
+                          className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold rounded-lg transition"
+                        >
+                          Upgrade to Pro
+                        </button>
+                      )}
+                      {(hasActiveSubscription || isTrialing) && (
+                        <button
+                          onClick={() => setShowCancelModal(true)}
+                          className="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 font-semibold rounded-lg transition border border-red-600/30"
+                        >
+                          Cancel Subscription
+                        </button>
+                      )}
+                      <button
+                        onClick={() => navigate(ROUTES.BILLING)}
+                        className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition"
+                      >
+                        View Billing Details
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Subscription Info */}
+                  {normalizedTier !== 'free' && (
+                    <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/50">
+                      <p className="text-slate-400 text-sm mb-2">
+                        {isTrialing ? (
+                          <>
+                            Your 7-day free trial includes 10 credits. After the trial ends on{' '}
+                            {user?.trial_end_date ? new Date(user.trial_end_date).toLocaleDateString() : 'the end of your trial period'},
+                            {' '}your subscription will automatically begin and you'll be charged monthly.
+                          </>
+                        ) : (
+                          <>
+                            Your subscription is active and will automatically renew each month.
+                            {user?.subscription_start_date && ` Started on ${new Date(user.subscription_start_date).toLocaleDateString()}.`}
+                          </>
+                        )}
+                      </p>
+                      <p className="text-slate-500 text-xs mt-2">
+                        You can cancel anytime and retain access until the end of your billing period.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* SECURITY SETTINGS */}
           {activeTab === 'security' && (
             <div className="space-y-6">
@@ -256,6 +398,62 @@ const SettingsPage = ({ user }) => {
           )}
           </motion.div>
         </SpotlightCard>
+
+        {/* Cancel Subscription Modal */}
+        <AnimatePresence>
+          {showCancelModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="bg-slate-800 rounded-xl p-6 max-w-md w-full mx-4 border border-slate-700"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-white">Cancel Subscription</h3>
+                  <button
+                    onClick={() => setShowCancelModal(false)}
+                    className="p-1 hover:bg-slate-700 rounded-lg transition"
+                  >
+                    <X className="w-5 h-5 text-slate-400" />
+                  </button>
+                </div>
+
+                <div className="mb-6">
+                  <div className="flex items-start gap-3 mb-4">
+                    <AlertCircle className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-white font-medium mb-2">Are you sure you want to cancel?</p>
+                      <p className="text-slate-400 text-sm">
+                        Your subscription will remain active until the end of your current billing period.
+                        {isTrialing && user?.trial_end_date && (
+                          <> Your trial ends on {new Date(user.trial_end_date).toLocaleDateString()}.</>
+                        )}
+                        {' '}After that, you'll be downgraded to the free plan.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowCancelModal(false)}
+                    className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition"
+                  >
+                    Keep Subscription
+                  </button>
+                  <button
+                    onClick={handleCancelSubscription}
+                    disabled={canceling}
+                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {canceling ? 'Canceling...' : 'Cancel Subscription'}
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

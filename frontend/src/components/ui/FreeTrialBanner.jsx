@@ -27,13 +27,13 @@ const FreeTrialBanner = () => {
                 Try Premium Free for 7 Days
               </span>
               <span className="text-xs sm:text-sm text-gray-300">
-                Unlimited analyses • AI insights • No credit card required
+                Unlimited analyses • AI insights • Credit card required
               </span>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Link
-              to={ROUTES.REGISTER}
+              to={ROUTES.PRICING}
               className="group px-5 py-2 bg-white text-slate-900 font-semibold text-sm rounded-lg hover:bg-gray-100 transition-all flex items-center gap-2 flex-shrink-0 shadow-lg hover:shadow-xl"
             >
               Start Free Trial

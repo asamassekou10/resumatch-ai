@@ -43,10 +43,10 @@ const TrialOfferBanner = ({ credits = 0, onStartTrial, className = '' }) => {
             </div>
 
             <p className="text-gray-700 mb-1">
-              <strong>Try Pro FREE for 30 days</strong> with 30 analyses
+              <strong>Try Pro FREE for 7 days</strong> with 10 credits
             </p>
             <p className="text-sm text-gray-600 mb-4">
-              Experience all Pro features risk-free. No credit card required. Cancel anytime.
+              Experience all Pro features risk-free. Credit card required. Cancel anytime.
             </p>
 
             {/* Benefits */}
@@ -75,13 +75,13 @@ const TrialOfferBanner = ({ credits = 0, onStartTrial, className = '' }) => {
               className="w-full sm:w-auto"
             >
               <div className="flex items-center justify-center gap-2">
-                <span>Start Free 30-Day Trial</span>
+                <span>Start Free 7-Day Trial</span>
                 <ArrowRight className="w-4 h-4" />
               </div>
             </ShimmerButton>
 
             <p className="text-xs text-gray-500 mt-2">
-              After trial: $19.99/month as Founding Member (limited spots) or $24.99/month regular
+              After 7-day trial: $19.99/month as Founding Member (limited spots) or $24.99/month regular
             </p>
           </div>
         </div>

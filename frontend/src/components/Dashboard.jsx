@@ -295,37 +295,21 @@ const Dashboard = ({ userProfile }) => {
               </div>
               <div>
                 <p className="text-white font-bold text-base md:text-lg">
-                  Start Your 30-Day Free Trial
+                  Start Your 7-Day Free Trial
                 </p>
                 <p className="text-white/80 text-sm">
-                  Get 30 credits and access to all Pro features - No credit card required
+                  Get 10 credits and access to all Pro features - Credit card required
                 </p>
               </div>
             </div>
             <button
-              onClick={async () => {
-                try {
-                  const response = await fetch(`${API_URL}/trial/activate`, {
-                    method: 'POST',
-                    headers: {
-                      'Authorization': `Bearer ${token}`,
-                      'Content-Type': 'application/json'
-                    }
-                  });
-                  const data = await response.json();
-                  if (response.ok) {
-                    // Refresh user profile
-                    window.location.reload();
-                  } else {
-                    alert(data.error || 'Failed to activate trial');
-                  }
-                } catch (err) {
-                  alert('Failed to activate trial. Please try again.');
-                }
+              onClick={() => {
+                // Redirect to checkout for free trial (requires credit card)
+                navigate(`${ROUTES.CHECKOUT}?tier=pro_founding`);
               }}
               className="px-4 py-2 rounded-lg bg-white text-blue-600 hover:bg-blue-50 font-semibold text-sm transition-all hover:scale-105 active:scale-95"
             >
-              Activate Free Trial
+              Start Free Trial
             </button>
           </div>
         </motion.div>
@@ -335,25 +319,9 @@ const Dashboard = ({ userProfile }) => {
       {userProfile && userProfile.credits <= 3 && !userProfile.is_trial_active && userProfile.subscription_tier === 'free' && (
         <TrialOfferBanner
           credits={userProfile.credits}
-          onStartTrial={async () => {
-            try {
-              const response = await fetch(`${API_URL}/subscription/start-mega-trial`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json'
-                }
-              });
-              const data = await response.json();
-              if (response.ok) {
-                // Refresh user profile
-                window.location.reload();
-              } else {
-                alert(data.error || 'Failed to start trial');
-              }
-            } catch (err) {
-              alert('Failed to start trial. Please try again.');
-            }
+          onStartTrial={() => {
+            // Redirect to checkout for free trial (requires credit card)
+            navigate(`${ROUTES.CHECKOUT}?tier=pro_founding`);
           }}
           className="mb-6"
         />

@@ -46,7 +46,7 @@ const PromotionBanner = ({ variant = 'trial', className = '' }) => {
                 {isTrial ? (
                   <>
                     Get unlimited resume analyses, AI-powered insights, cover letter generation,
-                    and interview prep. No credit card required.
+                    and interview prep. Credit card required for 7-day free trial.
                   </>
                 ) : (
                   <>
