@@ -2478,12 +2478,12 @@ def stripe_webhook():
                                 # Fallback for backward compatibility
                                 if tier == 'elite':
                                     user.credits = 1000
-                        elif tier == 'pro' or tier == 'pro_founding' or tier == 'monthly_pro':
-                            # Normalize monthly_pro to pro_founding
-                            if tier == 'monthly_pro':
-                                tier = 'pro_founding'
-                                user.subscription_tier = 'pro_founding'
-                            user.credits = 100
+                                elif tier == 'pro' or tier == 'pro_founding' or tier == 'monthly_pro':
+                                    # Normalize monthly_pro to pro_founding
+                                    if tier == 'monthly_pro':
+                                        tier = 'pro_founding'
+                                        user.subscription_tier = 'pro_founding'
+                                    user.credits = 100
                                 else:
                                     user.credits = 20
                                 logging.warning(f"Tier config not found for {tier}, using fallback credits")
