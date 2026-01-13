@@ -27,7 +27,7 @@ const FreeTrialBanner = () => {
                 Try Premium Free for 7 Days
               </span>
               <span className="text-xs sm:text-sm text-gray-300">
-                Unlimited analyses • AI insights • Credit card required
+                Unlimited analyses • AI insights • 100% free for 7 days
               </span>
             </div>
           </div>

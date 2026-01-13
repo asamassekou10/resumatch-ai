@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Lock, CheckCircle, AlertCircle, Shield, X } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -20,6 +20,23 @@ const TIER_INFO = {
       'Job Match Scoring',
       'Skills Gap Analysis',
       'Priority Support',
+    ],
+    color: 'from-cyan-500 to-blue-600',
+    icon: '⚡',
+  },
+  pro_founding: {
+    name: 'Pro Founding Member',
+    price: 19.99,
+    credits: 50,
+    description: 'Lock in $19.99 forever',
+    features: [
+      '50 AI Credits/month',
+      'Resume Analysis & Optimization',
+      'Job Match Scoring',
+      'Skills Gap Analysis',
+      'Priority Support',
+      'Founding Member Badge',
+      'Price locked forever',
     ],
     color: 'from-cyan-500 to-blue-600',
     icon: '⚡',
@@ -48,7 +65,7 @@ const CheckoutForm = ({ tier, clientSecret, onSuccess, onError }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
 
-  const tierInfo = TIER_INFO[tier];
+  const tierInfo = TIER_INFO[tier] || TIER_INFO.pro;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -83,8 +100,45 @@ const CheckoutForm = ({ tier, clientSecret, onSuccess, onError }) => {
     }
   };
 
+  // Calculate trial end date (7 days from now)
+  const trialEndDate = new Date();
+  trialEndDate.setDate(trialEndDate.getDate() + 7);
+  const firstChargeDate = trialEndDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Free Trial Information Banner */}
+      <motion.div
+        className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg p-5"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <div className="flex items-start gap-3">
+          <div className="text-3xl">🎉</div>
+          <div className="flex-1">
+            <h4 className="text-white font-semibold mb-2 text-lg">Start Your 7-Day Free Trial</h4>
+            <p className="text-sm text-slate-300 mb-3">
+              Get instant access to all Pro features with 10 credits. Your card won't be charged for 7 days.
+            </p>
+            <div className="flex flex-wrap gap-3 text-xs">
+              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/20 rounded-full text-green-300 border border-green-500/30">
+                <CheckCircle className="w-3.5 h-3.5" />
+                Cancel anytime
+              </span>
+              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/20 rounded-full text-green-300 border border-green-500/30">
+                <CheckCircle className="w-3.5 h-3.5" />
+                No charge during trial
+              </span>
+              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/20 rounded-full text-green-300 border border-green-500/30">
+                <CheckCircle className="w-3.5 h-3.5" />
+                One-click cancellation
+              </span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Order Summary */}
       <motion.div
         className="bg-slate-800 rounded-lg p-6 border border-slate-700"
@@ -92,7 +146,12 @@ const CheckoutForm = ({ tier, clientSecret, onSuccess, onError }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h3 className="text-lg font-semibold text-white mb-4">Order Summary</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-white">Order Summary</h3>
+          <span className="px-3 py-1 bg-green-500/20 text-green-300 text-xs font-semibold rounded-full border border-green-500/30">
+            7-Day Free Trial
+          </span>
+        </div>
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-slate-300">
@@ -102,21 +161,52 @@ const CheckoutForm = ({ tier, clientSecret, onSuccess, onError }) => {
               ${tierInfo.price.toFixed(2)}/month
             </span>
           </div>
+          <div className="bg-slate-700/50 rounded-lg p-3 border border-green-500/20">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-green-300 text-sm font-medium">Trial Period</span>
+              <span className="text-green-300 text-sm font-semibold">7 Days Free</span>
+            </div>
+            <div className="flex justify-between items-center text-xs text-slate-400 mt-1">
+              <span>10 Credits Included</span>
+              <span>First charge: {firstChargeDate}</span>
+            </div>
+          </div>
           <div className="flex justify-between items-center text-sm">
-            <span className="text-slate-400">Monthly Credits</span>
+            <span className="text-slate-400">Monthly Credits (after trial)</span>
             <span className="text-emerald-400 font-semibold">
               {tierInfo.credits} Credits
             </span>
           </div>
           <div className="border-t border-slate-700 pt-3 mt-3">
-            <div className="flex justify-between items-center">
-              <span className="text-white font-semibold">Total</span>
-              <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
-                ${tierInfo.price.toFixed(2)}
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-white font-semibold">Today's Charge</span>
+              <span className="text-2xl font-bold text-green-400">
+                $0.00
               </span>
             </div>
+            <p className="text-xs text-slate-500 text-right">
+              After trial: ${tierInfo.price.toFixed(2)}/month
+            </p>
           </div>
         </div>
+      </motion.div>
+
+      {/* Why Payment Method is Needed */}
+      <motion.div
+        className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+      >
+        <h4 className="text-white font-medium mb-2 text-sm flex items-center gap-2">
+          <Lock className="w-4 h-4 text-blue-400" />
+          Why do we need a payment method?
+        </h4>
+        <p className="text-slate-300 text-sm leading-relaxed">
+          We require a payment method to start your free trial and unlock all features instantly. 
+          Your card will <strong className="text-white">not be charged for 7 days</strong>, and you can 
+          cancel anytime from your Settings page - even during the trial - with no charges.
+        </p>
       </motion.div>
 
       {/* Payment Method */}
@@ -165,7 +255,7 @@ const CheckoutForm = ({ tier, clientSecret, onSuccess, onError }) => {
       <motion.button
         type="submit"
         disabled={isLoading || !stripe || !elements}
-        className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2"
+        className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-lg transition duration-200 flex flex-col items-center justify-center gap-1 shadow-lg shadow-green-500/20"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         initial={{ opacity: 0, y: 10 }}
@@ -177,28 +267,74 @@ const CheckoutForm = ({ tier, clientSecret, onSuccess, onError }) => {
             <motion.span
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity }}
+              className="flex items-center gap-2"
             >
               <Lock className="w-5 h-5" />
+              <span>Processing...</span>
             </motion.span>
-            Processing...
           </>
         ) : (
           <>
-            <Lock className="w-5 h-5" />
-            Pay ${tierInfo.price.toFixed(2)}
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5" />
+              <span className="text-lg">Start My 7-Day Free Trial</span>
+            </div>
+            <span className="text-xs opacity-90 font-normal">No charge for 7 days</span>
           </>
         )}
       </motion.button>
 
-      {/* Security Info */}
+      {/* Enhanced Security Info */}
       <motion.div
-        className="flex items-center justify-center gap-2 text-xs text-slate-400"
+        className="bg-slate-800/50 rounded-lg p-4 border border-slate-700"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
       >
-        <CheckCircle className="w-4 h-4 text-green-400" />
-        <p>Secure payment powered by Stripe. Your information is encrypted.</p>
+        <div className="flex items-start gap-3">
+          <Shield className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-white font-medium text-sm mb-1">Your payment is secure</p>
+            <p className="text-slate-400 text-xs mb-2 leading-relaxed">
+              Powered by Stripe, the same secure payment system used by millions of companies worldwide. 
+              Your card details are encrypted and never stored on our servers.
+            </p>
+            <div className="flex flex-wrap gap-3 text-xs text-slate-500">
+              <span className="flex items-center gap-1">
+                <Lock className="w-3 h-3" />
+                PCI DSS Compliant
+              </span>
+              <span className="flex items-center gap-1">
+                <Lock className="w-3 h-3" />
+                Bank-level Encryption
+              </span>
+              <span className="flex items-center gap-1">
+                <Lock className="w-3 h-3" />
+                256-bit SSL
+              </span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Cancellation Assurance */}
+      <motion.div
+        className="border-t border-slate-700 pt-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6 }}
+      >
+        <div className="flex items-start gap-3">
+          <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-white font-medium text-sm mb-1">Cancel anytime, no questions asked</p>
+            <p className="text-slate-400 text-xs leading-relaxed">
+              You can cancel your subscription at any time from your Settings page. 
+              If you cancel before your 7-day trial ends, you won't be charged anything. 
+              Even if you cancel now, you'll still get the full 7 days of trial access.
+            </p>
+          </div>
+        </div>
       </motion.div>
     </form>
   );
@@ -215,7 +351,7 @@ const StripeCheckout = ({ token, navigate: parentNavigate }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const tierInfo = TIER_INFO[tier];
+  const tierInfo = TIER_INFO[tier] || TIER_INFO.pro;
 
   useEffect(() => {
     const initializeCheckout = async () => {
@@ -292,9 +428,11 @@ const StripeCheckout = ({ token, navigate: parentNavigate }) => {
             ← Back to Pricing
           </button>
           <h1 className="text-4xl font-bold text-white mb-2">
-            Upgrade to {tierInfo.name}
+            Start Your 7-Day Free Trial
           </h1>
-          <p className="text-slate-400">{tierInfo.description}</p>
+          <p className="text-slate-400 text-lg">
+            Try {tierInfo.name} free for 7 days • No charge during trial • Cancel anytime
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

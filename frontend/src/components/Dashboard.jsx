@@ -298,13 +298,12 @@ const Dashboard = ({ userProfile }) => {
                   Start Your 7-Day Free Trial
                 </p>
                 <p className="text-white/80 text-sm">
-                  Get 10 credits and access to all Pro features - Credit card required
+                  Get 10 credits and access to all Pro features - Try it free!
                 </p>
               </div>
             </div>
             <button
               onClick={() => {
-                // Redirect to checkout for free trial (requires credit card)
                 navigate(`${ROUTES.CHECKOUT}?tier=pro_founding`);
               }}
               className="px-4 py-2 rounded-lg bg-white text-blue-600 hover:bg-blue-50 font-semibold text-sm transition-all hover:scale-105 active:scale-95"
@@ -320,7 +319,6 @@ const Dashboard = ({ userProfile }) => {
         <TrialOfferBanner
           credits={userProfile.credits}
           onStartTrial={() => {
-            // Redirect to checkout for free trial (requires credit card)
             navigate(`${ROUTES.CHECKOUT}?tier=pro_founding`);
           }}
           className="mb-6"

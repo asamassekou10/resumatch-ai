@@ -46,7 +46,7 @@ const TrialOfferBanner = ({ credits = 0, onStartTrial, className = '' }) => {
               <strong>Try Pro FREE for 7 days</strong> with 10 credits
             </p>
             <p className="text-sm text-gray-600 mb-4">
-              Experience all Pro features risk-free. Credit card required. Cancel anytime.
+              Experience all Pro features risk-free for 7 days. Cancel anytime with one click.
             </p>
 
             {/* Benefits */}

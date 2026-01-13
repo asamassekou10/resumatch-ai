@@ -48,8 +48,8 @@ class ResultFilter:
             return True
 
         # Check for paid subscription
-        if user.subscription_tier in ['pro', 'pro_annual', 'elite', 'student']:
-            if user.subscription_status == 'active':
+        if user.subscription_tier in ['pro', 'pro_annual', 'pro_founding', 'monthly_pro', 'elite', 'student']:
+            if user.subscription_status == 'active' or user.subscription_status == 'trialing':
                 return True
 
         # Check if user has credits (they used their free scan or bought credits)

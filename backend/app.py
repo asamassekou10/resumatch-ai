@@ -2288,7 +2288,8 @@ def create_checkout_session():
                     'error': 'Student plan requires a valid .edu email address',
                     'details': 'Please sign up with your educational email to access the Student plan'
                 }), 403
-        elif tier_param == 'pro_founding':
+        elif tier_param == 'pro_founding' or tier_param == 'monthly_pro':
+            # Handle both monthly_pro and pro_founding as the same tier
             price_id = STRIPE_PRO_FOUNDING_PRICE_ID
             # Check founding member limit (first 100 only)
             founding_members_count = User.query.filter_by(subscription_tier='pro_founding').count()
@@ -2298,6 +2299,8 @@ def create_checkout_session():
                     'details': 'All 100 Founding Member spots have been claimed. Please choose Pro tier at $24.99/month.',
                     'alternative_tier': 'pro'
                 }), 403
+            # Normalize tier to pro_founding for consistency
+            tier_param = 'pro_founding'
         elif tier_param == 'elite':
             price_id = STRIPE_ELITE_PRICE_ID
         else:
@@ -2442,6 +2445,9 @@ def stripe_webhook():
 
                 subscription_id = session.get('subscription')
                 user.subscription_id = subscription_id
+                # Normalize monthly_pro to pro_founding for consistency
+                if tier == 'monthly_pro':
+                    tier = 'pro_founding'
                 user.subscription_tier = tier
                 
                 # Check if subscription is in trial period
@@ -2472,8 +2478,12 @@ def stripe_webhook():
                                 # Fallback for backward compatibility
                                 if tier == 'elite':
                                     user.credits = 1000
-                                elif tier == 'pro' or tier == 'pro_founding':
-                                    user.credits = 100
+                        elif tier == 'pro' or tier == 'pro_founding' or tier == 'monthly_pro':
+                            # Normalize monthly_pro to pro_founding
+                            if tier == 'monthly_pro':
+                                tier = 'pro_founding'
+                                user.subscription_tier = 'pro_founding'
+                            user.credits = 100
                                 else:
                                     user.credits = 20
                                 logging.warning(f"Tier config not found for {tier}, using fallback credits")
@@ -2486,7 +2496,11 @@ def stripe_webhook():
                             user.credits = tier_config.monthly_credits
                         elif tier == 'elite':
                             user.credits = 1000
-                        elif tier == 'pro' or tier == 'pro_founding':
+                        elif tier == 'pro' or tier == 'pro_founding' or tier == 'monthly_pro':
+                            # Normalize monthly_pro to pro_founding
+                            if tier == 'monthly_pro':
+                                tier = 'pro_founding'
+                                user.subscription_tier = 'pro_founding'
                             user.credits = 100
                         else:
                             user.credits = 20
@@ -2518,7 +2532,11 @@ def stripe_webhook():
                     # Fallback
                     if tier == 'elite':
                         user.credits = 1000
-                    elif tier == 'pro' or tier == 'pro_founding':
+                    elif tier == 'pro' or tier == 'pro_founding' or tier == 'monthly_pro':
+                        # Normalize monthly_pro to pro_founding
+                        if tier == 'monthly_pro':
+                            tier = 'pro_founding'
+                            user.subscription_tier = 'pro_founding'
                         user.credits = 100
                     else:
                         user.credits = 20

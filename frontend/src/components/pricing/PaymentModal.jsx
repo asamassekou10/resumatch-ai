@@ -64,10 +64,10 @@ const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to create payment');
+        throw new Error(data.error || data.message || 'Failed to create payment');
       }
 
-      const { client_secret, purchase_id } = data;
+      const { client_secret } = data;
 
       // Step 2: Confirm payment with Stripe
       const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
@@ -88,8 +88,8 @@ const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          purchase_id,
-          payment_intent_id: paymentIntent.id
+          payment_intent_id: paymentIntent.id,
+          purchase_type: selectedPlan.type
         })
       });
 
