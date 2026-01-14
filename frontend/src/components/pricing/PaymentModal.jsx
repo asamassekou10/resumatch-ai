@@ -1,32 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CreditCard, Lock, AlertCircle, CheckCircle, Loader, Mail, User } from 'lucide-react';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../../config/routes';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
-// Initialize Stripe
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 /**
  * GuestPaymentForm Component (Internal)
  *
  * Handles guest checkout for $1.99 purchases (no account required)
  */
-const GuestPaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const navigate = useNavigate();
+const GuestPaymentForm = ({ selectedPlan, guestToken, onSuccess, onError, onClose }) => {
 
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
-  const [cardComplete, setCardComplete] = useState(false);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
-  const [showAccountPrompt, setShowAccountPrompt] = useState(false);
 
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -46,18 +34,8 @@ const GuestPaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!stripe || !elements) {
-      setError('Stripe has not loaded yet. Please wait.');
-      return;
-    }
-
     if (!email || !validateEmail(email)) {
       setEmailError('Please enter a valid email address');
-      return;
-    }
-
-    if (!cardComplete) {
-      setError('Please complete your card details.');
       return;
     }
 
@@ -66,78 +44,42 @@ const GuestPaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
     setEmailError('');
 
     try {
-      // Step 1: Create guest checkout payment intent
-      const response = await fetch(`${API_URL}/payments/guest-checkout`, {
+      // Create Stripe Checkout Session for guest
+      const payload = {
+        email: email,
+        purchase_type: selectedPlan.type
+      };
+      if (guestToken) {
+        payload.guest_token = guestToken;
+      }
+
+      const response = await fetch(`${API_URL}/payments/create-micro-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: email,
-          purchase_type: selectedPlan.type
+          ...payload
         })
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Failed to create payment');
+        throw new Error(data.error || data.message || 'Failed to create checkout');
       }
 
-      const { client_secret } = data;
-
-      // Step 2: Confirm payment with Stripe
-      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-          billing_details: {
-            email: email
-          }
-        }
-      });
-
-      if (stripeError) {
-        throw new Error(stripeError.message);
-      }
-
-      // Step 3: Confirm purchase on backend
-      const confirmResponse = await fetch(`${API_URL}/payments/confirm-guest-purchase`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          payment_intent_id: paymentIntent.id,
-          email: email
-        })
-      });
-
-      const confirmData = await confirmResponse.json();
-
-      if (!confirmResponse.ok) {
-        throw new Error(confirmData.error || 'Failed to confirm payment');
-      }
-
-      // Show account creation prompt if guest account
-      if (confirmData.create_account_prompt && confirmData.access_token) {
-        // Store token for account access
-        localStorage.setItem('token', confirmData.access_token);
-        setShowAccountPrompt(true);
-        // Auto-close after showing prompt
-        setTimeout(() => {
-          onSuccess(confirmData);
-          onClose();
-        }, 3000);
+      if (data.checkout_url) {
+        // Redirect to Stripe's hosted checkout page
+        window.location.href = data.checkout_url;
       } else {
-        // Success!
-        onSuccess(confirmData);
+        throw new Error('No checkout URL received');
       }
     } catch (err) {
       console.error('Payment error:', err);
       setError(err.message || 'Payment failed. Please try again.');
-      onError(err);
-    } finally {
       setProcessing(false);
+      onError(err);
     }
   };
 
@@ -178,45 +120,8 @@ const GuestPaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
           <p className="mt-1 text-xs text-red-400">{emailError}</p>
         )}
         <p className="mt-1 text-xs text-gray-500">
-          We'll send your receipt and results to this email
+          We'll send your receipt and results to this email. You'll be redirected to Stripe's secure checkout page.
         </p>
-      </div>
-
-      {/* Card Input */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Card Details
-        </label>
-        <div className="bg-white/5 border border-white/10 rounded-lg p-4 hover:border-cyan-500/30 transition-colors">
-          <CardElement
-            options={{
-              style: {
-                base: {
-                  fontSize: '16px',
-                  color: '#ffffff',
-                  fontFamily: '"Inter", system-ui, sans-serif',
-                  '::placeholder': {
-                    color: '#6b7280',
-                  },
-                  iconColor: '#06b6d4'
-                },
-                invalid: {
-                  color: '#ef4444',
-                  iconColor: '#ef4444'
-                }
-              },
-              hidePostalCode: false
-            }}
-            onChange={(event) => {
-              setCardComplete(event.complete);
-              if (event.error) {
-                setError(event.error.message);
-              } else {
-                setError(null);
-              }
-            }}
-          />
-        </div>
       </div>
 
       {/* Error Display */}
@@ -228,33 +133,6 @@ const GuestPaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
         >
           <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
           <p className="text-red-400 text-sm">{error}</p>
-        </motion.div>
-      )}
-
-      {/* Account Creation Prompt */}
-      {showAccountPrompt && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-start gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg"
-        >
-          <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-green-400 text-sm font-semibold mb-1">Payment Successful!</p>
-            <p className="text-gray-300 text-xs mb-2">
-              Create an account to save your results and access them anytime.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                navigate(`${ROUTES.REGISTER}?email=${encodeURIComponent(email)}&from=guest_checkout`);
-                onClose();
-              }}
-              className="text-xs text-cyan-400 hover:text-cyan-300 underline"
-            >
-              Create Account →
-            </button>
-          </div>
         </motion.div>
       )}
 
@@ -276,7 +154,7 @@ const GuestPaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
         </button>
         <button
           type="submit"
-          disabled={processing || !stripe || !cardComplete || !email || emailError}
+          disabled={processing || !email || emailError}
           className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 rounded-lg text-white font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {processing ? (
@@ -304,36 +182,19 @@ const GuestPaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
 /**
  * PaymentForm Component (Internal)
  *
- * Handles Stripe payment flow within the modal for authenticated users.
+ * Handles Stripe checkout session creation for authenticated users.
+ * Redirects to Stripe's hosted checkout page.
  */
 const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
-  const stripe = useStripe();
-  const elements = useElements();
   const token = localStorage.getItem('token');
-
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
-  const [cardComplete, setCardComplete] = useState(false);
-
-  const handleCardChange = (event) => {
-    setCardComplete(event.complete);
-    if (event.error) {
-      setError(event.error.message);
-    } else {
-      setError(null);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!stripe || !elements) {
-      setError('Stripe has not loaded yet. Please wait.');
-      return;
-    }
-
-    if (!cardComplete) {
-      setError('Please complete your card details.');
+    if (!token) {
+      setError('Please log in to continue.');
       return;
     }
 
@@ -341,8 +202,8 @@ const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
     setError(null);
 
     try {
-      // Step 1: Create PaymentIntent on backend
-      const response = await fetch(`${API_URL}/payments/create-micro-purchase`, {
+      // Create Stripe Checkout Session for authenticated user
+      const response = await fetch(`${API_URL}/payments/create-micro-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -356,49 +217,20 @@ const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Failed to create payment');
+        throw new Error(data.error || data.message || 'Failed to create checkout');
       }
 
-      const { client_secret } = data;
-
-      // Step 2: Confirm payment with Stripe
-      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-        }
-      });
-
-      if (stripeError) {
-        throw new Error(stripeError.message);
+      if (data.checkout_url) {
+        // Redirect to Stripe's hosted checkout page
+        window.location.href = data.checkout_url;
+      } else {
+        throw new Error('No checkout URL received');
       }
-
-      // Step 3: Confirm purchase on backend
-      const confirmResponse = await fetch(`${API_URL}/payments/confirm-micro-purchase`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          payment_intent_id: paymentIntent.id,
-          purchase_type: selectedPlan.type
-        })
-      });
-
-      const confirmData = await confirmResponse.json();
-
-      if (!confirmResponse.ok) {
-        throw new Error(confirmData.message || 'Failed to confirm payment');
-      }
-
-      // Success!
-      onSuccess(confirmData);
     } catch (err) {
       console.error('Payment error:', err);
       setError(err.message || 'Payment failed. Please try again.');
-      onError(err);
-    } finally {
       setProcessing(false);
+      onError(err);
     }
   };
 
@@ -416,35 +248,9 @@ const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
             Unlimited scans for 7 days starting now
           </div>
         )}
-      </div>
-
-      {/* Card Input */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Card Details
-        </label>
-        <div className="bg-white/5 border border-white/10 rounded-lg p-4 hover:border-cyan-500/30 transition-colors">
-          <CardElement
-            options={{
-              style: {
-                base: {
-                  fontSize: '16px',
-                  color: '#ffffff',
-                  fontFamily: '"Inter", system-ui, sans-serif',
-                  '::placeholder': {
-                    color: '#6b7280',
-                  },
-                  iconColor: '#06b6d4'
-                },
-                invalid: {
-                  color: '#ef4444',
-                  iconColor: '#ef4444'
-                }
-              },
-              hidePostalCode: false
-            }}
-            onChange={handleCardChange}
-          />
+        <div className="mt-2 flex items-center gap-2 text-xs text-cyan-400">
+          <User className="w-3 h-3" />
+          <span>You'll be redirected to Stripe's secure checkout page</span>
         </div>
       </div>
 
@@ -478,7 +284,7 @@ const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
         </button>
         <button
           type="submit"
-          disabled={processing || !stripe || !cardComplete}
+          disabled={processing}
           className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 rounded-lg text-white font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {processing ? (
@@ -521,7 +327,8 @@ const PaymentModal = ({
   onClose,
   selectedPlan,
   onSuccess,
-  onError
+  onError,
+  guestToken
 }) => {
   const token = localStorage.getItem('token');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -652,10 +459,11 @@ const PaymentModal = ({
               </motion.div>
             ) : (
               // Payment Form - Show guest or authenticated form
-              <Elements stripe={stripePromise}>
+              <>
                 {isGuestCheckout && selectedPlan?.type === 'single_rescan' ? (
                   <GuestPaymentForm
                     selectedPlan={selectedPlan}
+                    guestToken={guestToken}
                     onSuccess={handleSuccess}
                     onError={onError}
                     onClose={onClose}
@@ -668,7 +476,7 @@ const PaymentModal = ({
                     onClose={onClose}
                   />
                 )}
-              </Elements>
+              </>
             )}
           </div>
         </motion.div>

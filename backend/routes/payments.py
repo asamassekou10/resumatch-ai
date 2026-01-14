@@ -4,7 +4,7 @@ Handles $1.99 single re-scans and $6.99 weekly passes
 """
 
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 from datetime import datetime, timedelta
 import stripe
 import os
@@ -12,7 +12,7 @@ import logging
 import secrets
 import bcrypt
 
-from models import db, User, Purchase, Analysis
+from models import db, User, Purchase, Analysis, GuestSession
 from services.subscription_service import SubscriptionService
 
 payments_bp = Blueprint('payments', __name__, url_prefix='/api/payments')
@@ -467,7 +467,6 @@ def confirm_guest_purchase():
         logger.info(f"Confirmed guest {purchase_type} purchase for user {user.id}")
 
         # Generate access token if user wants to create account
-        from flask_jwt_extended import create_access_token
         access_token = None
         if user.auth_provider == 'guest':
             # Create temporary token for guest to access their account
@@ -491,6 +490,144 @@ def confirm_guest_purchase():
         db.session.rollback()
         return jsonify({
             'error': 'Failed to confirm purchase',
+            'details': str(e)
+        }), 500
+
+
+@payments_bp.route('/create-micro-checkout-session', methods=['POST'])
+@jwt_required(optional=True)
+def create_micro_checkout_session():
+    """
+    Create a Stripe Checkout Session for micro-purchases ($1.99 or $6.99)
+    Works for both authenticated users and guests (if email provided)
+    
+    Request body:
+        - purchase_type: 'single_rescan' or 'weekly_pass'
+        - email: (optional, required for guests)
+    
+    Returns:
+        - checkout_url: Stripe Checkout Session URL
+    """
+    try:
+        if not STRIPE_API_KEY:
+            logger.error("Stripe API key not configured")
+            return jsonify({
+                'error': 'Payment service is not configured. Please contact support.'
+            }), 500
+
+        data = request.get_json() or {}
+        purchase_type = data.get('purchase_type', 'single_rescan')
+        email = data.get('email', '').strip().lower() if data.get('email') else None
+        guest_token = data.get('guest_token')
+
+        if purchase_type not in PRICING:
+            return jsonify({'error': 'Invalid purchase type'}), 400
+
+        pricing_info = PRICING[purchase_type]
+        amount = pricing_info['amount']  # in cents
+
+        # Validate guest session when provided (guest checkout)
+        guest_session = None
+        if guest_token:
+            guest_session = GuestSession.query.filter_by(session_token=guest_token, status='active').first()
+            if not guest_session or guest_session.is_expired():
+                return jsonify({'error': 'Guest session is invalid or expired'}), 400
+
+        # Get user - either from JWT or create/find by email
+        user = None
+        is_guest = True
+        
+        # Try to get user from JWT if authenticated
+        try:
+            jwt_identity = get_jwt_identity()
+            if jwt_identity:
+                user_id = int(jwt_identity)
+                user = User.query.get(user_id)
+                is_guest = False
+        except:
+            # Not authenticated - will use email to find/create user
+            pass
+
+        # If not authenticated, find or create user by email
+        if not user and email:
+            user = User.query.filter_by(email=email).first()
+            if not user:
+                # Create guest account
+                user = User(
+                    email=email,
+                    password_hash=None,
+                    auth_provider='guest',
+                    email_verified=False,
+                    subscription_tier='free',
+                    subscription_status='inactive',
+                    credits=0,
+                    is_trial_active=False
+                )
+                db.session.add(user)
+                db.session.flush()
+                logger.info(f"Created guest account for {email}")
+        elif not user:
+            return jsonify({'error': 'User authentication or email required'}), 401
+
+        # Link guest session to user if provided
+        if guest_session and guest_session.converted_user_id != user.id:
+            guest_session.converted_user_id = user.id
+            guest_session.status = 'active'
+
+        # Create or get Stripe customer
+        if not user.stripe_customer_id:
+            customer = stripe.Customer.create(
+                email=user.email,
+                name=user.name or user.email.split('@')[0]
+            )
+            user.stripe_customer_id = customer.id
+            db.session.commit()
+        else:
+            db.session.commit()
+
+        # Get frontend URL for redirects
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+        success_path = '/guest-analyze' if guest_session else '/dashboard'
+        cancel_path = '/guest-analyze' if guest_session else '/pricing'
+
+        # Create Stripe Checkout Session for one-time payment
+        checkout_session = stripe.checkout.Session.create(
+            customer=user.stripe_customer_id,
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': pricing_info['description'],
+                        'description': pricing_info['description']
+                    },
+                    'unit_amount': amount,
+                },
+                'quantity': 1,
+            }],
+            mode='payment',  # One-time payment, not subscription
+            success_url=f"{frontend_url}{success_path}?payment=success&purchase_type={purchase_type}",
+            cancel_url=f"{frontend_url}{cancel_path}?payment=cancel",
+            metadata={
+                'user_id': str(user.id),
+                'purchase_type': purchase_type,
+                'user_email': user.email,
+                'is_guest': 'true' if is_guest else 'false',
+                'guest_token': guest_token or ''
+            }
+        )
+
+        logger.info(f"Created checkout session {checkout_session.id} for user {user.id} - {purchase_type}")
+
+        return jsonify({
+            'checkout_url': checkout_session.url
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error creating micro-checkout session: {str(e)}")
+        db.session.rollback()
+        return jsonify({
+            'error': 'Failed to create checkout session',
             'details': str(e)
         }), 500
 

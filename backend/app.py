@@ -307,7 +307,7 @@ def set_security_headers(response):
 
 
 # Import models from models.py (single source of truth)
-from models import User, Analysis, GuestSession, GuestAnalysis
+from models import User, Analysis, GuestSession, GuestAnalysis, Purchase
 
 
 # Initialize database tables
@@ -2436,9 +2436,69 @@ def stripe_webhook():
         session = event['data']['object']
         user_id = session['metadata'].get('user_id')
         tier = session['metadata'].get('tier', 'pro')
+        purchase_type = session['metadata'].get('purchase_type')
+        guest_token = session['metadata'].get('guest_token') or None
+        is_guest = session['metadata'].get('is_guest', 'false') == 'true'
 
         if user_id:
             user = User.query.get(int(user_id))
+            
+            # Handle micro-purchases (one-time payments)
+            if purchase_type and session.get('mode') == 'payment':
+                # This is a micro-purchase checkout session
+                payment_intent_id = session.get('payment_intent')
+                
+                # Check if purchase already exists
+                existing_purchase = Purchase.query.filter_by(
+                    stripe_payment_intent_id=payment_intent_id
+                ).first()
+                
+                if not existing_purchase and purchase_type in ['single_rescan', 'weekly_pass']:
+                    from routes.payments import PRICING
+                    pricing_info = PRICING.get(purchase_type, {})
+                    
+                    # Create purchase record
+                    purchase = Purchase(
+                        user_id=user.id,
+                        purchase_type=purchase_type,
+                        amount_usd=pricing_info.get('amount', 0) / 100,
+                        credits_granted=pricing_info.get('credits', 0),
+                        stripe_payment_intent_id=payment_intent_id,
+                        stripe_charge_id=session.get('payment_intent'),
+                        payment_status='succeeded',
+                        payment_method='card'
+                    )
+                    
+                    # Grant benefits based on purchase type
+                    if purchase_type == 'single_rescan':
+                        user.credits += 1
+                        purchase.credits_granted = 1
+                    elif purchase_type == 'weekly_pass':
+                        purchase.access_expires_at = datetime.utcnow() + timedelta(days=7)
+                        user.subscription_tier = 'weekly_pass'
+                        user.subscription_status = 'active'
+                        user.subscription_start_date = datetime.utcnow()
+                    
+                    db.session.add(purchase)
+                    db.session.commit()
+                    logging.info(f"Processed {purchase_type} purchase for user {user.id} via checkout session")
+
+                    # Update guest session credits when present
+                    if guest_token:
+                        guest_session = GuestSession.query.filter_by(session_token=guest_token).first()
+                        if guest_session and not guest_session.is_expired():
+                            if purchase_type == 'single_rescan':
+                                guest_session.credits_remaining += 1
+                            elif purchase_type == 'weekly_pass':
+                                guest_session.credits_remaining = max(guest_session.credits_remaining, 1000)
+                                guest_session.expires_at = datetime.utcnow() + timedelta(days=7)
+                            guest_session.status = 'active'
+                            guest_session.last_activity = datetime.utcnow()
+                            db.session.commit()
+                            logging.info(f"Added guest credits for session {guest_session.id}")
+                
+                # Return early - don't process as subscription
+                return jsonify({'status': 'success'}), 200
             if user:
                 from config_manager import ConfigManager
                 config_manager = ConfigManager()

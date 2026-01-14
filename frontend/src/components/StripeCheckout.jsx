@@ -64,11 +64,11 @@ const StripeCheckout = ({ token, navigate: parentNavigate }) => {
         </div>
       </div>
     );
-  }
+    }
 
   if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4">
         <div className="max-w-2xl mx-auto">
           <button
             onClick={() => navigate('/pricing')}
@@ -80,16 +80,16 @@ const StripeCheckout = ({ token, navigate: parentNavigate }) => {
           <div className="bg-red-900/20 border border-red-700 rounded-xl p-6">
             <h3 className="text-red-400 font-semibold mb-2 text-lg">Checkout Error</h3>
             <p className="text-red-300 text-sm mb-4">{error}</p>
-            <button
-              onClick={() => navigate('/pricing')}
+                <button
+                  onClick={() => navigate('/pricing')}
               className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm transition"
-            >
+                >
               Return to Pricing
-            </button>
-          </div>
+                </button>
         </div>
       </div>
-    );
+    </div>
+  );
   }
 
   return null;

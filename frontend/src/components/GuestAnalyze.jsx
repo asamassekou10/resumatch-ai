@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 // Framer Motion removed to fix animation compatibility issues
 import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, Clock, FileText, Download, Sparkles, Mail, Infinity, Shield, Lock, ChevronDown, ChevronUp, Target, Search } from 'lucide-react';
 import guestService from '../services/guestService';
@@ -38,6 +38,7 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => (
 
 const GuestAnalyze = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [step, setStep] = useState('welcome'); // welcome, analyze, analyzing, complete, results
   const [guestToken, setGuestToken] = useState(null);
   const [guestCredits, setGuestCredits] = useState(1);
@@ -56,6 +57,37 @@ const GuestAnalyze = () => {
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
+
+  useEffect(() => {
+    const paymentStatus = searchParams.get('payment');
+    if (paymentStatus !== 'success') {
+      return;
+    }
+
+    const activeGuestToken = guestToken || guestService.getGuestToken();
+    if (!activeGuestToken) {
+      setSearchParams({});
+      return;
+    }
+
+    const refreshGuestCredits = async () => {
+      try {
+        const sessionInfo = await guestService.getSessionInfo(activeGuestToken);
+        if (sessionInfo?.session?.credits_remaining !== undefined) {
+          setGuestCredits(sessionInfo.session.credits_remaining);
+          setError('');
+          setShowPricingModal(false);
+          setShowPaymentModal(false);
+        }
+      } catch (err) {
+        console.error('Error refreshing guest credits:', err);
+      } finally {
+        setSearchParams({});
+      }
+    };
+
+    refreshGuestCredits();
+  }, [guestToken, searchParams, setSearchParams]);
 
   // FAQ data for the page
   const faqData = [
@@ -1008,6 +1040,7 @@ const GuestAnalyze = () => {
         selectedPlan={selectedPlan}
         onSuccess={handlePaymentSuccess}
         onError={handlePaymentError}
+        guestToken={guestToken}
       />
     </>
   );
