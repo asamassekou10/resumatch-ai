@@ -12,6 +12,7 @@ import { generateFAQSchema } from '../utils/structuredData';
 import { isPrerendering } from '../utils/prerender';
 import BlurredSection from './pricing/BlurredSection';
 import PricingModal from './pricing/PricingModal';
+import PaymentModal from './pricing/PaymentModal';
 
 // FAQ Accordion Component - Using CSS transitions instead of Framer Motion
 const FAQItem = ({ question, answer, isOpen, onClick }) => (
@@ -53,6 +54,8 @@ const GuestAnalyze = () => {
   const [openFAQ, setOpenFAQ] = useState(null);
   const [showComplete, setShowComplete] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
 
   // FAQ data for the page
   const faqData = [
@@ -253,20 +256,41 @@ const GuestAnalyze = () => {
   };
 
   const handleSelectPlan = (plan) => {
+    // For $1.99 single_rescan, show payment modal directly (with guest checkout option)
+    if (plan.type === 'single_rescan' && plan.price === 1.99) {
+      setSelectedPlan(plan);
+      setShowPricingModal(false);
+      setShowPaymentModal(true);
+      return;
+    }
+    
     const microPurchases = ['single_rescan', 'weekly_pass'];
     
     if (microPurchases.includes(plan.type)) {
-      // Store plan and flag to skip trial
-      localStorage.setItem('selected_plan', JSON.stringify(plan));
-      localStorage.setItem('skip_trial', 'true');
-      localStorage.setItem('redirect_after_auth', 'payment'); // Store redirect in localStorage
-      navigate(`${ROUTES.REGISTER}?redirect=payment`);
+      // For other micro-purchases, show payment modal
+      setSelectedPlan(plan);
+      setShowPricingModal(false);
+      setShowPaymentModal(true);
     } else {
-      // Subscription plans go to checkout
+      // Subscription plans go to checkout (require signup)
       localStorage.setItem('selected_plan', JSON.stringify(plan));
       localStorage.setItem('redirect_after_auth', 'checkout'); // Store redirect in localStorage
       navigate(`${ROUTES.REGISTER}?redirect=checkout`);
     }
+  };
+
+  const handlePaymentSuccess = (purchaseData) => {
+    setShowPaymentModal(false);
+    // Refresh guest credits or show success message
+    if (purchaseData?.user_info?.credits) {
+      // If user got credits, they can now analyze
+      setError('');
+      // Optionally refresh the page or show success message
+    }
+  };
+
+  const handlePaymentError = (error) => {
+    setError(error?.message || 'Payment failed. Please try again.');
   };
 
   const handleSignUp = () => {
@@ -972,6 +996,18 @@ const GuestAnalyze = () => {
           { type: 'monthly_pro', price: 19.99, description: 'Full Pro features + templates' }
         ]}
         creditsRemaining={guestCredits}
+      />
+
+      {/* Payment Modal for micro-purchases */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => {
+          setShowPaymentModal(false);
+          setSelectedPlan(null);
+        }}
+        selectedPlan={selectedPlan}
+        onSuccess={handlePaymentSuccess}
+        onError={handlePaymentError}
       />
     </>
   );
