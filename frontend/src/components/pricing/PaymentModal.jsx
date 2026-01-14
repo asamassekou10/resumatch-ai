@@ -27,7 +27,6 @@ const GuestPaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [showAccountPrompt, setShowAccountPrompt] = useState(false);
-  const [guestToken, setGuestToken] = useState(null);
 
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -85,8 +84,7 @@ const GuestPaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
         throw new Error(data.error || data.message || 'Failed to create payment');
       }
 
-      const { client_secret, guest_token } = data;
-      setGuestToken(guest_token);
+      const { client_secret } = data;
 
       // Step 2: Confirm payment with Stripe
       const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
