@@ -108,8 +108,7 @@ const GuestPaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
         },
         body: JSON.stringify({
           payment_intent_id: paymentIntent.id,
-          email: email,
-          guest_token: guest_token
+          email: email
         })
       });
 
