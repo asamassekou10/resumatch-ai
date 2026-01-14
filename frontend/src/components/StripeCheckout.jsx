@@ -272,7 +272,8 @@ const StripeCheckout = ({ token, navigate: parentNavigate }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const tierInfo = TIER_INFO[tier] || TIER_INFO.pro;
+  const tierInfo = TIER_INFO[tier] || TIER_INFO.pro_founding;
+  const IconComponent = tierInfo.icon;
 
   useEffect(() => {
     const initializeCheckout = async () => {
