@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 import stripe
 import os
 import logging
+import secrets
+import bcrypt
 
 from models import db, User, Purchase, Analysis
 from services.subscription_service import SubscriptionService
@@ -266,6 +268,229 @@ def check_weekly_pass():
         logger.error(f"Error checking weekly pass: {str(e)}")
         return jsonify({
             'error': 'Failed to check weekly pass status',
+            'details': str(e)
+        }), 500
+
+
+@payments_bp.route('/guest-checkout', methods=['POST'])
+def guest_checkout():
+    """
+    Create a payment intent for guest checkout (no account required)
+    Only available for $1.99 single_rescan purchases
+    
+    Request body:
+        - email: Customer email (required)
+        - purchase_type: 'single_rescan' (only allowed type)
+    
+    Returns:
+        - client_secret: Stripe PaymentIntent client secret
+        - guest_token: Temporary token for guest session
+        - amount: Amount in cents
+    """
+    try:
+        if not STRIPE_API_KEY:
+            logger.error("Stripe API key not configured")
+            return jsonify({
+                'error': 'Payment service is not configured. Please contact support.'
+            }), 500
+
+        data = request.get_json()
+        email = data.get('email', '').strip().lower()
+        purchase_type = data.get('purchase_type', 'single_rescan')
+
+        # Validate email
+        if not email or '@' not in email:
+            return jsonify({'error': 'Valid email is required'}), 400
+
+        # Only allow single_rescan for guest checkout
+        if purchase_type != 'single_rescan':
+            return jsonify({
+                'error': 'Guest checkout is only available for single re-scan purchases'
+            }), 400
+
+        if purchase_type not in PRICING:
+            return jsonify({'error': 'Invalid purchase type'}), 400
+
+        pricing_info = PRICING[purchase_type]
+
+        # Find or create guest user
+        user = User.query.filter_by(email=email).first()
+        
+        if not user:
+            # Create guest account (no password, email not verified)
+            # User can verify and set password later if they want
+            user = User(
+                email=email,
+                password_hash=None,  # No password for guest accounts
+                auth_provider='guest',
+                email_verified=False,
+                subscription_tier='free',
+                subscription_status='inactive',
+                credits=0,  # Will be granted after payment
+                is_trial_active=False
+            )
+            db.session.add(user)
+            db.session.flush()  # Get user.id without committing
+            logger.info(f"Created guest account for {email}")
+        else:
+            # Existing user - they can pay as guest and we'll link it
+            logger.info(f"Guest checkout for existing user {email}")
+
+        # Create or get Stripe customer
+        if not user.stripe_customer_id:
+            customer = stripe.Customer.create(
+                email=user.email,
+                name=user.name or user.email.split('@')[0]
+            )
+            user.stripe_customer_id = customer.id
+            db.session.commit()
+        else:
+            db.session.commit()
+
+        # Create PaymentIntent
+        payment_intent = stripe.PaymentIntent.create(
+            amount=pricing_info['amount'],
+            currency='usd',
+            customer=user.stripe_customer_id,
+            description=pricing_info['description'],
+            metadata={
+                'user_id': user.id,
+                'purchase_type': purchase_type,
+                'user_email': user.email,
+                'is_guest_checkout': 'true'
+            },
+            automatic_payment_methods={'enabled': True}
+        )
+
+        # Generate temporary guest token for this checkout session
+        guest_token = 'guest_checkout_' + secrets.token_urlsafe(32)
+
+        logger.info(f"Created guest checkout payment intent {payment_intent.id} for {email}")
+
+        return jsonify({
+            'client_secret': payment_intent.client_secret,
+            'payment_intent_id': payment_intent.id,
+            'guest_token': guest_token,
+            'amount': pricing_info['amount'],
+            'amount_display': f"${pricing_info['amount'] / 100:.2f}",
+            'purchase_type': purchase_type,
+            'description': pricing_info['description']
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error creating guest checkout: {str(e)}")
+        db.session.rollback()
+        return jsonify({
+            'error': 'Failed to create checkout',
+            'details': str(e)
+        }), 500
+
+
+@payments_bp.route('/confirm-guest-purchase', methods=['POST'])
+def confirm_guest_purchase():
+    """
+    Confirm a guest purchase after successful payment
+    No authentication required - uses payment_intent_id to verify
+    
+    Request body:
+        - payment_intent_id: Stripe PaymentIntent ID
+        - email: Customer email
+        - guest_token: Temporary guest token (optional)
+    
+    Returns:
+        - success: boolean
+        - purchase: Purchase details
+        - user_info: User information
+        - access_token: JWT token if user wants to create account
+    """
+    try:
+        data = request.get_json()
+        payment_intent_id = data.get('payment_intent_id')
+        email = data.get('email', '').strip().lower()
+        purchase_type = 'single_rescan'  # Only type for guest checkout
+
+        if not payment_intent_id or not email:
+            return jsonify({'error': 'Invalid request'}), 400
+
+        # Verify payment intent with Stripe
+        payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+
+        if payment_intent.status != 'succeeded':
+            return jsonify({
+                'error': 'Payment not completed',
+                'payment_status': payment_intent.status
+            }), 400
+
+        # Get user from payment intent metadata
+        user_id = payment_intent.metadata.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'Invalid payment'}), 400
+
+        user = User.query.get(int(user_id))
+        if not user or user.email != email:
+            return jsonify({'error': 'User not found'}), 404
+
+        # Check if purchase already exists
+        existing_purchase = Purchase.query.filter_by(
+            stripe_payment_intent_id=payment_intent_id
+        ).first()
+
+        if existing_purchase:
+            logger.warning(f"Guest purchase already processed: {payment_intent_id}")
+            return jsonify({
+                'success': True,
+                'purchase': existing_purchase.to_dict(),
+                'message': 'Purchase already processed'
+            }), 200
+
+        pricing_info = PRICING[purchase_type]
+
+        # Create purchase record
+        purchase = Purchase(
+            user_id=user.id,
+            purchase_type=purchase_type,
+            amount_usd=pricing_info['amount'] / 100,
+            credits_granted=1,
+            stripe_payment_intent_id=payment_intent_id,
+            stripe_charge_id=payment_intent.latest_charge if hasattr(payment_intent, 'latest_charge') else None,
+            payment_status='succeeded',
+            payment_method=payment_intent.payment_method_types[0] if payment_intent.payment_method_types else None
+        )
+
+        # Grant 1 credit for re-scan
+        user.credits += 1
+        purchase.credits_granted = 1
+
+        db.session.add(purchase)
+        db.session.commit()
+
+        logger.info(f"Confirmed guest {purchase_type} purchase for user {user.id}")
+
+        # Generate access token if user wants to create account
+        from flask_jwt_extended import create_access_token
+        access_token = None
+        if user.auth_provider == 'guest':
+            # Create temporary token for guest to access their account
+            access_token = create_access_token(identity=str(user.id), expires_delta=timedelta(days=30))
+
+        return jsonify({
+            'success': True,
+            'purchase': purchase.to_dict(),
+            'user_info': {
+                'email': user.email,
+                'credits': user.credits,
+                'is_guest': user.auth_provider == 'guest'
+            },
+            'access_token': access_token,  # Token for guest to access account
+            'message': 'Payment successful! You can now re-scan your resume.',
+            'create_account_prompt': user.auth_provider == 'guest'  # Prompt to create account
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error confirming guest purchase: {str(e)}")
+        db.session.rollback()
+        return jsonify({
+            'error': 'Failed to confirm purchase',
             'details': str(e)
         }), 500
 

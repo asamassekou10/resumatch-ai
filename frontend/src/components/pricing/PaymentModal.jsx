@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CreditCard, Lock, AlertCircle, CheckCircle, Loader } from 'lucide-react';
+import { X, CreditCard, Lock, AlertCircle, CheckCircle, Loader, Mail, User } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../../config/routes';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -10,9 +12,302 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 /**
+ * GuestPaymentForm Component (Internal)
+ *
+ * Handles guest checkout for $1.99 purchases (no account required)
+ */
+const GuestPaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const navigate = useNavigate();
+
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState(null);
+  const [cardComplete, setCardComplete] = useState(false);
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [showAccountPrompt, setShowAccountPrompt] = useState(false);
+  const [guestToken, setGuestToken] = useState(null);
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value.trim().toLowerCase();
+    setEmail(value);
+    if (value && !validateEmail(value)) {
+      setEmailError('Please enter a valid email address');
+    } else {
+      setEmailError('');
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!stripe || !elements) {
+      setError('Stripe has not loaded yet. Please wait.');
+      return;
+    }
+
+    if (!email || !validateEmail(email)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    if (!cardComplete) {
+      setError('Please complete your card details.');
+      return;
+    }
+
+    setProcessing(true);
+    setError(null);
+    setEmailError('');
+
+    try {
+      // Step 1: Create guest checkout payment intent
+      const response = await fetch(`${API_URL}/payments/guest-checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          purchase_type: selectedPlan.type
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Failed to create payment');
+      }
+
+      const { client_secret, guest_token } = data;
+      setGuestToken(guest_token);
+
+      // Step 2: Confirm payment with Stripe
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+          billing_details: {
+            email: email
+          }
+        }
+      });
+
+      if (stripeError) {
+        throw new Error(stripeError.message);
+      }
+
+      // Step 3: Confirm purchase on backend
+      const confirmResponse = await fetch(`${API_URL}/payments/confirm-guest-purchase`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          payment_intent_id: paymentIntent.id,
+          email: email,
+          guest_token: guest_token
+        })
+      });
+
+      const confirmData = await confirmResponse.json();
+
+      if (!confirmResponse.ok) {
+        throw new Error(confirmData.error || 'Failed to confirm payment');
+      }
+
+      // Show account creation prompt if guest account
+      if (confirmData.create_account_prompt && confirmData.access_token) {
+        // Store token for account access
+        localStorage.setItem('token', confirmData.access_token);
+        setShowAccountPrompt(true);
+        // Auto-close after showing prompt
+        setTimeout(() => {
+          onSuccess(confirmData);
+          onClose();
+        }, 3000);
+      } else {
+        // Success!
+        onSuccess(confirmData);
+      }
+    } catch (err) {
+      console.error('Payment error:', err);
+      setError(err.message || 'Payment failed. Please try again.');
+      onError(err);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Plan Summary */}
+      <div className="bg-white/5 border border-cyan-500/20 rounded-lg p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-gray-400 text-sm">Selected Plan</span>
+          <span className="text-white font-bold text-lg">${selectedPlan.price}</span>
+        </div>
+        <p className="text-gray-300 text-sm">{selectedPlan.description}</p>
+        <div className="mt-2 flex items-center gap-2 text-xs text-cyan-400">
+          <User className="w-3 h-3" />
+          <span>Pay as guest - No account required</span>
+        </div>
+      </div>
+
+      {/* Email Input */}
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Email Address <span className="text-red-400">*</span>
+        </label>
+        <div className="relative">
+          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="email"
+            value={email}
+            onChange={handleEmailChange}
+            placeholder="your@email.com"
+            className={`w-full pl-10 pr-4 py-3 bg-white/5 border ${
+              emailError ? 'border-red-500' : 'border-white/10'
+            } rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition-colors`}
+            required
+          />
+        </div>
+        {emailError && (
+          <p className="mt-1 text-xs text-red-400">{emailError}</p>
+        )}
+        <p className="mt-1 text-xs text-gray-500">
+          We'll send your receipt and results to this email
+        </p>
+      </div>
+
+      {/* Card Input */}
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Card Details
+        </label>
+        <div className="bg-white/5 border border-white/10 rounded-lg p-4 hover:border-cyan-500/30 transition-colors">
+          <CardElement
+            options={{
+              style: {
+                base: {
+                  fontSize: '16px',
+                  color: '#ffffff',
+                  fontFamily: '"Inter", system-ui, sans-serif',
+                  '::placeholder': {
+                    color: '#6b7280',
+                  },
+                  iconColor: '#06b6d4'
+                },
+                invalid: {
+                  color: '#ef4444',
+                  iconColor: '#ef4444'
+                }
+              },
+              hidePostalCode: false
+            }}
+            onChange={(event) => {
+              setCardComplete(event.complete);
+              if (event.error) {
+                setError(event.error.message);
+              } else {
+                setError(null);
+              }
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Error Display */}
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg"
+        >
+          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+          <p className="text-red-400 text-sm">{error}</p>
+        </motion.div>
+      )}
+
+      {/* Account Creation Prompt */}
+      {showAccountPrompt && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-start gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg"
+        >
+          <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-green-400 text-sm font-semibold mb-1">Payment Successful!</p>
+            <p className="text-gray-300 text-xs mb-2">
+              Create an account to save your results and access them anytime.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                navigate(`${ROUTES.REGISTER}?email=${encodeURIComponent(email)}&from=guest_checkout`);
+                onClose();
+              }}
+              className="text-xs text-cyan-400 hover:text-cyan-300 underline"
+            >
+              Create Account →
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Security Notice */}
+      <div className="flex items-center gap-2 text-xs text-gray-500">
+        <Lock className="w-4 h-4" />
+        <span>Secured by Stripe. Your payment info is encrypted and secure.</span>
+      </div>
+
+      {/* Submit Button */}
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={processing}
+          className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={processing || !stripe || !cardComplete || !email || emailError}
+          className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 rounded-lg text-white font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {processing ? (
+            <>
+              <Loader className="w-5 h-5 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            <>
+              <CreditCard className="w-5 h-5" />
+              Pay ${selectedPlan.price}
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Money-back guarantee */}
+      <p className="text-center text-xs text-gray-500">
+        100% money-back guarantee within 24 hours if you're not satisfied
+      </p>
+    </form>
+  );
+};
+
+/**
  * PaymentForm Component (Internal)
  *
- * Handles Stripe payment flow within the modal.
+ * Handles Stripe payment flow within the modal for authenticated users.
  */
 const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
   const stripe = useStripe();
@@ -231,14 +526,22 @@ const PaymentModal = ({
   onSuccess,
   onError
 }) => {
+  const token = localStorage.getItem('token');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [isGuestCheckout, setIsGuestCheckout] = useState(false);
 
   // Reset success state when modal closes
   useEffect(() => {
     if (!isOpen) {
       setPaymentSuccess(false);
+      setIsGuestCheckout(false);
+    } else {
+      // For $1.99 purchases, default to guest checkout if user is not logged in
+      if (selectedPlan?.type === 'single_rescan' && selectedPlan?.price === 1.99 && !token) {
+        setIsGuestCheckout(true);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, selectedPlan, token]);
 
   const handleSuccess = (data) => {
     setPaymentSuccess(true);
@@ -286,6 +589,40 @@ const PaymentModal = ({
             </div>
           </div>
 
+          {/* Guest Checkout Toggle (only for $1.99 purchases) */}
+          {selectedPlan?.type === 'single_rescan' && selectedPlan?.price === 1.99 && (
+            <div className="px-6 pt-4 pb-2 border-b border-white/10">
+              <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                <div className="flex-1">
+                  <p className="text-white text-sm font-medium">Checkout Options</p>
+                  <p className="text-gray-400 text-xs mt-1">
+                    {isGuestCheckout 
+                      ? 'Pay as guest - No account required'
+                      : 'Sign in to save results in your account'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!token && !isGuestCheckout) {
+                      // Redirect to login if trying to use authenticated checkout without token
+                      window.location.href = `/login?redirect=payment&plan=${selectedPlan.type}`;
+                      return;
+                    }
+                    setIsGuestCheckout(!isGuestCheckout);
+                  }}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full bg-cyan-500/20 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isGuestCheckout ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Content */}
           <div className="p-6">
             {paymentSuccess ? (
@@ -317,14 +654,23 @@ const PaymentModal = ({
                 </div>
               </motion.div>
             ) : (
-              // Payment Form
+              // Payment Form - Show guest or authenticated form
               <Elements stripe={stripePromise}>
-                <PaymentForm
-                  selectedPlan={selectedPlan}
-                  onSuccess={handleSuccess}
-                  onError={onError}
-                  onClose={onClose}
-                />
+                {isGuestCheckout && selectedPlan?.type === 'single_rescan' ? (
+                  <GuestPaymentForm
+                    selectedPlan={selectedPlan}
+                    onSuccess={handleSuccess}
+                    onError={onError}
+                    onClose={onClose}
+                  />
+                ) : (
+                  <PaymentForm
+                    selectedPlan={selectedPlan}
+                    onSuccess={handleSuccess}
+                    onError={onError}
+                    onClose={onClose}
+                  />
+                )}
               </Elements>
             )}
           </div>
