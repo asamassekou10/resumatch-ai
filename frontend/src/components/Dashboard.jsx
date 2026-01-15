@@ -349,63 +349,128 @@ const Dashboard = ({ userProfile }) => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-cyan-900/20 via-blue-900/20 to-blue-900/20 border border-cyan-500/30 rounded-2xl p-8 md:p-12 mb-6"
+          transition={{ duration: 0.6 }}
+          className="relative overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 md:p-12 mb-6"
         >
-          <div className="text-center max-w-2xl mx-auto">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 mb-6">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+          {/* Background atmospheric effects */}
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-blue-600/5 pointer-events-none" />
+          <div 
+            className="absolute inset-0 opacity-30 pointer-events-none" 
+            style={{ 
+              backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', 
+              backgroundSize: '40px 40px' 
+            }} 
+          />
+
+          <div className="text-center max-w-3xl mx-auto relative z-10">
+            {/* Enhanced Icon Treatment */}
+            <div className="relative inline-flex items-center justify-center mb-6 sm:mb-8">
+              {/* Outer glow ring */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-500/20 to-blue-600/20 blur-xl animate-pulse" />
+              {/* Icon container */}
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center backdrop-blur-sm">
+                <svg className="w-10 h-10 sm:w-12 sm:h-12 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-display">
-              Welcome to Your Career Dashboard! 🎯
+
+            {/* Heading with gradient text treatment */}
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4 font-display px-4">
+              Welcome to Your{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+                Career Dashboard
+              </span>
             </h2>
-            <p className="text-gray-300 text-lg mb-2">
+
+            {/* Description Text */}
+            <p className="text-base sm:text-lg md:text-xl text-gray-300 mb-2 sm:mb-3 max-w-2xl mx-auto leading-relaxed px-4">
               Get started by analyzing your resume against any job description
             </p>
-            <p className="text-gray-400 text-sm mb-8">
-              Our AI will help you identify gaps, optimize keywords, and improve your match score
+            <p className="text-sm sm:text-base text-gray-400 mb-8 sm:mb-10 max-w-2xl mx-auto px-4">
+              Our AI-powered analysis helps you identify gaps, optimize keywords, and improve your match score
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+
+            {/* Enhanced CTA Button */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-10 sm:mb-12 px-4">
               <button
                 onClick={() => navigate(ROUTES.ANALYZE)}
-                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-8 py-4 rounded-lg font-semibold transition shadow-lg hover:shadow-cyan-500/25 flex items-center gap-2 text-lg"
+                className="group relative overflow-hidden bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-6 sm:px-8 md:px-10 py-3 sm:py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-cyan-500/40 flex items-center gap-2 sm:gap-3 text-base sm:text-lg hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-black"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {/* Shimmer effect */}
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                Start Your First Analysis
-                <ArrowRight className="w-5 h-5" />
+                <span className="relative z-10">Start Your First Analysis</span>
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-              <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-                <div className="w-12 h-12 rounded-lg bg-cyan-500/20 flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
+
+            {/* Enhanced Feature Cards Grid */}
+            <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 text-left px-4">
+              {/* Upload Resume Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="group relative bg-white/5 backdrop-blur-sm rounded-xl p-5 sm:p-6 border border-white/10 hover:border-cyan-500/30 transition-all duration-300 hover:bg-white/10"
+              >
+                {/* Hover glow effect */}
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/0 via-blue-500/0 to-blue-600/0 group-hover:from-cyan-500/10 group-hover:via-blue-500/5 group-hover:to-blue-600/10 transition-all duration-300 pointer-events-none" />
+                
+                <div className="relative z-10">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-6 h-6 sm:w-7 sm:h-7 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                  </div>
+                  <h3 className="text-white font-semibold mb-2 text-base sm:text-lg">Upload Resume</h3>
+                  <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">Upload your resume in PDF, DOCX, or TXT format</p>
                 </div>
-                <h3 className="text-white font-semibold mb-2">Upload Resume</h3>
-                <p className="text-gray-400 text-sm">Upload your resume in PDF, DOCX, or TXT format</p>
-              </div>
-              <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-                <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+              </motion.div>
+
+              {/* Paste Job Description Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="group relative bg-white/5 backdrop-blur-sm rounded-xl p-5 sm:p-6 border border-white/10 hover:border-cyan-500/30 transition-all duration-300 hover:bg-white/10"
+              >
+                {/* Hover glow effect */}
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/0 via-blue-500/0 to-blue-600/0 group-hover:from-cyan-500/10 group-hover:via-blue-500/5 group-hover:to-blue-600/10 transition-all duration-300 pointer-events-none" />
+                
+                <div className="relative z-10">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-6 h-6 sm:w-7 sm:h-7 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-white font-semibold mb-2 text-base sm:text-lg">Paste Job Description</h3>
+                  <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">Add the job description you're applying for</p>
                 </div>
-                <h3 className="text-white font-semibold mb-2">Paste Job Description</h3>
-                <p className="text-gray-400 text-sm">Add the job description you're applying for</p>
-              </div>
-              <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-                <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
+              </motion.div>
+
+              {/* Get Insights Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="group relative bg-white/5 backdrop-blur-sm rounded-xl p-5 sm:p-6 border border-white/10 hover:border-cyan-500/30 transition-all duration-300 hover:bg-white/10 sm:col-span-2 lg:col-span-1"
+              >
+                {/* Hover glow effect */}
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/0 via-blue-500/0 to-blue-600/0 group-hover:from-cyan-500/10 group-hover:via-blue-500/5 group-hover:to-blue-600/10 transition-all duration-300 pointer-events-none" />
+                
+                <div className="relative z-10">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-6 h-6 sm:w-7 sm:h-7 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-white font-semibold mb-2 text-base sm:text-lg">Get Insights</h3>
+                  <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">Receive detailed analysis and improvement suggestions</p>
                 </div>
-                <h3 className="text-white font-semibold mb-2">Get Insights</h3>
-                <p className="text-gray-400 text-sm">Receive detailed analysis and improvement suggestions</p>
-              </div>
+              </motion.div>
             </div>
           </div>
         </motion.div>
