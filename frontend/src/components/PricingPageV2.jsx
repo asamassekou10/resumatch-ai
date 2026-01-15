@@ -96,15 +96,6 @@ const PricingPageV2 = ({ token, userProfile }) => {
       };
     }
 
-    if (lowerPlan === 'pay per scan') {
-      return {
-        text: 'Buy $1.99 Scan',
-        action: () => navigate(ROUTES.ANALYZE),
-        variant: 'secondary',
-        disabled: loading
-      };
-    }
-
     if (lowerPlan === '7-day pass') {
       return {
         text: 'Get 7-Day Pass',
@@ -153,27 +144,6 @@ const PricingPageV2 = ({ token, userProfile }) => {
       icon: Sparkles
     },
     {
-      name: 'Pay Per Scan',
-      description: 'Quick unlock when you need it',
-      monthlyPrice: 1.99,
-      yearlyPrice: 0,
-      credits: 1,
-      features: [
-        'One-time payment',
-        'Unlock single analysis',
-        'All missing keywords revealed',
-        'Full AI recommendations',
-        'ATS optimization tips',
-        'No subscription needed',
-        '💰 Under $2 - instant access'
-      ],
-      notIncluded: ['Unlimited scans'],
-      highlighted: false,
-      icon: Zap,
-      badge: 'MOST POPULAR',
-      specialNote: 'Perfect for quick resume updates'
-    },
-    {
       name: '7-Day Pass',
       description: 'Best for active job hunting',
       monthlyPrice: 6.99,
@@ -186,13 +156,13 @@ const PricingPageV2 = ({ token, userProfile }) => {
         'Full analysis every time',
         'All keywords & recommendations',
         'ATS optimization included',
-        '🚀 Best value - save vs 3+ scans'
+        '🚀 Best value for active job seekers'
       ],
       notIncluded: ['Monthly subscription'],
       highlighted: true,
       icon: Crown,
       badge: 'BEST VALUE',
-      specialNote: 'Save $3+ compared to 4 single scans'
+      specialNote: 'Perfect for testing multiple resume versions'
     },
     {
       name: 'Pro Founding',
@@ -257,8 +227,8 @@ const PricingPageV2 = ({ token, userProfile }) => {
     <>
       <SEO
         title="Pricing Plans"
-        description="Start free, then pay only when you need it. $1.99 per scan or $6.99 for 7-day unlimited access. No monthly commitments required. AI-powered resume analysis with ATS scoring."
-        keywords="pricing, pay per scan, resume analyzer pricing, AI career tools pricing, affordable resume analysis, $1.99 resume scan"
+        description="Start free, then get unlimited scans for 7 days at $6.99 or subscribe monthly. No long-term commitments required. AI-powered resume analysis with ATS scoring."
+        keywords="pricing, resume analyzer pricing, AI career tools pricing, affordable resume analysis, 7-day pass, unlimited resume scans"
         url="https://resumeanalyzerai.com/pricing"
       />
       <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
@@ -277,10 +247,10 @@ const PricingPageV2 = ({ token, userProfile }) => {
           custom={0}
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 font-display relative z-10">
-            Pay only when you need it
+            Simple, flexible pricing
           </h1>
           <p className="text-lg text-gray-400 max-w-2xl mx-auto relative z-10">
-            Start free. Then unlock scans for $1.99 each, or get unlimited access for 7 days at $6.99. No monthly commitments.
+            Start free. Then get unlimited scans for 7 days at $6.99, or subscribe monthly for ongoing access. No long-term commitments.
           </p>
         </motion.div>
 
@@ -401,12 +371,12 @@ const PricingPageV2 = ({ token, userProfile }) => {
                       >
                         <span className="text-4xl font-bold text-white font-display relative z-10">${price.toFixed(2)}</span>
                         <span className="text-gray-400 text-base font-normal font-sans ml-2 relative z-10">
-                          {price === 0 ? '' : plan.name === 'Pay Per Scan' || plan.name === '7-Day Pass' ? '' : isYearly ? '/year' : '/mo'}
+                          {price === 0 ? '' : plan.name === '7-Day Pass' ? '' : isYearly ? '/year' : '/mo'}
                         </span>
                       </motion.div>
 
                       {/* One-time payment label */}
-                      {(plan.name === 'Pay Per Scan' || plan.name === '7-Day Pass') && (
+                      {plan.name === '7-Day Pass' && (
                         <p className="text-cyan-400 text-sm font-semibold mt-2 relative z-10">
                           One-time payment
                         </p>

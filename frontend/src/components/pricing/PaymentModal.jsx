@@ -7,7 +7,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 /**
  * GuestPaymentForm Component (Internal)
  *
- * Handles guest checkout for $1.99 purchases (no account required)
+ * Handles guest checkout for micro-purchases (no account required)
  */
 const GuestPaymentForm = ({ selectedPlan, guestToken, onSuccess, onError, onClose }) => {
 
@@ -339,11 +339,6 @@ const PaymentModal = ({
     if (!isOpen) {
       setPaymentSuccess(false);
       setIsGuestCheckout(false);
-    } else {
-      // For $1.99 purchases, default to guest checkout if user is not logged in
-      if (selectedPlan?.type === 'single_rescan' && selectedPlan?.price === 1.99 && !token) {
-        setIsGuestCheckout(true);
-      }
     }
   }, [isOpen, selectedPlan, token]);
 
@@ -393,8 +388,8 @@ const PaymentModal = ({
             </div>
           </div>
 
-          {/* Guest Checkout Toggle (only for $1.99 purchases) */}
-          {selectedPlan?.type === 'single_rescan' && selectedPlan?.price === 1.99 && (
+          {/* Guest Checkout Toggle (for weekly pass purchases) */}
+          {selectedPlan?.type === 'weekly_pass' && !token && (
             <div className="px-6 pt-4 pb-2 border-b border-white/10">
               <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                 <div className="flex-1">
@@ -460,7 +455,7 @@ const PaymentModal = ({
             ) : (
               // Payment Form - Show guest or authenticated form
               <>
-                {isGuestCheckout && selectedPlan?.type === 'single_rescan' ? (
+                {isGuestCheckout && selectedPlan?.type === 'weekly_pass' ? (
                   <GuestPaymentForm
                     selectedPlan={selectedPlan}
                     guestToken={guestToken}

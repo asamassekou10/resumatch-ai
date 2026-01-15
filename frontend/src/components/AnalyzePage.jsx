@@ -292,9 +292,9 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
   const handleUpgradeClick = (plan) => {
     // Check if this is a subscription plan that should go to checkout
     // Subscription plans: pro_founding, elite, monthly_pro (if it's a subscription)
-    // Micro-purchases: single_rescan, weekly_pass
+    // Micro-purchases: weekly_pass
     const subscriptionPlans = ['pro_founding', 'elite'];
-    const microPurchasePlans = ['single_rescan', 'weekly_pass'];
+    const microPurchasePlans = ['weekly_pass'];
     
     // If it's a subscription plan, redirect to checkout
     if (subscriptionPlans.includes(plan.type)) {

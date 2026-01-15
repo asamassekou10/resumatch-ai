@@ -49,7 +49,6 @@ const PricingModal = ({
   }, [isOpen]);
 
   // Find plan types
-  const singleScan = upgradeOptions.find(opt => opt.type === 'single_rescan');
   const weeklyPass = upgradeOptions.find(opt => opt.type === 'weekly_pass');
   const monthlyPro = upgradeOptions.find(opt => opt.type === 'monthly_pro');
 
@@ -120,61 +119,7 @@ const PricingModal = ({
 
           {/* Pricing Cards */}
           <div className="p-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Single Re-scan */}
-              {singleScan && (
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  className={`relative bg-white/5 border ${
-                    selectedPlan?.type === 'single_rescan'
-                      ? 'border-cyan-500 shadow-lg shadow-cyan-500/20'
-                      : 'border-white/10'
-                  } rounded-xl p-6 cursor-pointer transition-all`}
-                  onClick={() => handleSelectPlan(singleScan)}
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <Zap className="w-5 h-5 text-yellow-400" />
-                    <h3 className="text-lg font-bold text-white">Quick Unlock</h3>
-                  </div>
-
-                  <div className="mb-4">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold text-white">${singleScan.price}</span>
-                      <span className="text-gray-500 text-sm">one-time</span>
-                    </div>
-                    <p className="text-gray-400 text-sm mt-2">{singleScan.description}</p>
-                  </div>
-
-                  <ul className="space-y-3 mb-6">
-                    <li className="flex items-start gap-2 text-sm text-gray-300">
-                      <Check className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                      <span>Unlock current analysis results</span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm text-gray-300">
-                      <Check className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                      <span>All missing keywords revealed</span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm text-gray-300">
-                      <Check className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                      <span>AI recommendations included</span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm text-gray-400">
-                      <X className="w-4 h-4 text-gray-600 mt-0.5 flex-shrink-0" />
-                      <span>Single use only</span>
-                    </li>
-                  </ul>
-
-                  <button
-                    onClick={() => handleSelectPlan(singleScan)}
-                    className="w-full py-3 bg-white/10 hover:bg-white/20 border border-cyan-500/30 rounded-lg text-white font-semibold transition-all"
-                  >
-                    Select Plan
-                  </button>
-
-                  <p className="text-center text-xs text-gray-500 mt-3">Perfect for one-time use</p>
-                </motion.div>
-              )}
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
               {/* Weekly Pass - Recommended */}
               {weeklyPass && (
                 <motion.div
@@ -204,7 +149,7 @@ const PricingModal = ({
                     </div>
                     <p className="text-gray-300 text-sm mt-2 font-medium">{weeklyPass.description}</p>
                     <div className="inline-block bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded mt-2">
-                      Save ${((singleScan?.price || 0) * 3 - weeklyPass.price).toFixed(2)} vs 3 single scans
+                      Best value for active job seekers
                     </div>
                   </div>
 

@@ -288,18 +288,10 @@ const GuestAnalyze = () => {
   };
 
   const handleSelectPlan = (plan) => {
-    // For $1.99 single_rescan, show payment modal directly (with guest checkout option)
-    if (plan.type === 'single_rescan' && plan.price === 1.99) {
-      setSelectedPlan(plan);
-      setShowPricingModal(false);
-      setShowPaymentModal(true);
-      return;
-    }
-    
-    const microPurchases = ['single_rescan', 'weekly_pass'];
+    const microPurchases = ['weekly_pass'];
     
     if (microPurchases.includes(plan.type)) {
-      // For other micro-purchases, show payment modal
+      // For micro-purchases, show payment modal
       setSelectedPlan(plan);
       setShowPricingModal(false);
       setShowPaymentModal(true);
@@ -1023,7 +1015,6 @@ const GuestAnalyze = () => {
         onClose={() => setShowPricingModal(false)}
         onSelectPlan={handleSelectPlan}
         upgradeOptions={[
-          { type: 'single_rescan', price: 1.99, description: 'Re-scan once to see improvements' },
           { type: 'weekly_pass', price: 6.99, description: '7 days unlimited scans', recommended: true },
           { type: 'monthly_pro', price: 19.99, description: 'Full Pro features + templates' }
         ]}
