@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Zap, Clock, Sparkles, TrendingUp, Shield, Users } from 'lucide-react';
+import { X, Check, Clock, Sparkles, TrendingUp, Shield, Users } from 'lucide-react';
 
 /**
  * PricingModal Component
