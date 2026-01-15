@@ -153,15 +153,37 @@ def fetch_linkedin_job(url):
 def fetch_indeed_job(url):
     """Fetch job description from Indeed with multiple extraction strategies"""
     try:
+        # Create a session to maintain cookies
+        session = requests.Session()
+        
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Language': 'en-US,en;q=0.9',
             'Accept-Encoding': 'gzip, deflate, br',
             'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1'
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Cache-Control': 'max-age=0',
+            'Referer': 'https://www.indeed.com/'
         }
-        response = requests.get(url, headers=headers, timeout=15, allow_redirects=True)
+        
+        # First, visit the Indeed homepage to get cookies
+        try:
+            session.get('https://www.indeed.com/', headers=headers, timeout=10)
+        except:
+            pass  # Continue even if homepage visit fails
+        
+        # Now fetch the job page with session cookies
+        response = session.get(url, headers=headers, timeout=15, allow_redirects=True)
+        
+        # Check for 401 before raising for status
+        if response.status_code == 401:
+            logger.error(f"Indeed blocked request (401 Unauthorized) for URL: {url}")
+            raise Exception("Indeed is blocking automated requests. Please copy the job description manually.")
+        
         response.raise_for_status()
 
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -310,6 +332,13 @@ def fetch_indeed_job(url):
             return description
 
         return None
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 401:
+            logger.error(f"Indeed blocked request (401 Unauthorized): {e}")
+            # Return a special indicator that Indeed is blocking
+            raise Exception("Indeed is blocking automated requests. Please copy the job description manually.")
+        logger.error(f"HTTP error fetching Indeed job: {e}")
+        return None
     except requests.exceptions.RequestException as e:
         logger.error(f"Request error fetching Indeed job: {e}")
         return None
@@ -340,6 +369,44 @@ def fetch_glassdoor_job(url):
     except Exception as e:
         logger.error(f"Error fetching Glassdoor job: {e}")
         return None
+
+def normalize_linkedin_url(url):
+    """Normalize LinkedIn URL - convert collection URLs to direct job view URLs"""
+    try:
+        parsed = urlparse(url)
+        
+        # If it's already a direct job view URL, return as is
+        if '/jobs/view/' in url:
+            return url
+        
+        # Extract job ID from query parameters (for collection URLs)
+        from urllib.parse import parse_qs
+        query_params = parse_qs(parsed.query)
+        job_id = query_params.get('currentJobId', [None])[0]
+        
+        if job_id:
+            # Construct direct job view URL
+            normalized_url = f"https://www.linkedin.com/jobs/view/{job_id}"
+            logger.info(f"Normalized LinkedIn URL from {url} to {normalized_url}")
+            return normalized_url
+        
+        # Try to extract job ID from path using regex
+        job_id_match = re.search(r'currentJobId=(\d+)', url)
+        if job_id_match:
+            job_id = job_id_match.group(1)
+            normalized_url = f"https://www.linkedin.com/jobs/view/{job_id}"
+            logger.info(f"Normalized LinkedIn URL from {url} to {normalized_url}")
+            return normalized_url
+        
+        # Try to find job ID in path
+        job_id_match = re.search(r'/jobs/view/(\d+)', url)
+        if job_id_match:
+            return url  # Already normalized
+        
+        return url
+    except Exception as e:
+        logger.warning(f"Error normalizing LinkedIn URL: {e}, using original URL")
+        return url
 
 def detect_job_board(url):
     """Detect which job board the URL is from"""
@@ -399,6 +466,14 @@ def fetch_job_description():
 
         # Detect job board
         job_board = detect_job_board(url)
+        
+        # Normalize LinkedIn URLs (convert collection URLs to direct view URLs)
+        if job_board == 'linkedin':
+            original_url = url
+            url = normalize_linkedin_url(url)
+            if url != original_url:
+                logger.info(f"Normalized LinkedIn URL: {original_url} -> {url}")
+        
         logger.info(f"Fetching job from {job_board}: {url}")
 
         # Fetch description based on job board
@@ -407,7 +482,17 @@ def fetch_job_description():
         if job_board == 'linkedin':
             description = fetch_linkedin_job(url)
         elif job_board == 'indeed':
-            description = fetch_indeed_job(url)
+            try:
+                description = fetch_indeed_job(url)
+            except Exception as e:
+                # If Indeed is blocking, return a helpful error
+                if "blocking automated requests" in str(e):
+                    return create_error_response(
+                        "Indeed is blocking automated requests. "
+                        "Please copy the job description text directly from the Indeed page and paste it manually in the 'Paste Description' tab.",
+                        400
+                    )
+                raise  # Re-raise other exceptions
         elif job_board == 'glassdoor':
             description = fetch_glassdoor_job(url)
         else:
@@ -418,12 +503,27 @@ def fetch_job_description():
             )
 
         if not description:
-            return create_error_response(
-                "Unable to extract job description from this URL. "
-                "The page structure may have changed or the URL may be invalid. "
-                "Please try copying and pasting the job description manually.",
-                400
-            )
+            # Provide helpful error messages based on job board
+            if job_board == 'linkedin':
+                error_msg = (
+                    "Unable to extract job description from this LinkedIn URL. "
+                    "Please ensure you're using a direct job posting URL (format: linkedin.com/jobs/view/...). "
+                    "If you copied a collection URL, try opening the job posting in a new tab and copying that URL. "
+                    "Alternatively, copy and paste the job description manually."
+                )
+            elif job_board == 'indeed':
+                error_msg = (
+                    "Unable to extract job description from this Indeed URL. "
+                    "Indeed may be blocking automated requests. "
+                    "Please try copying the job description text directly from the Indeed page and paste it manually."
+                )
+            else:
+                error_msg = (
+                    "Unable to extract job description from this URL. "
+                    "The page structure may have changed or the URL may be invalid. "
+                    "Please try copying and pasting the job description manually."
+                )
+            return create_error_response(error_msg, 400)
 
         logger.info(f"Successfully fetched job description from {job_board}")
 
