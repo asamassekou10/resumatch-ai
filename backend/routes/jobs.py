@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import logging
 import re
+import json
 from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup
@@ -224,7 +225,6 @@ def fetch_indeed_job(url):
             json_ld_scripts = soup.find_all('script', type='application/ld+json')
             for script in json_ld_scripts:
                 try:
-                    import json
                     data = json.loads(script.string)
                     if isinstance(data, dict):
                         if 'description' in data:
