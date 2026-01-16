@@ -307,7 +307,7 @@ def set_security_headers(response):
 
 
 # Import models from models.py (single source of truth)
-from models import User, Analysis, GuestSession, GuestAnalysis, Purchase
+from models import User, Analysis, GuestSession, GuestAnalysis, Purchase, Feedback
 
 
 # Initialize database tables
@@ -2755,6 +2755,89 @@ def cancel_subscription():
         else:
             logging.error(f"Error canceling subscription: {error_str}")
         return jsonify({'error': 'Failed to cancel subscription'}), 500
+
+
+# ============== FEEDBACK ROUTES ==============
+
+@app.route('/api/feedback', methods=['POST'])
+def submit_feedback():
+    """Submit user feedback (no authentication required)"""
+    try:
+        data = request.get_json()
+
+        # Validate required fields
+        required_fields = ['name', 'email', 'rating', 'message', 'category']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({
+                    'status': 'error',
+                    'message': f'Missing required field: {field}',
+                    'error_type': 'VALIDATION_ERROR'
+                }), 400
+
+        # Validate rating
+        rating = int(data['rating'])
+        if rating < 1 or rating > 5:
+            return jsonify({
+                'status': 'error',
+                'message': 'Rating must be between 1 and 5',
+                'error_type': 'VALIDATION_ERROR'
+            }), 400
+
+        # Validate category
+        valid_categories = ['general', 'bug', 'feature', 'support', 'praise']
+        if data['category'] not in valid_categories:
+            return jsonify({
+                'status': 'error',
+                'message': f'Invalid category. Must be one of: {", ".join(valid_categories)}',
+                'error_type': 'VALIDATION_ERROR'
+            }), 400
+
+        # Check if user is logged in (optional)
+        user_id = None
+        try:
+            verify_jwt_in_request(optional=True)
+            identity = get_jwt_identity()
+            if identity:
+                user_id = int(identity)
+        except:
+            pass
+
+        # Create feedback entry
+        feedback = Feedback(
+            name=data['name'].strip(),
+            email=data['email'].strip().lower(),
+            rating=rating,
+            category=data['category'],
+            message=data['message'].strip(),
+            user_id=user_id
+        )
+
+        db.session.add(feedback)
+        db.session.commit()
+
+        logging.info(f"Feedback submitted: {feedback.id} from {feedback.email} ({feedback.category}, {feedback.rating}/5)")
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Thank you for your feedback!',
+            'feedback_id': feedback.id
+        }), 201
+
+    except ValueError as e:
+        return jsonify({
+            'status': 'error',
+            'message': 'Invalid rating format',
+            'error_type': 'VALIDATION_ERROR'
+        }), 400
+    except Exception as e:
+        logging.error(f"Error submitting feedback: {str(e)}")
+        db.session.rollback()
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to submit feedback',
+            'error_type': 'INTERNAL_SERVER_ERROR'
+        }), 500
 
 
 # ============== ADMIN ROUTES ==============

@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, ChevronDown, Mail, MessageSquare, BookOpen, FileText, Shield } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Search, ChevronDown, Mail, MessageSquare, BookOpen, FileText, Shield, Send, CheckCircle } from 'lucide-react';
 import SpotlightCard from './ui/SpotlightCard';
 import Footer from './ui/Footer';
 import SEO from './common/SEO';
 import { generateFAQSchema } from '../utils/structuredData';
+import axios from 'axios';
+import { API_URL } from '../config';
 
 // FAQs data - defined at module level before use
   const faqs = [
@@ -51,13 +54,39 @@ import { generateFAQSchema } from '../utils/structuredData';
 ];
 
 const HelpPage = ({ defaultTab = 'help' }) => {
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedFaq, setExpandedFaq] = useState(null);
-  const [activeView, setActiveView] = useState(defaultTab); // 'help', 'terms', 'privacy'
+  const [activeView, setActiveView] = useState(defaultTab); // 'help', 'terms', 'privacy', 'feedback'
+  const [feedbackData, setFeedbackData] = useState({
+    name: '',
+    email: '',
+    rating: 0,
+    message: '',
+    category: 'general'
+  });
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [feedbackError, setFeedbackError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Check for feedback query parameter
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('feedback') === 'true') {
+      setActiveView('feedback');
+    }
+  }, [location]);
   
   // Get SEO metadata based on active view
   const getSEOMetadata = () => {
     switch (activeView) {
+      case 'feedback':
+        return {
+          title: 'Share Your Feedback',
+          description: 'Tell us about your experience with ResumeAnalyzer AI. Your feedback helps us improve and serve you better.',
+          keywords: 'feedback, user feedback, testimonial, review, suggestions',
+          url: 'https://resumeanalyzerai.com/help?feedback=true'
+        };
       case 'terms':
         return {
           title: 'Terms of Service',
@@ -121,6 +150,28 @@ const HelpPage = ({ defaultTab = 'help' }) => {
       )
     : faqs;
 
+  const handleFeedbackSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setFeedbackError('');
+
+    try {
+      await axios.post(`${API_URL}/api/feedback`, feedbackData);
+      setFeedbackSubmitted(true);
+      setFeedbackData({
+        name: '',
+        email: '',
+        rating: 0,
+        message: '',
+        category: 'general'
+      });
+    } catch (error) {
+      setFeedbackError(error.response?.data?.error || 'Failed to submit feedback. Please try again or email us at support@resumeanalyzerai.com');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
       <SEO
@@ -138,7 +189,7 @@ const HelpPage = ({ defaultTab = 'help' }) => {
 
       <div className="max-w-5xl mx-auto px-4 py-8 relative z-10">
         {/* View Tabs */}
-        <div className="flex justify-center gap-2 mb-8 border-b border-white/10 pb-4 relative z-10">
+        <div className="flex justify-center gap-2 mb-8 border-b border-white/10 pb-4 relative z-10 flex-wrap">
           <button
             onClick={() => setActiveView('help')}
             className={`px-6 py-3 rounded-t-lg transition font-medium relative z-10 ${
@@ -148,6 +199,17 @@ const HelpPage = ({ defaultTab = 'help' }) => {
             }`}
           >
             Help & FAQs
+          </button>
+          <button
+            onClick={() => setActiveView('feedback')}
+            className={`px-6 py-3 rounded-t-lg transition font-medium flex items-center gap-2 relative z-10 ${
+              activeView === 'feedback'
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" />
+            Feedback
           </button>
           <button
             onClick={() => setActiveView('terms')}
@@ -303,6 +365,160 @@ const HelpPage = ({ defaultTab = 'help' }) => {
           </div>
         </SpotlightCard>
           </>
+        )}
+
+        {/* Feedback View */}
+        {activeView === 'feedback' && (
+          <SpotlightCard className="rounded-2xl p-8 max-w-2xl mx-auto relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="relative z-10"
+            >
+              {!feedbackSubmitted ? (
+                <>
+                  <h1 className="text-3xl font-bold text-white mb-4 font-display relative z-10">Share Your Feedback</h1>
+                  <p className="text-gray-400 mb-8 relative z-10">
+                    We'd love to hear about your experience with ResumeAnalyzer AI. Your feedback helps us improve!
+                  </p>
+
+                  <form onSubmit={handleFeedbackSubmit} className="space-y-6 relative z-10">
+                    {/* Name Field */}
+                    <div>
+                      <label className="block text-white font-medium mb-2">Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={feedbackData.name}
+                        onChange={(e) => setFeedbackData({ ...feedbackData, name: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
+                        placeholder="Your name"
+                      />
+                    </div>
+
+                    {/* Email Field */}
+                    <div>
+                      <label className="block text-white font-medium mb-2">Email</label>
+                      <input
+                        type="email"
+                        required
+                        value={feedbackData.email}
+                        onChange={(e) => setFeedbackData({ ...feedbackData, email: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
+                        placeholder="your@email.com"
+                      />
+                    </div>
+
+                    {/* Rating */}
+                    <div>
+                      <label className="block text-white font-medium mb-3">How would you rate your experience?</label>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setFeedbackData({ ...feedbackData, rating: star })}
+                            className="group"
+                          >
+                            <svg
+                              className={`w-10 h-10 transition ${
+                                star <= feedbackData.rating
+                                  ? 'text-yellow-400 fill-yellow-400'
+                                  : 'text-gray-600 group-hover:text-gray-400'
+                              }`}
+                              fill={star <= feedbackData.rating ? 'currentColor' : 'none'}
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                              />
+                            </svg>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Category */}
+                    <div>
+                      <label className="block text-white font-medium mb-2">Category</label>
+                      <select
+                        value={feedbackData.category}
+                        onChange={(e) => setFeedbackData({ ...feedbackData, category: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
+                      >
+                        <option value="general">General Feedback</option>
+                        <option value="bug">Report a Bug</option>
+                        <option value="feature">Feature Request</option>
+                        <option value="support">Support Issue</option>
+                        <option value="praise">Praise/Testimonial</option>
+                      </select>
+                    </div>
+
+                    {/* Message */}
+                    <div>
+                      <label className="block text-white font-medium mb-2">Message</label>
+                      <textarea
+                        required
+                        value={feedbackData.message}
+                        onChange={(e) => setFeedbackData({ ...feedbackData, message: e.target.value })}
+                        rows={6}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition resize-none"
+                        placeholder="Tell us about your experience, suggestions, or any issues you've encountered..."
+                      />
+                    </div>
+
+                    {feedbackError && (
+                      <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+                        <p className="text-red-400 text-sm">{feedbackError}</p>
+                      </div>
+                    )}
+
+                    {/* Submit Button */}
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || feedbackData.rating === 0}
+                      className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-5 h-5" />
+                          Submit Feedback
+                        </>
+                      )}
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle className="w-12 h-12 text-green-400" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-3 font-display">Thank You!</h2>
+                  <p className="text-gray-400 mb-6">
+                    Your feedback has been submitted successfully. We'll review it carefully and use it to improve ResumeAnalyzer AI.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setFeedbackSubmitted(false);
+                      setActiveView('help');
+                    }}
+                    className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-lg transition"
+                  >
+                    Back to Help
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </SpotlightCard>
         )}
 
         {/* Terms of Service View */}

@@ -1431,6 +1431,41 @@ class AnalysisCreateSchema(Schema):
     company_name = fields.Str(validate=validate.Length(max=200))
     job_description = fields.Str(required=True, validate=validate.Length(min=50, max=10000))
 
+
+class Feedback(db.Model):
+    """Feedback model for user submissions"""
+    __tablename__ = 'feedback'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    email = db.Column(db.String(255), nullable=False, index=True)
+    rating = db.Column(db.Integer, nullable=False)  # 1-5 stars
+    category = db.Column(db.String(50), nullable=False, default='general')  # general, bug, feature, support, praise
+    message = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Optional - if logged in
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    resolved = db.Column(db.Boolean, default=False)
+    resolved_at = db.Column(db.DateTime)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    def __repr__(self):
+        return f'<Feedback {self.id} - {self.category} - {self.rating}/5>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'email': self.email,
+            'rating': self.rating,
+            'category': self.category,
+            'message': self.message,
+            'user_id': self.user_id,
+            'created_at': self.created_at.isoformat(),
+            'resolved': self.resolved,
+            'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None
+        }
+
+
 # Initialize schemas
 user_schema = UserSchema()
 analysis_schema = AnalysisSchema()
