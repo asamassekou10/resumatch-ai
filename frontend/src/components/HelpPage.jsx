@@ -7,7 +7,9 @@ import Footer from './ui/Footer';
 import SEO from './common/SEO';
 import { generateFAQSchema } from '../utils/structuredData';
 import axios from 'axios';
-import { API_URL } from '../config';
+import config from '../config';
+
+const API_URL = config.api.baseURL;
 
 // FAQs data - defined at module level before use
   const faqs = [
