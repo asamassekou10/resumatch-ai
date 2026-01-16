@@ -68,7 +68,7 @@ const JobApplicationsPage = ({ token }) => {
       params.append('sort', sortBy);
       params.append('order', sortOrder);
 
-      const response = await fetch(`${API_URL}/api/job-applications?${params}`, {
+      const response = await fetch(`${API_URL}/job-applications?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -88,7 +88,7 @@ const JobApplicationsPage = ({ token }) => {
   // Fetch stats
   const fetchStats = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/api/job-applications/stats`, {
+      const response = await fetch(`${API_URL}/job-applications/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -111,8 +111,8 @@ const JobApplicationsPage = ({ token }) => {
       setIsSaving(true);
       const isEditing = !!editingApplication;
       const url = isEditing
-        ? `${API_URL}/api/job-applications/${editingApplication.id}`
-        : `${API_URL}/api/job-applications`;
+        ? `${API_URL}/job-applications/${editingApplication.id}`
+        : `${API_URL}/job-applications`;
 
       const response = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
@@ -143,7 +143,7 @@ const JobApplicationsPage = ({ token }) => {
   // Handle status change
   const handleStatusChange = async (id, newStatus) => {
     try {
-      const response = await fetch(`${API_URL}/api/job-applications/${id}/status`, {
+      const response = await fetch(`${API_URL}/job-applications/${id}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ const JobApplicationsPage = ({ token }) => {
   // Handle toggle star
   const handleToggleStar = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/api/job-applications/${id}/star`, {
+      const response = await fetch(`${API_URL}/job-applications/${id}/star`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -187,7 +187,7 @@ const JobApplicationsPage = ({ token }) => {
   // Handle toggle archive
   const handleToggleArchive = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/api/job-applications/${id}/archive`, {
+      const response = await fetch(`${API_URL}/job-applications/${id}/archive`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -206,7 +206,7 @@ const JobApplicationsPage = ({ token }) => {
     if (!window.confirm('Are you sure you want to delete this application?')) return;
 
     try {
-      const response = await fetch(`${API_URL}/api/job-applications/${id}`, {
+      const response = await fetch(`${API_URL}/job-applications/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
