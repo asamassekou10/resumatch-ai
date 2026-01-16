@@ -4,27 +4,26 @@
   "outputDirectory": "frontend/build",
   "framework": "create-react-app",
   "trailingSlash": false,
-  "cleanUrls": true,
-  "rewrites": [
+  "routes": [
     {
-      "source": "/static/(.*)",
-      "destination": "/static/$1"
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
     },
     {
-      "source": "/sitemap.xml",
-      "destination": "/sitemap.xml"
+      "src": "/sitemap.xml",
+      "dest": "/sitemap.xml"
     },
     {
-      "source": "/robots.txt",
-      "destination": "/robots.txt"
+      "src": "/robots.txt",
+      "dest": "/robots.txt"
     },
     {
-      "source": "/manifest.json",
-      "destination": "/manifest.json"
+      "src": "/manifest.json",
+      "dest": "/manifest.json"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "headers": [
