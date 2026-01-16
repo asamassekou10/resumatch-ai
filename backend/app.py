@@ -308,7 +308,7 @@ def set_security_headers(response):
 
 
 # Import models from models.py (single source of truth)
-from models import User, Analysis, GuestSession, GuestAnalysis, Purchase, Feedback
+from models import User, Analysis, GuestSession, GuestAnalysis, Purchase, Feedback, JobApplication
 
 
 # Initialize database tables
