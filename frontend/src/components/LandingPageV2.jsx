@@ -615,15 +615,24 @@ const LandingPageV2 = ({ token }) => {
           <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
           <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
 
-          <div
+          <motion.div
             className="flex gap-16 whitespace-nowrap"
+            animate={{ x: [0, -1200] }}
+            transition={{
+              x: {
+                repeat: Infinity,
+                repeatType: "loop",
+                duration: 20,
+                ease: "linear"
+              }
+            }}
           >
             {["TECHCORP", "INNOVATE", "FUTURELABS", "GLOBALAI", "NEXTGEN", "DATASYSTEMS", "ORBITAL", "SYNTHWAVE", "TECHCORP", "INNOVATE", "FUTURELABS", "GLOBALAI", "NEXTGEN", "DATASYSTEMS", "ORBITAL", "SYNTHWAVE"].map((company, index) => (
               <span key={index} className="text-xl md:text-2xl font-bold text-white/30 hover:text-white transition-colors cursor-default select-none font-display">
                 {company}
               </span>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
 
