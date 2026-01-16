@@ -141,7 +141,38 @@ class User(db.Model):
         """Check if user has a specific permission through any of their roles"""
         return any(permission.name == permission_name for role in self.roles for permission in role.permissions)
 
+    def get_active_pass(self):
+        """Get the user's active weekly pass if one exists"""
+        from models import Purchase
+        active_pass = Purchase.query.filter(
+            Purchase.user_id == self.id,
+            Purchase.purchase_type == 'weekly_pass',
+            Purchase.is_active == True,
+            Purchase.payment_status == 'succeeded',
+            Purchase.access_expires_at > datetime.utcnow()
+        ).order_by(Purchase.access_expires_at.desc()).first()
+        return active_pass
+
+    def has_active_pass(self):
+        """Check if user has an active weekly pass"""
+        return self.get_active_pass() is not None
+
     def to_dict(self):
+        # Check for active weekly pass
+        active_pass = self.get_active_pass()
+        pass_info = None
+        if active_pass:
+            time_remaining = active_pass.access_expires_at - datetime.utcnow()
+            hours_remaining = int(time_remaining.total_seconds() / 3600)
+            days_remaining = hours_remaining // 24
+            pass_info = {
+                'is_active': True,
+                'expires_at': active_pass.access_expires_at.isoformat(),
+                'hours_remaining': hours_remaining,
+                'days_remaining': days_remaining,
+                'purchase_id': active_pass.id
+            }
+
         return {
             'id': self.id,
             'email': self.email,
@@ -159,7 +190,8 @@ class User(db.Model):
             'preferences_completed': self.preferences_completed,
             'detected_industries': self.detected_industries or [],
             'created_at': self.created_at.isoformat(),
-            'last_login': self.last_login.isoformat() if self.last_login else None
+            'last_login': self.last_login.isoformat() if self.last_login else None,
+            'weekly_pass': pass_info
         }
 
 class Analysis(db.Model):

@@ -76,8 +76,10 @@ const SettingsPage = ({ user }) => {
 
   // Normalize subscription tier
   const normalizedTier = user?.subscription_tier === 'premium' ? 'pro' : (user?.subscription_tier || 'free');
-  const hasActiveSubscription = normalizedTier !== 'free' && user?.subscription_status === 'active';
+  const hasActiveSubscription = normalizedTier !== 'free' && normalizedTier !== 'weekly_pass' && user?.subscription_status === 'active';
   const isTrialing = user?.subscription_status === 'trialing' || user?.is_trial_active;
+  const hasActivePass = user?.weekly_pass?.is_active === true;
+  const passInfo = user?.weekly_pass;
 
   // Toggle Switch Component
   const ToggleSwitch = ({ enabled, onChange, label, description }) => (
@@ -293,12 +295,39 @@ const SettingsPage = ({ user }) => {
                 </h3>
 
                 <div className="space-y-4">
+                  {/* Active 7-Day Pass Banner */}
+                  {hasActivePass && passInfo && (
+                    <div className="bg-gradient-to-r from-cyan-500/20 to-blue-600/20 rounded-lg p-4 border border-cyan-500/30">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-white font-semibold flex items-center gap-2">
+                            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                            7-Day Pass Active
+                          </p>
+                          <p className="text-cyan-300 text-sm mt-1">
+                            {passInfo.days_remaining > 0
+                              ? `${passInfo.days_remaining} day${passInfo.days_remaining !== 1 ? 's' : ''} remaining`
+                              : `${passInfo.hours_remaining} hour${passInfo.hours_remaining !== 1 ? 's' : ''} remaining`
+                            }
+                          </p>
+                          <p className="text-slate-400 text-xs mt-1">
+                            Expires: {new Date(passInfo.expires_at).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-cyan-400 font-bold text-lg">Unlimited Scans</p>
+                          <p className="text-slate-400 text-xs">During pass period</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Current Plan */}
                   <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
                     <div className="flex items-center justify-between mb-2">
                       <div>
                         <p className="text-white font-semibold capitalize">
-                          {normalizedTier === 'pro_founding' ? 'Pro Founding Member' : normalizedTier} Plan
+                          {normalizedTier === 'pro_founding' ? 'Pro Founding Member' : normalizedTier === 'weekly_pass' ? '7-Day Pass' : normalizedTier} Plan
                         </p>
                         {isTrialing && (
                           <p className="text-blue-400 text-sm mt-1">
@@ -308,14 +337,18 @@ const SettingsPage = ({ user }) => {
                         {hasActiveSubscription && !isTrialing && (
                           <p className="text-green-400 text-sm mt-1">Active Subscription</p>
                         )}
-                        {normalizedTier === 'free' && (
-                          <p className="text-slate-400 text-sm mt-1">Free tier with {user?.credits || 10} credits</p>
+                        {normalizedTier === 'free' && !hasActivePass && (
+                          <p className="text-slate-400 text-sm mt-1">Free tier with {user?.credits || 0} credits</p>
+                        )}
+                        {normalizedTier === 'free' && hasActivePass && (
+                          <p className="text-green-400 text-sm mt-1">7-Day Pass Active - Unlimited scans!</p>
                         )}
                       </div>
                       <div className="text-right">
                         <p className="text-white font-bold">
-                          {normalizedTier === 'free' ? '$0' : normalizedTier === 'pro_founding' ? '$19.99' : normalizedTier === 'pro' ? '$24.99' : '$49.99'}
-                          {normalizedTier !== 'free' && <span className="text-slate-400 text-sm font-normal">/month</span>}
+                          {normalizedTier === 'free' ? '$0' : normalizedTier === 'weekly_pass' ? '$6.99' : normalizedTier === 'pro_founding' ? '$19.99' : normalizedTier === 'pro' ? '$24.99' : '$49.99'}
+                          {normalizedTier !== 'free' && normalizedTier !== 'weekly_pass' && <span className="text-slate-400 text-sm font-normal">/month</span>}
+                          {normalizedTier === 'weekly_pass' && <span className="text-slate-400 text-sm font-normal">/week</span>}
                         </p>
                       </div>
                     </div>
@@ -329,13 +362,29 @@ const SettingsPage = ({ user }) => {
                       </div>
                     )}
 
-                    <div className="mt-4 flex gap-3">
-                      {normalizedTier === 'free' && (
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      {normalizedTier === 'free' && !hasActivePass && (
+                        <>
+                          <button
+                            onClick={() => navigate(ROUTES.PRICING)}
+                            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold rounded-lg transition"
+                          >
+                            Get 7-Day Pass - $6.99
+                          </button>
+                          <button
+                            onClick={() => navigate(ROUTES.PRICING)}
+                            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition"
+                          >
+                            View All Plans
+                          </button>
+                        </>
+                      )}
+                      {normalizedTier === 'free' && hasActivePass && (
                         <button
-                          onClick={() => navigate(ROUTES.PRICING)}
+                          onClick={() => navigate(ROUTES.ANALYZE)}
                           className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold rounded-lg transition"
                         >
-                          Upgrade to Pro
+                          Start Analyzing
                         </button>
                       )}
                       {(hasActiveSubscription || isTrialing) && (

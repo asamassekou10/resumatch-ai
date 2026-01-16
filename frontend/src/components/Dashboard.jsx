@@ -34,14 +34,22 @@ const Dashboard = ({ userProfile }) => {
   // Check for payment success parameter
   useEffect(() => {
     const paymentStatus = searchParams.get('payment');
-    if (paymentStatus === 'success' && userProfile) {
-      // Normalize tier name
-      const tier = userProfile.subscription_tier === 'premium' ? 'pro' : userProfile.subscription_tier;
-      setSubscriptionTier(tier);
+    const purchaseType = searchParams.get('purchase_type');
+
+    if (paymentStatus === 'success') {
+      // Determine what was purchased
+      if (purchaseType === 'weekly_pass') {
+        setSubscriptionTier('7-day-pass');
+      } else if (userProfile) {
+        // Normalize tier name
+        const tier = userProfile.subscription_tier === 'premium' ? 'pro' : userProfile.subscription_tier;
+        setSubscriptionTier(tier);
+      }
       setShowSuccessNotification(true);
 
-      // Remove query parameter from URL
+      // Remove query parameters from URL
       searchParams.delete('payment');
+      searchParams.delete('purchase_type');
       setSearchParams(searchParams, { replace: true });
 
       // Auto-hide after 8 seconds
@@ -146,10 +154,12 @@ const Dashboard = ({ userProfile }) => {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-bold text-white mb-1">
-                    Welcome to {subscriptionTier.charAt(0).toUpperCase() + subscriptionTier.slice(1)}!
+                    {subscriptionTier === '7-day-pass' ? '7-Day Pass Activated!' : `Welcome to ${subscriptionTier.charAt(0).toUpperCase() + subscriptionTier.slice(1)}!`}
                   </h3>
                   <p className="text-green-50 text-sm">
-                    Your subscription is now active. {subscriptionTier === 'elite' ? '200' : subscriptionTier === 'pro_founding' ? '50' : '50'} credits have been added to your account.
+                    {subscriptionTier === '7-day-pass'
+                      ? 'Enjoy unlimited resume scans for the next 7 days!'
+                      : `Your subscription is now active. ${subscriptionTier === 'elite' ? '200' : subscriptionTier === 'pro_founding' ? '50' : '50'} credits have been added to your account.`}
                   </p>
                 </div>
                 <button

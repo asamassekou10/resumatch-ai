@@ -251,6 +251,50 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
   };
 
+  // Refresh user data from server
+  const refreshUser = async () => {
+    try {
+      const response = await ApiService.getCurrentUser();
+      if (response.data?.user) {
+        dispatch({
+          type: AUTH_ACTIONS.UPDATE_USER,
+          payload: response.data.user
+        });
+        localStorage.setItem(config.storage.user, JSON.stringify(response.data.user));
+        return response.data.user;
+      }
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+    }
+    return null;
+  };
+
+  // Check if user has an active weekly pass
+  const hasActivePass = () => {
+    if (!state.user?.weekly_pass) return false;
+    return state.user.weekly_pass.is_active === true;
+  };
+
+  // Get pass expiration info
+  const getPassInfo = () => {
+    if (!state.user?.weekly_pass) return null;
+    return state.user.weekly_pass;
+  };
+
+  // Check if user can perform analysis (has pass, credits, or subscription)
+  const canAnalyze = () => {
+    if (!state.user) return false;
+    // Admin bypass
+    if (state.user.is_admin) return true;
+    // Has active weekly pass
+    if (hasActivePass()) return true;
+    // Has credits
+    if (state.user.credits > 0) return true;
+    // Has active subscription
+    if (state.user.subscription_status === 'active') return true;
+    return false;
+  };
+
   const value = {
     ...state,
     login,
@@ -258,7 +302,11 @@ export const AuthProvider = ({ children }) => {
     logout,
     changePassword,
     updateUser,
-    clearError
+    clearError,
+    refreshUser,
+    hasActivePass,
+    getPassInfo,
+    canAnalyze
   };
 
   return (
