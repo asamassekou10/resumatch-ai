@@ -73,6 +73,17 @@ const Navigation = ({ token, onLogout, user }) => {
                       Dashboard
                     </Link>
 
+                    <Link
+                      to={ROUTES.JOB_APPLICATIONS}
+                      className={`px-4 py-2 rounded-lg font-medium transition ${
+                        isActive(ROUTES.JOB_APPLICATIONS)
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30'
+                          : 'text-gray-300 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      Job Tracker
+                    </Link>
+
                     {/* Market Intelligence Menu */}
                     <div className="relative">
                       <button

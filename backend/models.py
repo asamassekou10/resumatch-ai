@@ -1466,6 +1466,100 @@ class Feedback(db.Model):
         }
 
 
+class JobApplication(db.Model):
+    """Job Application Tracker model for tracking job applications"""
+    __tablename__ = 'job_applications'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+
+    # Job Details
+    company_name = db.Column(db.String(200), nullable=False)
+    job_title = db.Column(db.String(200), nullable=False)
+    job_url = db.Column(db.String(500))
+    job_description = db.Column(db.Text)
+    salary_min = db.Column(db.Integer)
+    salary_max = db.Column(db.Integer)
+    location = db.Column(db.String(200))
+    work_type = db.Column(db.String(50))  # remote, hybrid, onsite
+
+    # Application Status
+    # Statuses: saved, applied, phone_screen, interview, offer, rejected, withdrawn, accepted
+    status = db.Column(db.String(50), nullable=False, default='saved', index=True)
+
+    # Important Dates
+    date_saved = db.Column(db.DateTime, default=datetime.utcnow)
+    date_applied = db.Column(db.DateTime)
+    date_response = db.Column(db.DateTime)
+    date_interview = db.Column(db.DateTime)
+    follow_up_date = db.Column(db.DateTime)
+
+    # Notes & Tracking
+    notes = db.Column(db.Text)
+    resume_version = db.Column(db.String(200))  # Which resume version was used
+    cover_letter_used = db.Column(db.Boolean, default=False)
+    referral_contact = db.Column(db.String(200))
+    interview_notes = db.Column(db.Text)
+    rejection_reason = db.Column(db.String(500))
+
+    # UI State
+    is_starred = db.Column(db.Boolean, default=False, index=True)
+    is_archived = db.Column(db.Boolean, default=False, index=True)
+
+    # Linked Analysis (optional)
+    analysis_id = db.Column(db.Integer, db.ForeignKey('analyses.id'), nullable=True)
+
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Indexes for common queries
+    __table_args__ = (
+        db.Index('idx_job_app_user_status', 'user_id', 'status'),
+        db.Index('idx_job_app_user_created', 'user_id', 'created_at'),
+        db.Index('idx_job_app_user_starred', 'user_id', 'is_starred'),
+        db.Index('idx_job_app_follow_up', 'user_id', 'follow_up_date'),
+    )
+
+    # Relationship
+    user = db.relationship('User', backref=db.backref('job_applications', lazy='dynamic'))
+    analysis = db.relationship('Analysis', backref=db.backref('job_application', uselist=False))
+
+    def __repr__(self):
+        return f'<JobApplication {self.id} - {self.company_name} - {self.job_title}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'company_name': self.company_name,
+            'job_title': self.job_title,
+            'job_url': self.job_url,
+            'job_description': self.job_description,
+            'salary_min': self.salary_min,
+            'salary_max': self.salary_max,
+            'location': self.location,
+            'work_type': self.work_type,
+            'status': self.status,
+            'date_saved': self.date_saved.isoformat() if self.date_saved else None,
+            'date_applied': self.date_applied.isoformat() if self.date_applied else None,
+            'date_response': self.date_response.isoformat() if self.date_response else None,
+            'date_interview': self.date_interview.isoformat() if self.date_interview else None,
+            'follow_up_date': self.follow_up_date.isoformat() if self.follow_up_date else None,
+            'notes': self.notes,
+            'resume_version': self.resume_version,
+            'cover_letter_used': self.cover_letter_used,
+            'referral_contact': self.referral_contact,
+            'interview_notes': self.interview_notes,
+            'rejection_reason': self.rejection_reason,
+            'is_starred': self.is_starred,
+            'is_archived': self.is_archived,
+            'analysis_id': self.analysis_id,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
 # Initialize schemas
 user_schema = UserSchema()
 analysis_schema = AnalysisSchema()

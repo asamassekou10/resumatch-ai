@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { X, ChevronRight, ChevronDown, Home, FileText, TrendingUp, CreditCard, Settings, HelpCircle, LogIn, UserPlus, Shield, LogOut } from 'lucide-react';
+import { X, ChevronRight, ChevronDown, Home, FileText, TrendingUp, CreditCard, Settings, HelpCircle, LogIn, UserPlus, Shield, LogOut, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ROUTES } from '../config/routes';
 
@@ -71,6 +71,7 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
   const authenticatedMenuItems = [
     { label: 'Dashboard', route: ROUTES.DASHBOARD, icon: Home },
     { label: 'Analyze Resume', route: ROUTES.ANALYZE, icon: FileText },
+    { label: 'Job Tracker', route: ROUTES.JOB_APPLICATIONS, icon: Briefcase },
     {
       label: 'Market Intelligence',
       icon: TrendingUp,

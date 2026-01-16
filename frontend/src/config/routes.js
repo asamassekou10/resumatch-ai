@@ -26,6 +26,7 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   ANALYZE: '/analyze',
   RESULT: '/result/:id',
+  JOB_APPLICATIONS: '/applications',
   PROFILE: '/profile',
   SETTINGS: '/settings',
   BILLING: '/billing',
@@ -70,6 +71,7 @@ export const VIEW_TO_ROUTE = {
   // Protected views
   'dashboard': ROUTES.DASHBOARD,
   'analyze': ROUTES.ANALYZE,
+  'job-applications': ROUTES.JOB_APPLICATIONS,
   'profile': ROUTES.PROFILE,
   'settings': ROUTES.SETTINGS,
   'billing': ROUTES.BILLING,
@@ -152,6 +154,7 @@ export const NAV_GROUPS = {
   main: [
     { label: 'Dashboard', route: ROUTES.DASHBOARD, icon: 'Home' },
     { label: 'Analyze Resume', route: ROUTES.ANALYZE, icon: 'FileText' },
+    { label: 'Job Tracker', route: ROUTES.JOB_APPLICATIONS, icon: 'Briefcase' },
     { label: 'Pricing', route: ROUTES.PRICING, icon: 'CreditCard' },
     { label: 'Settings', route: ROUTES.SETTINGS, icon: 'Settings' },
     { label: 'Help & Support', route: ROUTES.HELP, icon: 'HelpCircle' },

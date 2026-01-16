@@ -45,6 +45,7 @@ from routes.analysis import analysis_bp
 from routes.dashboard import dashboard_bp
 from routes.jobs import jobs_bp
 from routes.payments import payments_bp
+from routes.job_applications import job_applications_bp
 from routes_admin_diagnostics import admin_diag_bp
 from scheduled_ingestion_tasks import init_scheduler
 from email_automation import init_email_scheduler
@@ -2998,6 +2999,7 @@ app.register_blueprint(company_intel_bp)
 app.register_blueprint(career_path_bp)
 app.register_blueprint(analytics_bp)
 app.register_blueprint(admin_diag_bp)
+app.register_blueprint(job_applications_bp)
 
 # Exempt health check endpoints from rate limiting
 limiter.exempt(health_bp)
