@@ -5,278 +5,278 @@
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
   <url>
-    <loc>https://resumeanalyzerai.com/</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/guest-analyze</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/guest-analyze</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/pricing</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/pricing</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/help</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/help</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/help/terms</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/help/terms</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/help/privacy</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/help/privacy</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/login</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/login</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/register</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/register</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resources/for-students</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resources/for-students</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/software-engineer</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/software-engineer</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/nursing-student</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/nursing-student</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/marketing-manager</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/marketing-manager</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/project-manager</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/project-manager</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/data-analyst</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/data-analyst</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/registered-nurse</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/registered-nurse</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/accountant</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/accountant</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/teacher</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/teacher</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/sales-representative</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/sales-representative</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/human-resources</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/human-resources</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/graphic-designer</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/graphic-designer</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/financial-analyst</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/financial-analyst</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/operations-manager</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/operations-manager</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/customer-service</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/customer-service</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/business-analyst</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/business-analyst</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/mechanical-engineer</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/mechanical-engineer</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/social-worker</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/social-worker</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/web-developer</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/web-developer</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/pharmacist</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/pharmacist</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/electrician</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/electrician</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/resume-for/chef</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/resume-for/chef</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/how-to-beat-ats-2026</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/how-to-beat-ats-2026</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/why-not-getting-interviews</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/why-not-getting-interviews</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/resume-keywords-project-managers</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/resume-keywords-project-managers</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/software-engineer-resume-hiring-managers</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/software-engineer-resume-hiring-managers</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/agile-project-manager-resume-keywords</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/agile-project-manager-resume-keywords</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/it-project-manager-resume-keywords</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/it-project-manager-resume-keywords</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/nursing-resume-tips-healthcare</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/nursing-resume-tips-healthcare</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/financial-analyst-resume-keywords</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/financial-analyst-resume-keywords</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/sales-representative-resume-keywords</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/sales-representative-resume-keywords</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/graphic-designer-resume-keywords</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/graphic-designer-resume-keywords</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/resume-format-guide-2026</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/resume-format-guide-2026</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/data-scientist-resume-keywords</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/data-scientist-resume-keywords</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/medical-assistant-resume-keywords</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/medical-assistant-resume-keywords</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/accountant-resume-keywords-cpa</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/accountant-resume-keywords-cpa</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://resumeanalyzerai.com/blog/account-executive-resume-saas</loc>
-    <lastmod>2026-01-14</lastmod>
+    <loc>https://www.resumeanalyzerai.com/blog/account-executive-resume-saas</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

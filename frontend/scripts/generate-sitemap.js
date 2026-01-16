@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const SITE_URL = 'https://resumeanalyzerai.com';
+const SITE_URL = 'https://www.resumeanalyzerai.com';
 
 // Import job roles for dynamic pages
 let JOB_ROLES = [];

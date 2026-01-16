@@ -36,7 +36,7 @@ const SEO = ({
   structuredData = null
 }) => {
   // Default values
-  const siteUrl = 'https://resumeanalyzerai.com';
+  const siteUrl = 'https://www.resumeanalyzerai.com';
   const defaultTitle = 'ResumeAnalyzer AI - AI-Powered Resume Analysis & Job Matching';
   const defaultDescription = 'Optimize your resume with AI-powered analysis, ATS scoring, skill gap analysis, and personalized job matching. Get hired faster with ResumeAnalyzer AI.';
   const defaultImage = `${siteUrl}/og-image.png`;

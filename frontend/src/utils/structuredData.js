@@ -4,7 +4,7 @@
  * Generates JSON-LD structured data for SEO
  */
 
-const SITE_URL = 'https://resumeanalyzerai.com';
+const SITE_URL = 'https://www.resumeanalyzerai.com';
 const SITE_NAME = 'ResumeAnalyzer AI';
 
 /**
