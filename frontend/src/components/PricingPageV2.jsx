@@ -147,7 +147,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
       name: '7-Day Pass',
       description: 'Best for active job hunting',
       monthlyPrice: 6.99,
-      yearlyPrice: 0,
+      yearlyPrice: 6.99,
       credits: 'unlimited',
       features: [
         'Unlimited scans for 7 days',
@@ -209,6 +209,10 @@ const PricingPageV2 = ({ token, userProfile }) => {
   ];
 
   const calculatePrice = (plan) => {
+    // 7-Day Pass should always show the same price regardless of toggle
+    if (plan.name === '7-Day Pass') {
+      return plan.monthlyPrice;
+    }
     if (isYearly) {
       return plan.yearlyPrice;
     }
@@ -265,17 +269,17 @@ const PricingPageV2 = ({ token, userProfile }) => {
           <span className={`text-sm font-semibold transition-colors ${!isYearly ? 'text-white' : 'text-gray-400'}`}>
             Monthly
           </span>
-          <motion.button
+          <button
             onClick={() => setIsYearly(!isYearly)}
             className="relative inline-flex items-center h-10 w-20 bg-white/10 rounded-full p-1 transition-colors hover:bg-white/20"
-            whileHover={{ scale: 1.05 }}
           >
             <motion.div
               className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-lg"
-              layout
+              initial={false}
+              animate={{ x: isYearly ? 40 : 0 }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             />
-          </motion.button>
+          </button>
           <span className={`text-sm font-semibold transition-colors ${isYearly ? 'text-white' : 'text-gray-400'}`}>
             Yearly
           </span>
@@ -326,13 +330,13 @@ const PricingPageV2 = ({ token, userProfile }) => {
                 )}
 
                 <SpotlightCard
-                  className={`relative h-full rounded-2xl p-8 transition-all duration-300 ${
+                  className={`relative h-full rounded-2xl p-8 transition-all duration-300 flex flex-col ${
                     plan.highlighted
                       ? 'border-2 border-blue-500/50 shadow-2xl shadow-blue-900/20'
                       : ''
                   }`}
                 >
-                  <div className="relative z-10">
+                  <div className="relative z-10 flex flex-col flex-1">
                     {/* Badge - Show custom badge if present, otherwise show "POPULAR" for highlighted */}
                     {(plan.badge || plan.highlighted) && (
                       <motion.div
@@ -425,39 +429,8 @@ const PricingPageV2 = ({ token, userProfile }) => {
                       )}
                     </div>
 
-                    {/* CTA Button */}
-                    {(() => {
-                      const buttonConfig = getButtonConfig(plan.name);
-                      if (buttonConfig.variant === 'primary' && !buttonConfig.disabled) {
-                        return (
-                          <div className="mb-8 relative z-10">
-                            <ShimmerButton
-                              onClick={buttonConfig.action}
-                              disabled={buttonConfig.disabled}
-                              className="w-full"
-                            >
-                              {buttonConfig.text} {!buttonConfig.disabled && <ArrowRight size={16} />}
-                            </ShimmerButton>
-                          </div>
-                        );
-                      }
-                      return (
-                        <motion.button
-                          onClick={buttonConfig.action}
-                          disabled={buttonConfig.disabled}
-                          className={`w-full py-3 rounded-lg font-bold mb-8 flex items-center justify-center gap-2 transition-all duration-300 border border-white/20 text-white hover:bg-white hover:text-black relative z-10 ${
-                            buttonConfig.disabled ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
-                          whileHover={buttonConfig.disabled ? {} : { scale: 1.02 }}
-                          whileTap={buttonConfig.disabled ? {} : { scale: 0.98 }}
-                        >
-                          {buttonConfig.text}
-                        </motion.button>
-                      );
-                    })()}
-
                     {/* Features */}
-                    <div className="space-y-4 border-t border-white/10 pt-8 relative z-10">
+                    <div className="space-y-4 border-t border-white/10 pt-8 relative z-10 flex-1">
                       {/* Included Features */}
                       {plan.features.map((feature, j) => (
                         <motion.div
@@ -490,6 +463,37 @@ const PricingPageV2 = ({ token, userProfile }) => {
                           ))}
                         </>
                       )}
+                    </div>
+
+                    {/* CTA Button */}
+                    <div className="mt-auto pt-6 relative z-10">
+                      {(() => {
+                        const buttonConfig = getButtonConfig(plan.name);
+                        if (buttonConfig.variant === 'primary' && !buttonConfig.disabled) {
+                          return (
+                            <ShimmerButton
+                              onClick={buttonConfig.action}
+                              disabled={buttonConfig.disabled}
+                              className="w-full"
+                            >
+                              {buttonConfig.text} {!buttonConfig.disabled && <ArrowRight size={16} />}
+                            </ShimmerButton>
+                          );
+                        }
+                        return (
+                          <motion.button
+                            onClick={buttonConfig.action}
+                            disabled={buttonConfig.disabled}
+                            className={`w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all duration-300 border border-white/20 text-white hover:bg-white hover:text-black relative z-10 ${
+                              buttonConfig.disabled ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                            whileHover={buttonConfig.disabled ? {} : { scale: 1.02 }}
+                            whileTap={buttonConfig.disabled ? {} : { scale: 0.98 }}
+                          >
+                            {buttonConfig.text}
+                          </motion.button>
+                        );
+                      })()}
                     </div>
                   </div>
                 </SpotlightCard>
