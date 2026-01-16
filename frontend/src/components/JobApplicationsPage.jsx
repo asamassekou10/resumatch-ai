@@ -6,14 +6,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Plus, Search, Filter, Star, Archive, RefreshCw,
-  TrendingUp, Briefcase, Phone, Calendar, Gift, XCircle, Clock
+  Plus, Search, Star, Archive, RefreshCw,
+  TrendingUp, Briefcase, Phone, Gift, Clock
 } from 'lucide-react';
 import config from '../config';
 import JobApplicationCard from './JobApplicationCard';
 import JobApplicationModal from './JobApplicationModal';
 import SpotlightCard from './ui/SpotlightCard';
-import { STATUS_CONFIG } from './ui/StatusBadge';
 import SEO from './common/SEO';
 
 const API_URL = config.api.baseURL;
@@ -50,7 +49,7 @@ const JobApplicationsPage = ({ token }) => {
   const [showStarredOnly, setShowStarredOnly] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [sortBy, setSortBy] = useState('created_at');
-  const [sortOrder, setSortOrder] = useState('desc');
+  const sortOrder = 'desc'; // Fixed to descending for now
 
   // Modal state
   const [showModal, setShowModal] = useState(false);

@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Star, MapPin, ExternalLink, Calendar, Clock, Edit2, Trash2,
-  ChevronDown, ChevronUp, MoreVertical, Archive, RefreshCw
+  ChevronDown, ChevronUp, MoreVertical, Archive
 } from 'lucide-react';
 import StatusBadge, { STATUS_CONFIG } from './ui/StatusBadge';
 import SpotlightCard from './ui/SpotlightCard';

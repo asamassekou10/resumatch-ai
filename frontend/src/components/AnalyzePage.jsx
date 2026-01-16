@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, ArrowLeft, Mail, Sparkles, FileText, Search, Target, Lock, Shield } from 'lucide-react';
+import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, ArrowLeft, Mail, Sparkles, FileText, Search, Target, Lock, Shield, Briefcase } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
@@ -55,6 +55,10 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
+
+  // Job Application Tracking state
+  const [trackingApplication, setTrackingApplication] = useState(false);
+  const [applicationTracked, setApplicationTracked] = useState(false);
 
   const fetchAnalysisResult = useCallback(async () => {
     setResultLoading(true);
@@ -342,6 +346,41 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
 
   const handlePaymentError = (error) => {
     setError(error.message || 'Payment failed. Please try again.');
+  };
+
+  // Track this job application
+  const handleTrackApplication = async () => {
+    if (!analysisData) return;
+
+    setTrackingApplication(true);
+    try {
+      const response = await fetch(`${API_URL}/job-applications`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          company_name: analysisData.company_name || 'Unknown Company',
+          job_title: analysisData.job_title || 'Unknown Position',
+          status: 'applied',
+          date_applied: new Date().toISOString().split('T')[0],
+          notes: `Resume Match Score: ${analysisData.match_score}%\nResume: ${analysisData.resume_filename || 'Unknown'}`,
+          analysis_id: parseInt(id)
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to track application');
+      }
+
+      setApplicationTracked(true);
+    } catch (err) {
+      setError(err.message || 'Failed to track application');
+    } finally {
+      setTrackingApplication(false);
+    }
   };
 
   const handleFileUpload = (e) => {
@@ -1164,6 +1203,52 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                     </p>
                   </div>
                 </div>
+              </button>
+            </div>
+          </motion.div>
+
+          {/* Track Application */}
+          <motion.div
+            className="bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20 rounded-xl p-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <Briefcase className="w-6 h-6 text-green-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold">Track This Application</h3>
+                  <p className="text-gray-400 text-sm">Add to your Job Application Tracker</p>
+                </div>
+              </div>
+              <button
+                onClick={applicationTracked ? () => navigate(ROUTES.JOB_APPLICATIONS) : handleTrackApplication}
+                disabled={trackingApplication}
+                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition ${
+                  applicationTracked
+                    ? 'bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30'
+                    : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+                } disabled:opacity-50`}
+              >
+                {trackingApplication ? (
+                  <>
+                    <Loader className="w-5 h-5 animate-spin" />
+                    Adding...
+                  </>
+                ) : applicationTracked ? (
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    View in Tracker
+                  </>
+                ) : (
+                  <>
+                    <Briefcase className="w-5 h-5" />
+                    Track Application
+                  </>
+                )}
               </button>
             </div>
           </motion.div>
