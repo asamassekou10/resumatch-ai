@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, TrendingUp, BookOpen, Code, Stethoscope, DollarSign, GraduationCap, Palette, Heart, Globe, Clipboard, ChevronDown, ChevronUp, Play } from 'lucide-react';
+import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, TrendingUp, BookOpen, Code, Stethoscope, DollarSign, GraduationCap, Palette, Heart, Globe, Clipboard, ChevronDown, ChevronUp, Play, Link2, Edit3, Eye, Clock, MessageSquare } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import ShimmerButton from './ui/ShimmerButton';
@@ -513,6 +513,98 @@ const LandingPageV2 = ({ token }) => {
         </div>
       </div>
 
+      {/* Why Choose Us Section */}
+      <div className="py-16 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            className="text-center mb-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            custom={0}
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20 mb-4">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <span className="text-sm font-medium text-green-300">What Makes Us Different</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 font-display">
+              Not Just Another Resume Scanner
+            </h2>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+              We go beyond basic ATS checks to give you a complete job application toolkit
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Link2,
+                title: 'Job URL Auto-Extraction',
+                description: 'Just paste a LinkedIn or Indeed job URL. We automatically scrape the job description, requirements, and company info - no copy-pasting needed.',
+                highlight: true
+              },
+              {
+                icon: Edit3,
+                title: 'AI-Optimized Resume + Cover Letter',
+                description: 'Get a rewritten, ATS-optimized version of your resume AND a tailored cover letter - both customized for the specific job you\'re applying to.',
+                highlight: true
+              },
+              {
+                icon: Eye,
+                title: 'Transparent Scoring Breakdown',
+                description: 'See exactly why you got your score with detailed breakdowns for keywords, formatting, experience match, and more. No black-box algorithms.'
+              },
+              {
+                icon: Clock,
+                title: 'Affordable Pricing',
+                description: 'First scan free, then just $6.99 for unlimited scans for 7 days. No expensive monthly subscriptions required - pay only when you need it.'
+              },
+              {
+                icon: MessageSquare,
+                title: 'Interview Prep Included',
+                description: 'Get role-specific interview questions based on the job you\'re applying for, so you can prepare for every stage of the hiring process.'
+              },
+              {
+                icon: Zap,
+                title: 'Results in Under 2 Minutes',
+                description: 'No waiting around. Upload your resume and job details, and get comprehensive analysis, recommendations, and optimized documents in seconds.'
+              }
+            ].map((item, index) => {
+              const IconComponent = item.icon;
+              return (
+                <motion.div
+                  key={index}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={scaleIn}
+                  custom={index}
+                >
+                  <SpotlightCard className={`rounded-2xl p-6 h-full ${item.highlight ? 'border-blue-500/30' : ''}`}>
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${item.highlight ? 'bg-gradient-to-br from-blue-500 to-cyan-500' : 'bg-white/10'}`}>
+                      <IconComponent className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2 font-display">{item.title}</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed">{item.description}</p>
+                  </SpotlightCard>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          <motion.div
+            className="text-center mt-10"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            <ShimmerButton onClick={() => navigate(ROUTES.GUEST_ANALYZE)} className="px-8 py-3">
+              Try It Free <ArrowRight size={16} />
+            </ShimmerButton>
+          </motion.div>
+        </div>
+      </div>
 
       {/* Trusted By Section - Marquee */}
       <div className="py-12 bg-black border-y border-white/5 overflow-hidden relative z-10">
