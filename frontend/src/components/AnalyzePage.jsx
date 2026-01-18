@@ -703,94 +703,6 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
             )}
           </AnimatePresence>
 
-          {/* AI Feature Progress */}
-          <AnimatePresence>
-            {aiFeatureLoading && (
-              <motion.div
-                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white font-semibold flex items-center gap-2">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                      >
-                        <Loader className="w-4 h-4 text-cyan-400" />
-                      </motion.div>
-                      {aiFeatureMessage}
-                    </span>
-                    <span className="text-gray-400 text-sm">{Math.round(aiFeatureProgress)}%</span>
-                  </div>
-                  <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-cyan-500 to-blue-600"
-                      initial={{ width: '0%' }}
-                      animate={{ width: `${aiFeatureProgress}%` }}
-                      transition={{ ease: 'easeOut', duration: 0.3 }}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* AI Feedback Display */}
-          {aiFeedback && aiFeedback.length > 0 && (
-            <motion.div
-              className="bg-gradient-to-br from-blue-900/20 to-cyan-900/20 border border-blue-700/50 rounded-lg p-6"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="w-5 h-5 text-blue-400" />
-                <h3 className="text-white font-semibold">AI-Generated Feedback</h3>
-              </div>
-              <div className="prose prose-invert max-w-none">
-                <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">
-                  {typeof aiFeedback === 'string' ? aiFeedback : JSON.stringify(aiFeedback, null, 2)}
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Optimized Resume Display */}
-          {optimizedResume && (
-            <motion.div
-              className="bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border border-cyan-700/50 rounded-lg p-6"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <FileText className="w-5 h-5 text-cyan-400" />
-                <h3 className="text-white font-semibold">AI-Optimized Resume</h3>
-              </div>
-              <div className="prose prose-invert max-w-none">
-                <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{optimizedResume}</div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Cover Letter Display */}
-          {coverLetter && (
-            <motion.div
-              className="bg-gradient-to-br from-amber-900/20 to-orange-900/20 border border-amber-700/50 rounded-lg p-6"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <FileUp className="w-5 h-5 text-amber-400" />
-                <h3 className="text-white font-semibold">AI-Generated Cover Letter</h3>
-              </div>
-              <div className="prose prose-invert max-w-none">
-                <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{coverLetter}</div>
-              </div>
-            </motion.div>
-          )}
-
           {/* Match Breakdown - Progress Bars */}
           <motion.div
             className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
@@ -1205,7 +1117,95 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
                 </div>
               </button>
             </div>
+
+            {/* AI Feature Progress - Displayed directly below buttons */}
+            <AnimatePresence>
+              {aiFeatureLoading && (
+                <motion.div
+                  className="mt-4 bg-white/5 border border-white/10 rounded-xl p-4"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white font-semibold flex items-center gap-2">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                        >
+                          <Loader className="w-4 h-4 text-cyan-400" />
+                        </motion.div>
+                        {aiFeatureMessage}
+                      </span>
+                      <span className="text-gray-400 text-sm">{Math.round(aiFeatureProgress)}%</span>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-cyan-500 to-blue-600"
+                        initial={{ width: '0%' }}
+                        animate={{ width: `${aiFeatureProgress}%` }}
+                        transition={{ ease: 'easeOut', duration: 0.3 }}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
+
+          {/* AI Feedback Display - Shown directly after buttons */}
+          {aiFeedback && aiFeedback.length > 0 && (
+            <motion.div
+              className="bg-gradient-to-br from-blue-900/20 to-cyan-900/20 border border-blue-700/50 rounded-xl p-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-5 h-5 text-blue-400" />
+                <h3 className="text-white font-semibold">AI-Generated Feedback</h3>
+              </div>
+              <div className="prose prose-invert max-w-none">
+                <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">
+                  {typeof aiFeedback === 'string' ? aiFeedback : JSON.stringify(aiFeedback, null, 2)}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Optimized Resume Display - Shown directly after buttons */}
+          {optimizedResume && (
+            <motion.div
+              className="bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border border-cyan-700/50 rounded-xl p-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="w-5 h-5 text-cyan-400" />
+                <h3 className="text-white font-semibold">AI-Optimized Resume</h3>
+              </div>
+              <div className="prose prose-invert max-w-none">
+                <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{optimizedResume}</div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Cover Letter Display - Shown directly after buttons */}
+          {coverLetter && (
+            <motion.div
+              className="bg-gradient-to-br from-amber-900/20 to-orange-900/20 border border-amber-700/50 rounded-xl p-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <FileUp className="w-5 h-5 text-amber-400" />
+                <h3 className="text-white font-semibold">AI-Generated Cover Letter</h3>
+              </div>
+              <div className="prose prose-invert max-w-none">
+                <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{coverLetter}</div>
+              </div>
+            </motion.div>
+          )}
 
           {/* Track Application */}
           <motion.div
