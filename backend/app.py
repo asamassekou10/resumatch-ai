@@ -375,7 +375,11 @@ def auto_migrate():
                 'ALTER TABLE users ADD COLUMN IF NOT EXISTS email_variant VARCHAR(50);',
                 'ALTER TABLE users ADD COLUMN IF NOT EXISTS timezone VARCHAR(50) DEFAULT \'UTC\';',
                 # Set Google OAuth users as verified
-                'UPDATE users SET email_verified = TRUE WHERE auth_provider = \'google\';'
+                'UPDATE users SET email_verified = TRUE WHERE auth_provider = \'google\';',
+                # Template system columns for Analysis table
+                'ALTER TABLE analyses ADD COLUMN IF NOT EXISTS structured_resume JSONB;',
+                'ALTER TABLE analyses ADD COLUMN IF NOT EXISTS selected_resume_template VARCHAR(50) DEFAULT \'modern\';',
+                'ALTER TABLE analyses ADD COLUMN IF NOT EXISTS selected_cover_letter_template VARCHAR(50) DEFAULT \'professional\';'
             ]
             for command in commands:
                 db.session.execute(text(command))
