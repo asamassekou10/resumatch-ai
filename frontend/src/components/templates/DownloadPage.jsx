@@ -97,6 +97,13 @@ const DownloadPage = ({ token }) => {
     fetchData();
   }, [fetchData]);
 
+  // Auto-parse resume if optimized resume exists but not yet parsed
+  useEffect(() => {
+    if (!loading && analysis?.has_optimized_resume && !structuredResume && !parsing) {
+      handleParseResume();
+    }
+  }, [loading, analysis, structuredResume, parsing]);
+
   // Parse resume if not already parsed
   const handleParseResume = async () => {
     try {

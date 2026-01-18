@@ -113,13 +113,32 @@ const TemplatePreview = ({
             </div>
           </div>
         ) : html ? (
-          <div className="aspect-[8.5/11] bg-white rounded-lg overflow-hidden shadow-xl">
-            <iframe
-              srcDoc={html}
-              title="Resume Preview"
-              className="w-full h-full border-0"
-              sandbox="allow-same-origin"
-            />
+          <div className="aspect-[8.5/11] bg-white rounded-lg overflow-hidden shadow-xl relative">
+            <div className="absolute inset-0 overflow-auto">
+              <iframe
+                srcDoc={`
+                  <!DOCTYPE html>
+                  <html>
+                  <head>
+                    <style>
+                      body {
+                        margin: 0;
+                        padding: 0;
+                        transform: scale(0.4);
+                        transform-origin: top left;
+                        width: 250%;
+                      }
+                    </style>
+                  </head>
+                  <body>${html}</body>
+                  </html>
+                `}
+                title="Resume Preview"
+                className="w-full border-0"
+                style={{ height: '250%' }}
+                sandbox="allow-same-origin"
+              />
+            </div>
           </div>
         ) : (
           <div className="aspect-[8.5/11] bg-white/5 rounded-lg flex items-center justify-center">
