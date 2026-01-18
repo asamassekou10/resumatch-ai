@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, ArrowLeft, Mail, Sparkles, FileText, Search, Target, Lock, Shield, Briefcase } from 'lucide-react';
+import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, ArrowLeft, Mail, Sparkles, FileText, Search, Target, Lock, Shield, Briefcase, Download } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
@@ -1252,6 +1252,35 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
               </button>
             </div>
           </motion.div>
+
+          {/* Download Documents Section */}
+          {(optimizedResume || coverLetter) && (
+            <motion.div
+              className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-xl p-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.28 }}
+            >
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                    <Download className="w-6 h-6 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-semibold">Download Professional PDFs</h3>
+                    <p className="text-gray-400 text-sm">Choose templates and download ATS-friendly documents</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate(`/download/${analysisData?.id || id}`)}
+                  className="flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700 shadow-lg shadow-cyan-500/25"
+                >
+                  <Download className="w-5 h-5" />
+                  Download Documents
+                </button>
+              </div>
+            </motion.div>
+          )}
 
           {/* Action Buttons */}
           <motion.div

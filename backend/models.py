@@ -223,6 +223,11 @@ class Analysis(db.Model):
     optimized_feedback = db.Column(db.Text)  # Detailed optimization feedback
     cover_letter = db.Column(db.Text)  # AI-generated cover letter
 
+    # Template system fields
+    structured_resume = db.Column(db.JSON, nullable=True)  # Parsed resume data for templates
+    selected_resume_template = db.Column(db.String(50), default='modern')
+    selected_cover_letter_template = db.Column(db.String(50), default='professional')
+
     # Metadata
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -253,6 +258,9 @@ class Analysis(db.Model):
             'optimized_feedback': self.optimized_feedback,
             'cover_letter': self.cover_letter,
             'resume_filename': self.resume_filename,
+            'structured_resume': self.structured_resume,
+            'selected_resume_template': self.selected_resume_template,
+            'selected_cover_letter_template': self.selected_cover_letter_template,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()
         }

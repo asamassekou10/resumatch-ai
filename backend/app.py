@@ -46,6 +46,7 @@ from routes.dashboard import dashboard_bp
 from routes.jobs import jobs_bp
 from routes.payments import payments_bp
 from routes.job_applications import job_applications_bp
+from routes.templates import templates_bp
 from routes_admin_diagnostics import admin_diag_bp
 from scheduled_ingestion_tasks import init_scheduler
 from email_automation import init_email_scheduler
@@ -78,8 +79,11 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 JWT_SECRET = os.getenv('JWT_SECRET_KEY')
 SESSION_SECRET = os.getenv('SECRET_KEY')
 
+# Check FLASK_ENV directly since app.debug isn't set until app.run()
+is_development = os.getenv('FLASK_ENV', 'production') == 'development'
+
 if not JWT_SECRET or not SESSION_SECRET:
-    if not app.debug:
+    if not is_development:
         raise ValueError("JWT_SECRET_KEY and SECRET_KEY environment variables must be set!")
     # Only use defaults in development
     JWT_SECRET = 'dev-jwt-secret-change-in-production'
@@ -3000,6 +3004,7 @@ app.register_blueprint(career_path_bp)
 app.register_blueprint(analytics_bp)
 app.register_blueprint(admin_diag_bp)
 app.register_blueprint(job_applications_bp)
+app.register_blueprint(templates_bp)
 
 # Exempt health check endpoints from rate limiting
 limiter.exempt(health_bp)

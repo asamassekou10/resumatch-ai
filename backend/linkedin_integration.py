@@ -59,7 +59,7 @@ class LinkedInClient:
             self.enabled = False
         else:
             self.enabled = True
-            logger.info("LinkedIn integration initialized successfully")
+            logger.info(f"LinkedIn integration initialized - Local URI: {self.redirect_uri_local}, Prod URI: {self.redirect_uri_prod}")
 
     def get_redirect_uri(self, request_host: str = None) -> str:
         """Get the appropriate redirect URI based on the request host."""

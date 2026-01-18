@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cover Letter - {{ contact.name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: letter;
+            margin: 1in 1.25in;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, Georgia, serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #000000;
+            background: white;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 24px;
+            text-align: center;
+            border-bottom: 1px solid #cccccc;
+            padding-bottom: 16px;
+        }
+
+        .sender-name {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 6px;
+        }
+
+        .sender-contact {
+            font-size: 10pt;
+            color: #333333;
+            line-height: 1.4;
+        }
+
+        /* Date and Recipient */
+        .meta-section {
+            margin-bottom: 24px;
+        }
+
+        .date {
+            color: #333333;
+            margin-bottom: 16px;
+        }
+
+        .recipient-info {
+            margin-bottom: 16px;
+        }
+
+        .company-name {
+            font-weight: bold;
+            color: #000000;
+        }
+
+        /* Salutation */
+        .salutation {
+            margin-bottom: 16px;
+        }
+
+        /* Body */
+        .letter-body {
+            margin-bottom: 24px;
+        }
+
+        .letter-body p {
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+
+        .letter-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Closing */
+        .closing {
+            margin-bottom: 36px;
+        }
+
+        .signature {
+            font-weight: bold;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="sender-name">{{ contact.name }}</div>
+        <div class="sender-contact">
+            {% if contact.email %}{{ contact.email }}{% endif %}
+            {% if contact.email and contact.phone %} | {% endif %}
+            {% if contact.phone %}{{ contact.phone }}{% endif %}
+            {% if contact.location %} | {{ contact.location }}{% endif %}
+        </div>
+    </div>
+
+    <div class="meta-section">
+        <!-- Date -->
+        <div class="date">{{ date }}</div>
+
+        <!-- Recipient Info -->
+        <div class="recipient-info">
+            <div class="company-name">{{ company_name }}</div>
+            {% if job_title %}
+            <div>Re: {{ job_title }} Position</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Salutation -->
+    <div class="salutation">
+        {% if hiring_manager %}
+        Dear {{ hiring_manager }},
+        {% else %}
+        Dear Hiring Team,
+        {% endif %}
+    </div>
+
+    <!-- Letter Body -->
+    <div class="letter-body">
+        {{ content | safe }}
+    </div>
+
+    <!-- Closing -->
+    <div class="closing">
+        Best regards,
+    </div>
+
+    <div class="signature">
+        {{ contact.name }}
+    </div>
+</body>
+</html>

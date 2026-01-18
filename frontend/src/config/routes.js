@@ -26,6 +26,7 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   ANALYZE: '/analyze',
   RESULT: '/result/:id',
+  DOWNLOAD: '/download/:analysisId',
   JOB_APPLICATIONS: '/applications',
   PROFILE: '/profile',
   SETTINGS: '/settings',

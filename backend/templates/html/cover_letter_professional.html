@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cover Letter - {{ contact.name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: letter;
+            margin: 1in;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: #2d3748;
+            background: white;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .sender-info {
+            margin-bottom: 20px;
+        }
+
+        .sender-name {
+            font-size: 14pt;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 4px;
+        }
+
+        .sender-contact {
+            font-size: 10pt;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+
+        .date {
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .recipient-info {
+            margin-bottom: 20px;
+        }
+
+        .company-name {
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        /* Salutation */
+        .salutation {
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        /* Body */
+        .letter-body {
+            margin-bottom: 24px;
+        }
+
+        .letter-body p {
+            margin-bottom: 14px;
+            text-align: justify;
+        }
+
+        .letter-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Closing */
+        .closing {
+            margin-bottom: 40px;
+        }
+
+        .signature {
+            font-weight: 600;
+            color: #1a202c;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <!-- Sender Info -->
+        <div class="sender-info">
+            <div class="sender-name">{{ contact.name }}</div>
+            <div class="sender-contact">
+                {% if contact.email %}{{ contact.email }}{% endif %}
+                {% if contact.email and contact.phone %} | {% endif %}
+                {% if contact.phone %}{{ contact.phone }}{% endif %}
+                {% if contact.location %}
+                <br>{{ contact.location }}
+                {% endif %}
+                {% if contact.linkedin %}
+                <br>{{ contact.linkedin }}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Date -->
+        <div class="date">{{ date }}</div>
+
+        <!-- Recipient Info -->
+        <div class="recipient-info">
+            {% if hiring_manager %}
+            <div>{{ hiring_manager }}</div>
+            {% endif %}
+            <div class="company-name">{{ company_name }}</div>
+            {% if company_address %}
+            <div>{{ company_address }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Salutation -->
+    <div class="salutation">
+        {% if hiring_manager %}
+        Dear {{ hiring_manager }},
+        {% else %}
+        Dear Hiring Manager,
+        {% endif %}
+    </div>
+
+    <!-- Letter Body -->
+    <div class="letter-body">
+        {{ content | safe }}
+    </div>
+
+    <!-- Closing -->
+    <div class="closing">
+        Sincerely,
+    </div>
+
+    <div class="signature">
+        {{ contact.name }}
+    </div>
+</body>
+</html>

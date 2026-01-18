@@ -34,6 +34,7 @@ const StudentResources = lazy(() => import('../seo/StudentResources'));
 // Protected Pages
 const Dashboard = lazy(() => import('../Dashboard'));
 const AnalyzePage = lazy(() => import('../AnalyzePage'));
+const DownloadPage = lazy(() => import('../templates/DownloadPage'));
 const JobApplicationsPage = lazy(() => import('../JobApplicationsPage'));
 const ProfilePage = lazy(() => import('../ProfilePage'));
 const SettingsPage = lazy(() => import('../SettingsPage'));
@@ -235,6 +236,15 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) 
             element={
               <ProtectedRoute>
                 <AnalyzePage userProfile={userProfile} viewMode="result" />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path={ROUTES.DOWNLOAD}
+            element={
+              <ProtectedRoute>
+                <DownloadPage token={token} />
               </ProtectedRoute>
             }
           />
