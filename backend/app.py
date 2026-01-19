@@ -2992,6 +2992,127 @@ def admin_get_users():
         }), 500
 
 
+# ============== ADMIN: FEATURE ANNOUNCEMENT EMAIL ==============
+
+@app.route('/api/admin/send-feature-announcement', methods=['POST'])
+@jwt_required()
+def admin_send_feature_announcement():
+    """
+    Send feature announcement email to all active users or a specific user.
+    Admin only endpoint.
+
+    Request body:
+    - test_email (optional): If provided, send only to this email for testing
+    - send_to_all (optional): If true, send to all active users
+    """
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(int(user_id))
+
+        if not user or not user.is_admin:
+            return jsonify({
+                'status': 'error',
+                'message': 'Admin access required'
+            }), 403
+
+        data = request.get_json() or {}
+        test_email = data.get('test_email')
+        send_to_all = data.get('send_to_all', False)
+
+        results = {
+            'sent': 0,
+            'failed': 0,
+            'errors': []
+        }
+
+        if test_email:
+            # Send test email to a specific address
+            test_user = User.query.filter_by(email=test_email).first()
+            recipient_name = test_user.name if test_user else 'User'
+
+            # Generate unsubscribe link if user exists
+            unsubscribe_link = None
+            if test_user:
+                token = email_service.generate_unsubscribe_token(test_user.id)
+                if token:
+                    frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+                    unsubscribe_link = f"{frontend_url}/unsubscribe?token={token}"
+
+            success = email_service.send_feature_announcement_email(
+                recipient_email=test_email,
+                recipient_name=recipient_name,
+                unsubscribe_link=unsubscribe_link
+            )
+
+            if success:
+                results['sent'] = 1
+            else:
+                results['failed'] = 1
+                results['errors'].append(f"Failed to send to {test_email}")
+
+            return jsonify({
+                'status': 'success',
+                'message': f"Test email {'sent' if success else 'failed'} to {test_email}",
+                'data': results
+            }), 200
+
+        elif send_to_all:
+            # Send to all active users who haven't unsubscribed from marketing
+            users = User.query.filter(
+                User.is_active == True,
+                User.email_verified == True
+            ).all()
+
+            for u in users:
+                # Check email preferences (skip if marketing emails disabled)
+                prefs = u.email_preferences or {}
+                if prefs.get('marketing') == False:
+                    continue
+
+                # Generate unsubscribe link
+                unsubscribe_link = None
+                token = email_service.generate_unsubscribe_token(u.id)
+                if token:
+                    frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+                    unsubscribe_link = f"{frontend_url}/unsubscribe?token={token}"
+
+                try:
+                    success = email_service.send_feature_announcement_email(
+                        recipient_email=u.email,
+                        recipient_name=u.name or 'there',
+                        unsubscribe_link=unsubscribe_link
+                    )
+
+                    if success:
+                        results['sent'] += 1
+                    else:
+                        results['failed'] += 1
+                        results['errors'].append(f"Failed: {u.email}")
+                except Exception as e:
+                    results['failed'] += 1
+                    results['errors'].append(f"Error for {u.email}: {str(e)}")
+
+            return jsonify({
+                'status': 'success',
+                'message': f"Feature announcement sent to {results['sent']} users",
+                'data': results
+            }), 200
+
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Please provide test_email for testing or set send_to_all=true'
+            }), 400
+
+    except Exception as e:
+        logging.error(f"Error sending feature announcement: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to send feature announcement',
+            'error_type': 'INTERNAL_SERVER_ERROR'
+        }), 500
+
+
 # ============== REGISTER BLUEPRINTS ==============
 
 app.register_blueprint(health_bp)

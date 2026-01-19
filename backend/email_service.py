@@ -1523,5 +1523,153 @@ class EmailService:
             logger.error(f"Error sending trial expired email to {recipient_email}: {str(e)}")
             return False
 
+def send_feature_announcement_email(self, recipient_email: str, recipient_name: str, unsubscribe_link: str = None) -> bool:
+        """
+        Send feature announcement email about new features:
+        1. URL Job Description Fetching
+        2. Application Tracking
+        3. Download Optimized Resume with Templates
+        """
+        if not self.resend:
+            logger.warning("Resend not configured. Cannot send feature announcement email.")
+            return False
+
+        try:
+            subject = "🚀 New Features: Smart JD Import, Application Tracker & PDF Templates!"
+            website_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>New Features Announcement</title>
+                <style>
+                    body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #0f172a; margin: 0; padding: 0; background-color: #f8fafc; }}
+                    .container {{ max-width: 620px; margin: 24px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 30px rgba(15, 23, 42, 0.1); }}
+                    .header {{ background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%); color: white; padding: 48px 28px; text-align: center; }}
+                    .header h1 {{ margin: 0 0 12px 0; font-size: 28px; font-weight: 800; }}
+                    .header p {{ margin: 0; opacity: 0.95; font-size: 16px; }}
+                    .content {{ padding: 40px 32px; }}
+                    .intro {{ font-size: 17px; color: #334155; margin-bottom: 32px; }}
+                    .feature-card {{ background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin: 20px 0; position: relative; overflow: hidden; }}
+                    .feature-card::before {{ content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }}
+                    .feature-1::before {{ background: linear-gradient(180deg, #3b82f6, #1d4ed8); }}
+                    .feature-2::before {{ background: linear-gradient(180deg, #10b981, #059669); }}
+                    .feature-3::before {{ background: linear-gradient(180deg, #f59e0b, #d97706); }}
+                    .feature-icon {{ font-size: 32px; margin-bottom: 12px; }}
+                    .feature-title {{ font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 8px 0; }}
+                    .feature-desc {{ color: #475569; margin: 0; font-size: 15px; line-height: 1.7; }}
+                    .feature-benefits {{ margin-top: 12px; padding-left: 20px; }}
+                    .feature-benefits li {{ color: #64748b; font-size: 14px; margin: 6px 0; }}
+                    .cta-section {{ text-align: center; margin: 40px 0 20px 0; padding: 32px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 12px; }}
+                    .cta-section h3 {{ color: white; margin: 0 0 12px 0; font-size: 22px; font-weight: 700; }}
+                    .cta-section p {{ color: rgba(255,255,255,0.9); margin: 0 0 24px 0; font-size: 15px; }}
+                    .cta-button {{ display: inline-block; background: #ffffff; color: #6366f1 !important; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); transition: transform 0.2s; }}
+                    .cta-button:hover {{ transform: translateY(-2px); }}
+                    .footer {{ text-align: center; padding: 28px; color: #94a3b8; font-size: 13px; background: #f8fafc; border-top: 1px solid #e2e8f0; }}
+                    .footer a {{ color: #6366f1; text-decoration: none; }}
+                    .badge {{ display: inline-block; background: #dbeafe; color: #1d4ed8; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <p style="margin-bottom: 8px; font-size: 14px; opacity: 0.9;">✨ Product Update</p>
+                        <h1>3 Powerful New Features Just Dropped!</h1>
+                        <p>Making your job search faster and easier than ever</p>
+                    </div>
+
+                    <div class="content">
+                        <p class="intro">Hi {recipient_name},</p>
+                        <p class="intro">We've been working hard to make ResumeAnalyzer AI even better for your job search. Here's what's new:</p>
+
+                        <!-- Feature 1: URL JD Fetching -->
+                        <div class="feature-card feature-1">
+                            <div class="feature-icon">🔗</div>
+                            <span class="badge">Time Saver</span>
+                            <h3 class="feature-title">Smart Job Description Import</h3>
+                            <p class="feature-desc">No more copy-pasting! Simply paste a job posting URL and we'll automatically extract the job description for you. Works with LinkedIn, Indeed, Glassdoor, and most job boards.</p>
+                            <ul class="feature-benefits">
+                                <li>Paste any job URL to auto-import the description</li>
+                                <li>Works with 50+ job boards worldwide</li>
+                                <li>Saves 2-3 minutes per analysis</li>
+                            </ul>
+                        </div>
+
+                        <!-- Feature 2: Application Tracking -->
+                        <div class="feature-card feature-2">
+                            <div class="feature-icon">📊</div>
+                            <span class="badge" style="background: #d1fae5; color: #059669;">Stay Organized</span>
+                            <h3 class="feature-title">Application Tracker</h3>
+                            <p class="feature-desc">Keep track of all your job applications in one place! After each analysis, you can add the job to your application tracker with status updates, notes, and follow-up reminders.</p>
+                            <ul class="feature-benefits">
+                                <li>Track application status: Applied, Interview, Offer, etc.</li>
+                                <li>Add notes and follow-up dates</li>
+                                <li>Never lose track of where you applied</li>
+                            </ul>
+                        </div>
+
+                        <!-- Feature 3: PDF Download with Templates -->
+                        <div class="feature-card feature-3">
+                            <div class="feature-icon">📄</div>
+                            <span class="badge" style="background: #fef3c7; color: #d97706;">Professional Output</span>
+                            <h3 class="feature-title">Download Optimized Resume as PDF</h3>
+                            <p class="feature-desc">Transform your AI-optimized resume into a beautifully formatted PDF! Choose from our professional templates designed to pass ATS systems while looking great to human recruiters.</p>
+                            <ul class="feature-benefits">
+                                <li><strong>Modern Template:</strong> Clean, contemporary design for tech & creative roles</li>
+                                <li><strong>Classic Template:</strong> Traditional format with 100% ATS compatibility</li>
+                                <li>Edit your details before downloading</li>
+                                <li>PDF text is fully selectable for ATS parsing</li>
+                            </ul>
+                        </div>
+
+                        <div class="cta-section">
+                            <h3>Ready to Try These Features?</h3>
+                            <p>Log in now and supercharge your job search!</p>
+                            <a href="{website_url}/dashboard" class="cta-button">Go to Dashboard</a>
+                        </div>
+
+                        <p style="color: #64748b; font-size: 14px; text-align: center; margin-top: 24px;">
+                            Have questions or feedback? Just reply to this email – we read every message!
+                        </p>
+                    </div>
+
+                    <div class="footer">
+                        <p><strong>ResumeAnalyzer AI</strong></p>
+                        <p>Helping you land your dream job, one resume at a time.</p>
+                        <p style="margin-top: 12px;">
+                            <a href="{website_url}">Visit Website</a> &nbsp;|&nbsp;
+                            <a href="{website_url}/dashboard">Dashboard</a>
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            html_content = self._apply_unsubscribe_footer(html_content, unsubscribe_link)
+
+            response = self.resend.Emails.send({
+                "from": self.from_email,
+                "to": [recipient_email],
+                "subject": subject,
+                "html": html_content,
+                "reply_to": self.reply_to
+            })
+
+            if response and isinstance(response, dict) and 'id' in response:
+                logger.info(f"Feature announcement email sent successfully to {recipient_email}")
+                return True
+            else:
+                logger.error(f"Failed to send feature announcement email. Response: {response}")
+                return False
+
+        except Exception as e:
+            logger.error(f"Error sending feature announcement email to {recipient_email}: {str(e)}")
+            return False
+
+
 # Global email service instance
 email_service = EmailService()
