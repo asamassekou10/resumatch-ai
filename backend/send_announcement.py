@@ -4,9 +4,12 @@ Run this script from the backend directory with your admin credentials.
 
 Usage:
     python send_announcement.py --mode [test|production]
+    python send_announcement.py --mode test --token YOUR_JWT_TOKEN
 
     test mode: Sends to your admin email only
     production mode: Sends to all active, verified users
+
+For Google OAuth users: Use --token flag with your JWT token from browser DevTools
 """
 
 import sys
@@ -36,6 +39,18 @@ def login(api_url, email, password):
         print(f"❌ Login failed: {response.status_code}")
         print(response.text)
         return None
+
+def get_user_info(api_url, token):
+    """Get user info from token to extract email"""
+    response = requests.get(
+        f"{api_url}/api/user/profile",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    if response.status_code == 200:
+        data = response.json()
+        return data.get('data', {}).get('email')
+    return None
 
 def send_announcement(api_url, token, test_email=None, send_to_all=False):
     """Send feature announcement email"""
@@ -91,6 +106,14 @@ def main():
         '--api-url',
         help='API URL (default: from BACKEND_URL env or http://localhost:5000)'
     )
+    parser.add_argument(
+        '--token',
+        help='JWT token (for Google OAuth users, get from browser DevTools)'
+    )
+    parser.add_argument(
+        '--email',
+        help='Email address for test mode (required if using --token)'
+    )
 
     args = parser.parse_args()
 
@@ -98,20 +121,42 @@ def main():
     api_url = args.api_url or get_api_url()
     print(f"🌐 API URL: {api_url}")
 
-    # Get credentials
-    print("\n🔐 Admin Login")
-    email = input("Admin email: ")
-    password = getpass("Admin password: ")
+    # Get authentication
+    if args.token:
+        # Use provided token (for Google OAuth users)
+        token = args.token
+        print("\n✅ Using provided JWT token")
 
-    # Login
-    print("\n🔄 Logging in...")
-    token = login(api_url, email, password)
+        # Get email from token or user input
+        if args.email:
+            email = args.email
+        else:
+            # Try to get email from API
+            email = get_user_info(api_url, token)
+            if not email and args.mode == 'test':
+                email = input("Enter your email address for test mode: ")
+    else:
+        # Traditional email/password login
+        print("\n🔐 Admin Login")
+        print("(For Google OAuth users, use --token flag instead)")
+        email = input("Admin email: ")
+        password = getpass("Admin password: ")
 
-    if not token:
-        print("❌ Authentication failed. Exiting.")
-        return 1
+        # Login
+        print("\n🔄 Logging in...")
+        token = login(api_url, email, password)
 
-    print("✅ Logged in successfully")
+        if not token:
+            print("❌ Authentication failed. Exiting.")
+            print("\n💡 Tip: If you login with Google, use --token flag:")
+            print("   1. Open your app in browser and login")
+            print("   2. Press F12 → Console tab")
+            print("   3. Type: localStorage.getItem('access_token')")
+            print("   4. Copy the token and run:")
+            print(f"      python send_announcement.py --mode test --token YOUR_TOKEN --api-url {api_url}")
+            return 1
+
+        print("✅ Logged in successfully")
 
     # Confirm production send
     if args.mode == 'production':

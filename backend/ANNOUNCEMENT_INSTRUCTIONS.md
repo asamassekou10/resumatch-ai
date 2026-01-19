@@ -4,9 +4,26 @@
 
 ### Step 1: Test the Email (IMPORTANT - Do this first!)
 
+#### For Google OAuth Users (Recommended):
+
+1. **Get your JWT token from the browser:**
+   - Open https://resumatch-backend-7qdb.onrender.com (or your app URL) and login with Google
+   - Press F12 to open DevTools
+   - Go to Console tab
+   - Type: `localStorage.getItem('access_token')`
+   - Copy the token (without quotes)
+
+2. **Run the test:**
 ```bash
 cd backend
-python send_announcement.py --mode test
+python send_announcement.py --mode test --token YOUR_TOKEN_HERE --email your-email@example.com --api-url https://resumatch-backend-7qdb.onrender.com
+```
+
+#### For Email/Password Users:
+
+```bash
+cd backend
+python send_announcement.py --mode test --api-url https://resumatch-backend-7qdb.onrender.com
 ```
 
 Enter your admin email and password when prompted. This will send the email **only to your email** so you can review it.
@@ -15,8 +32,14 @@ Enter your admin email and password when prompted. This will send the email **on
 
 Once you've verified the test email looks good:
 
+**With token:**
 ```bash
-python send_announcement.py --mode production
+python send_announcement.py --mode production --token YOUR_TOKEN_HERE --api-url https://resumatch-backend-7qdb.onrender.com
+```
+
+**With password:**
+```bash
+python send_announcement.py --mode production --api-url https://resumatch-backend-7qdb.onrender.com
 ```
 
 - You'll need to type `SEND` to confirm
