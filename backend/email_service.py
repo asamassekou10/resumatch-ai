@@ -1523,7 +1523,7 @@ class EmailService:
             logger.error(f"Error sending trial expired email to {recipient_email}: {str(e)}")
             return False
 
-def send_feature_announcement_email(self, recipient_email: str, recipient_name: str, unsubscribe_link: str = None) -> bool:
+    def send_feature_announcement_email(self, recipient_email: str, recipient_name: str, unsubscribe_link: str = None) -> bool:
         """
         Send feature announcement email about new features:
         1. URL Job Description Fetching

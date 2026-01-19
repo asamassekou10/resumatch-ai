@@ -227,20 +227,24 @@ def init_email_scheduler(app, db, User, email_service):
         replace_existing=True
     )
 
-    # ONE-TIME: Feature announcement - send 1 minute after backend starts
+    # ONE-TIME: Feature announcement - January 19, 2026 at 3:40 AM Houston time (CST = UTC-6)
     try:
-        from datetime import datetime, timedelta
-        # Schedule for 1 minute from now
-        announcement_time = datetime.now() + timedelta(minutes=1)
+        from datetime import datetime, timezone, timedelta
+        # 3:40 AM CST = 9:40 AM UTC
+        announcement_time = datetime(2026, 1, 19, 9, 40, 0, tzinfo=timezone.utc)
 
-        scheduler.add_job(
-            lambda: send_feature_announcement(app, db, User, email_service),
-            trigger='date',
-            run_date=announcement_time,
-            id='feature_announcement_jan19',
-            replace_existing=True
-        )
-        logger.info(f"⚠️  FEATURE ANNOUNCEMENT scheduled for {announcement_time} (1 minute from now)")
+        # Only schedule if time hasn't passed
+        if datetime.now(timezone.utc) < announcement_time:
+            scheduler.add_job(
+                lambda: send_feature_announcement(app, db, User, email_service),
+                trigger='date',
+                run_date=announcement_time,
+                id='feature_announcement_jan19',
+                replace_existing=True
+            )
+            logger.info(f"⚠️  FEATURE ANNOUNCEMENT scheduled for {announcement_time} (3:40 AM Houston time)")
+        else:
+            logger.info(f"⚠️  Feature announcement time has passed ({announcement_time}), skipping")
     except Exception as e:
         logger.error(f"Failed to schedule feature announcement: {e}")
 
