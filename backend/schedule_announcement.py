@@ -4,6 +4,9 @@ This script will run continuously and send the announcement at the scheduled tim
 
 Usage:
     python schedule_announcement.py
+
+Note: This script directly calls the production API endpoint, so the backend
+must be running and accessible at the configured API_URL.
 """
 
 import sys
@@ -11,9 +14,6 @@ import os
 import time
 import requests
 from datetime import datetime, timedelta
-
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Configuration
 API_URL = "https://resumatch-backend-7qdb.onrender.com"
@@ -26,26 +26,62 @@ SCHEDULED_DAY = 19
 SCHEDULED_HOUR = 2
 SCHEDULED_MINUTE = 45
 
-def login_and_get_token():
+def get_production_token():
     """
-    Login using Google OAuth simulation or direct database access.
-    For production, you'll need to provide admin credentials.
+    Get authentication token from production API.
+
+    This will attempt to use the admin endpoint directly.
+    Since you login with Google, you'll need to provide a valid token
+    that has already been generated.
     """
-    from app import app, db
-    from models import User
-    from flask_jwt_extended import create_access_token
+    print("\n" + "="*60)
+    print("ADMIN AUTHENTICATION")
+    print("="*60)
+    print("\nTo get your admin token:")
+    print("1. Open https://www.resumeanalyzerai.com in browser")
+    print("2. Login with your Google account")
+    print("3. Press F12 → Console")
+    print("4. Type: localStorage.getItem('access_token')")
+    print("5. Copy the token\n")
 
-    with app.app_context():
-        # Get admin user
-        admin_user = User.query.filter_by(email=ADMIN_EMAIL, is_admin=True).first()
+    token = input("Paste your admin JWT token here: ").strip()
 
-        if not admin_user:
-            print(f"❌ Admin user not found: {ADMIN_EMAIL}")
+    if not token:
+        print("❌ No token provided")
+        return None
+
+    # Verify token works by checking user profile
+    try:
+        response = requests.get(
+            f"{API_URL}/api/user/profile",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        if response.status_code == 200:
+            data = response.json()
+            email = data.get('data', {}).get('email')
+            is_admin = data.get('data', {}).get('is_admin', False)
+
+            print(f"\n✅ Token valid!")
+            print(f"   Email: {email}")
+            print(f"   Admin: {is_admin}")
+
+            if not is_admin:
+                print("\n⚠️  WARNING: This account is not an admin!")
+                print("   The announcement send may fail.")
+                response = input("\nContinue anyway? (yes/no): ")
+                if response.lower() != 'yes':
+                    return None
+
+            return token
+        else:
+            print(f"❌ Token validation failed: {response.status_code}")
+            print(response.text)
             return None
 
-        # Create JWT token
-        token = create_access_token(identity=str(admin_user.id))
-        return token
+    except Exception as e:
+        print(f"❌ Error validating token: {e}")
+        return None
 
 def send_announcement_now(token):
     """Send announcement email to all users"""
@@ -90,7 +126,7 @@ def main():
     print("FEATURE ANNOUNCEMENT SCHEDULER")
     print("="*60)
     print(f"API URL: {API_URL}")
-    print(f"Admin Email: {ADMIN_EMAIL}")
+    print(f"Target: Production database users")
 
     # Calculate scheduled time
     scheduled_time = datetime(
@@ -113,15 +149,12 @@ def main():
 
         scheduled_time = now
 
-    # Get authentication token
-    print("\n🔄 Getting authentication token...")
-    token = login_and_get_token()
+    # Get authentication token from user
+    token = get_production_token()
 
     if not token:
         print("❌ Failed to get authentication token.")
         return 1
-
-    print("✅ Token obtained successfully")
 
     # Wait until scheduled time
     time_diff = (scheduled_time - datetime.now()).total_seconds()

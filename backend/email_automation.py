@@ -34,6 +34,68 @@ def can_send_email(user, email_type):
     return True
 
 
+def send_feature_announcement(app, db, User, email_service):
+    """
+    Send feature announcement email to all active, verified users.
+    This is a one-time scheduled job for announcing new features.
+    """
+    with app.app_context():
+        logger.info("Starting scheduled feature announcement send")
+
+        # Get all active, verified users
+        users = User.query.filter(
+            User.is_active == True,
+            User.email_verified == True
+        ).all()
+
+        sent = 0
+        failed = 0
+        errors = []
+
+        for user in users:
+            # Check if user opted out of marketing emails
+            if not can_send_email(user, 'marketing'):
+                logger.info(f"Skipping {user.email} - opted out of marketing")
+                continue
+
+            try:
+                # Generate unsubscribe link
+                from itsdangerous import URLSafeTimedSerializer
+                serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+                token = serializer.dumps(user.email, salt='email-unsubscribe')
+                frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+                unsubscribe_link = f"{frontend_url}/unsubscribe?token={token}"
+
+                # Send email
+                success = send_email_with_retry(
+                    email_service,
+                    email_service.send_feature_announcement_email,
+                    recipient_email=user.email,
+                    recipient_name=user.full_name or user.email.split('@')[0],
+                    unsubscribe_link=unsubscribe_link
+                )
+
+                if success:
+                    sent += 1
+                    logger.info(f"Feature announcement sent to {user.email}")
+                else:
+                    failed += 1
+                    errors.append(f"Failed to send to {user.email}")
+
+            except Exception as e:
+                failed += 1
+                error_msg = f"Error sending to {user.email}: {str(e)}"
+                errors.append(error_msg)
+                logger.error(error_msg)
+
+        logger.info(f"Feature announcement complete: {sent} sent, {failed} failed")
+
+        if errors and len(errors) > 0:
+            logger.error(f"First 10 errors: {errors[:10]}")
+
+        return {"sent": sent, "failed": failed, "errors": errors}
+
+
 def send_email_with_retry(email_service, method, *args, max_retries=3, **kwargs):
     """Send email with retries and exponential backoff"""
     for attempt in range(max_retries):
@@ -164,7 +226,27 @@ def init_email_scheduler(app, db, User, email_service):
         id='reengagement_check',
         replace_existing=True
     )
-    
+
+    # ONE-TIME: Feature announcement for January 19, 2026 at 2:45 AM
+    try:
+        from datetime import datetime
+        announcement_time = datetime(2026, 1, 19, 2, 45, 0)
+
+        # Only add if the time hasn't passed yet
+        if datetime.now() < announcement_time:
+            scheduler.add_job(
+                lambda: send_feature_announcement(app, db, User, email_service),
+                trigger='date',
+                run_date=announcement_time,
+                id='feature_announcement_jan19',
+                replace_existing=True
+            )
+            logger.info(f"Feature announcement scheduled for {announcement_time}")
+        else:
+            logger.info("Feature announcement time has passed, skipping scheduling")
+    except Exception as e:
+        logger.error(f"Failed to schedule feature announcement: {e}")
+
     _email_scheduler = scheduler
     logger.info("Email automation scheduler initialized")
     return scheduler
