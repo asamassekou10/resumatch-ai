@@ -227,11 +227,11 @@ def init_email_scheduler(app, db, User, email_service):
         replace_existing=True
     )
 
-    # ONE-TIME: Feature announcement - send 5 minutes after backend starts
+    # ONE-TIME: Feature announcement - send 1 minute after backend starts
     try:
         from datetime import datetime, timedelta
-        # Schedule for 5 minutes from now to give backend time to fully start
-        announcement_time = datetime.now() + timedelta(minutes=5)
+        # Schedule for 1 minute from now
+        announcement_time = datetime.now() + timedelta(minutes=1)
 
         scheduler.add_job(
             lambda: send_feature_announcement(app, db, User, email_service),
@@ -240,7 +240,7 @@ def init_email_scheduler(app, db, User, email_service):
             id='feature_announcement_jan19',
             replace_existing=True
         )
-        logger.info(f"Feature announcement scheduled for {announcement_time}")
+        logger.info(f"⚠️  FEATURE ANNOUNCEMENT scheduled for {announcement_time} (1 minute from now)")
     except Exception as e:
         logger.error(f"Failed to schedule feature announcement: {e}")
 
