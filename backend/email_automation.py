@@ -71,7 +71,7 @@ def send_feature_announcement(app, db, User, email_service):
                     email_service,
                     email_service.send_feature_announcement_email,
                     recipient_email=user.email,
-                    recipient_name=user.full_name or user.email.split('@')[0],
+                    recipient_name=user.name or user.email.split('@')[0],
                     unsubscribe_link=unsubscribe_link
                 )
 
