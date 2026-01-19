@@ -379,7 +379,11 @@ def auto_migrate():
                 # Template system columns for Analysis table
                 'ALTER TABLE analyses ADD COLUMN IF NOT EXISTS structured_resume JSONB;',
                 'ALTER TABLE analyses ADD COLUMN IF NOT EXISTS selected_resume_template VARCHAR(50) DEFAULT \'modern\';',
-                'ALTER TABLE analyses ADD COLUMN IF NOT EXISTS selected_cover_letter_template VARCHAR(50) DEFAULT \'professional\';'
+                'ALTER TABLE analyses ADD COLUMN IF NOT EXISTS selected_cover_letter_template VARCHAR(50) DEFAULT \'professional\';',
+                # AI-generated content columns for Analysis table
+                'ALTER TABLE analyses ADD COLUMN IF NOT EXISTS optimized_resume TEXT;',
+                'ALTER TABLE analyses ADD COLUMN IF NOT EXISTS optimized_feedback TEXT;',
+                'ALTER TABLE analyses ADD COLUMN IF NOT EXISTS cover_letter TEXT;'
             ]
             for command in commands:
                 db.session.execute(text(command))
@@ -1665,6 +1669,9 @@ def get_analysis(analysis_id):
         'suggestions': analysis.suggestions,
         'resume_filename': analysis.resume_filename,
         'ai_feedback': analysis.ai_feedback,
+        'optimized_resume': analysis.optimized_resume,
+        'optimized_feedback': analysis.optimized_feedback,
+        'cover_letter': analysis.cover_letter,
         'detected_industry': analysis.detected_industry,
         'created_at': analysis.created_at.isoformat()
     }), 200
@@ -1856,8 +1863,9 @@ def generate_feedback(analysis_id):
         )
         
         # Deduct credits and save feedback
+        # Save to optimized_feedback (personalized feedback) rather than ai_feedback (initial analysis)
         user.credits -= required_credits
-        analysis.ai_feedback = feedback
+        analysis.optimized_feedback = feedback
         db.session.commit()
         
         # Send email with AI feedback
@@ -1999,9 +2007,10 @@ def generate_cover_letter_route(analysis_id):
         
         if not cover_letter:
             return jsonify({'error': 'Failed to generate cover letter'}), 500
-        
-        # Deduct credits
+
+        # Deduct credits and save cover letter to database
         user.credits -= required_credits
+        analysis.cover_letter = cover_letter
         db.session.commit()
         
         # Send email with cover letter

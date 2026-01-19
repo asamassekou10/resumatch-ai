@@ -73,13 +73,26 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
 
       const data = await response.json();
       setAnalysisData(data);
-      // Load existing AI content if available
-      // ai_feedback might be a JSON string or object, parse it properly
-      if (data.ai_feedback) {
+
+      // Load existing AI-generated content if available
+      // Optimized resume
+      if (data.optimized_resume) {
+        setOptimizedResume(data.optimized_resume);
+      }
+
+      // Cover letter
+      if (data.cover_letter) {
+        setCoverLetter(data.cover_letter);
+      }
+
+      // AI feedback - might be a JSON string or object, parse it properly
+      // Check optimized_feedback first (personalized feedback), then fall back to ai_feedback
+      const feedbackSource = data.optimized_feedback || data.ai_feedback;
+      if (feedbackSource) {
         try {
-          const parsed = typeof data.ai_feedback === 'string' 
-            ? JSON.parse(data.ai_feedback) 
-            : data.ai_feedback;
+          const parsed = typeof feedbackSource === 'string'
+            ? JSON.parse(feedbackSource)
+            : feedbackSource;
           // Only set if it's actually feedback text, not just metadata
           if (typeof parsed === 'string' && parsed.length > 0) {
             setAiFeedback(parsed);
@@ -88,8 +101,8 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
           }
         } catch (e) {
           // If parsing fails, treat as plain string
-          if (typeof data.ai_feedback === 'string' && data.ai_feedback.length > 0) {
-            setAiFeedback(data.ai_feedback);
+          if (typeof feedbackSource === 'string' && feedbackSource.length > 0) {
+            setAiFeedback(feedbackSource);
           }
         }
       }
