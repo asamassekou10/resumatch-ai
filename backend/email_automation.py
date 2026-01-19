@@ -227,11 +227,11 @@ def init_email_scheduler(app, db, User, email_service):
         replace_existing=True
     )
 
-    # ONE-TIME: Feature announcement - January 19, 2026 at 3:45 PM Houston time (CST = UTC-6)
+    # ONE-TIME: Feature announcement - January 19, 2026 at 4:00 PM Houston time (CST = UTC-6)
     try:
         from datetime import datetime, timezone, timedelta
-        # 3:45 PM CST = 21:45 UTC (9:45 PM UTC)
-        announcement_time = datetime(2026, 1, 19, 21, 45, 0, tzinfo=timezone.utc)
+        # 4:00 PM CST = 22:00 UTC (10:00 PM UTC)
+        announcement_time = datetime(2026, 1, 19, 22, 0, 0, tzinfo=timezone.utc)
 
         # Only schedule if time hasn't passed
         if datetime.now(timezone.utc) < announcement_time:
@@ -242,7 +242,7 @@ def init_email_scheduler(app, db, User, email_service):
                 id='feature_announcement_jan19',
                 replace_existing=True
             )
-            logger.info(f"⚠️  FEATURE ANNOUNCEMENT scheduled for {announcement_time} (3:45 PM Houston time)")
+            logger.info(f"⚠️  FEATURE ANNOUNCEMENT scheduled for {announcement_time} (4:00 PM Houston time)")
         else:
             logger.info(f"⚠️  Feature announcement time has passed ({announcement_time}), skipping")
     except Exception as e:
