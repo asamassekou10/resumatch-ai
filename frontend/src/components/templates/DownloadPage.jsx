@@ -97,15 +97,8 @@ const DownloadPage = ({ token }) => {
     fetchData();
   }, [fetchData]);
 
-  // Auto-parse resume if optimized resume exists but not yet parsed
-  useEffect(() => {
-    if (!loading && analysis?.has_optimized_resume && !structuredResume && !parsing) {
-      handleParseResume();
-    }
-  }, [loading, analysis, structuredResume, parsing]);
-
-  // Parse resume if not already parsed
-  const handleParseResume = async () => {
+  // Parse resume function wrapped in useCallback for stable reference
+  const handleParseResume = useCallback(async () => {
     try {
       setParsing(true);
       setError('');
@@ -134,7 +127,14 @@ const DownloadPage = ({ token }) => {
     } finally {
       setParsing(false);
     }
-  };
+  }, [analysisId, token]);
+
+  // Auto-parse resume if optimized resume exists but not yet parsed
+  useEffect(() => {
+    if (!loading && analysis?.has_optimized_resume && !structuredResume && !parsing) {
+      handleParseResume();
+    }
+  }, [loading, analysis, structuredResume, parsing, handleParseResume]);
 
   // Save edited resume data
   const handleSaveResume = async (updatedData) => {
