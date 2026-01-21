@@ -1,3 +1,5 @@
+import { fetchWithRetry } from '../utils/fetchWithTimeout';
+
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const guestService = {
@@ -44,23 +46,42 @@ const guestService = {
       formData.append('job_title', jobTitle);
       formData.append('company_name', companyName);
 
-      const response = await fetch(`${API_URL}/guest/analyze`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${guestToken}`,
+      // Use fetchWithRetry with extended timeout for analysis (2 minutes)
+      const response = await fetchWithRetry(
+        `${API_URL}/guest/analyze`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${guestToken}`,
+          },
+          body: formData,
         },
-        body: formData,
-      });
+        {
+          maxRetries: 2,
+          retryDelay: 2000,
+          timeout: 120000, // 2 minutes - matches backend timeout
+        }
+      );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Analysis failed');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Analysis failed with status ${response.status}`);
       }
 
       const data = await response.json();
       return data;
     } catch (error) {
       console.error('Error analyzing resume:', error);
+      
+      // Provide more helpful error messages
+      if (error.message.includes('timed out')) {
+        throw new Error('Analysis is taking longer than expected. Please check your analysis history in a moment - it may have completed successfully.');
+      }
+      
+      if (error.message.includes('Network error')) {
+        throw new Error('Unable to connect to the server. Please check your internet connection and try again.');
+      }
+      
       throw error;
     }
   },

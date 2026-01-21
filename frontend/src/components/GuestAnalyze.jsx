@@ -179,8 +179,10 @@ const GuestAnalyze = () => {
           setError('Too many sessions created. Please try again in 24 hours or create an account.');
         } else if (errorMessage.includes('Daily guest analysis limit') || errorMessage.includes('DAILY_LIMIT_EXCEEDED')) {
           setError('Daily guest limit reached. Create an account for unlimited access!');
-        } else if (errorMessage.includes('timeout') || errorMessage.includes('Failed to fetch')) {
-          setError('Unable to connect to server. Please try again later.');
+        } else if (errorMessage.includes('timed out') || errorMessage.includes('timeout')) {
+          setError('Analysis is taking longer than expected. Please check your analysis history - it may have completed successfully.');
+        } else if (errorMessage.includes('Network error') || errorMessage.includes('Failed to fetch')) {
+          setError('Unable to connect to the server. Please check your internet connection and try again. If the problem persists, check your analysis history as the request may have completed.');
         } else {
           setError(errorMessage);
         }
@@ -275,6 +277,10 @@ const GuestAnalyze = () => {
         setShowPricingModal(true);
       } else if (errorMessage.includes('Too many guest sessions') || errorMessage.includes('RATE_LIMIT_EXCEEDED')) {
         setError('⏰ Too many sessions created. Please try again later or sign up for a free account!');
+      } else if (errorMessage.includes('timed out') || errorMessage.includes('timeout')) {
+        setError('Analysis is taking longer than expected. Please check your analysis history - it may have completed successfully.');
+      } else if (errorMessage.includes('Network error') || errorMessage.includes('Failed to fetch')) {
+        setError('Unable to connect to the server. Please check your internet connection and try again. If the problem persists, check your analysis history as the request may have completed.');
       } else {
         setError(errorMessage);
       }

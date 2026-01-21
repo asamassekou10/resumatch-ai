@@ -519,24 +519,34 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
           throw new Error('Analysis completed but no result received');
         }
       } else {
-        // Fallback to regular endpoint
-        const response = await fetch(`${API_URL}/analyze`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
+        // Fallback to regular endpoint with timeout and retry
+        const { fetchWithRetry } = await import('../../utils/fetchWithTimeout');
+        
+        const response = await fetchWithRetry(
+          `${API_URL}/analyze`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
           },
-          body: formData
-        });
-
-        const data = await response.json();
+          {
+            maxRetries: 2,
+            retryDelay: 2000,
+            timeout: 120000, // 2 minutes - matches backend timeout
+          }
+        );
 
         clearInterval(progressInterval);
         clearInterval(messageInterval);
         setLoadingProgress(100);
         setLoadingMessage('Complete!');
 
+        const data = await response.json();
+
         if (!response.ok) {
-          throw new Error(data.error || 'Analysis failed');
+          throw new Error(data.error || `Analysis failed with status ${response.status}`);
         }
 
         setTimeout(() => {
@@ -546,8 +556,21 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
     } catch (err) {
       clearInterval(progressInterval);
       clearInterval(messageInterval);
-      setError(err.message || 'Analysis failed. Please try again.');
+      
+      // Provide more helpful error messages
+      let errorMessage = err.message || 'Analysis failed. Please try again.';
+      
+      if (err.message.includes('timed out')) {
+        errorMessage = 'Analysis is taking longer than expected. Please check your analysis history - it may have completed successfully.';
+      } else if (err.message.includes('Network error') || err.message.includes('Failed to fetch')) {
+        errorMessage = 'Unable to connect to the server. Please check your internet connection and try again. If the problem persists, check your analysis history as the request may have completed.';
+      }
+      
+      setError(errorMessage);
       setLoading(false);
+      
+      // Log error for debugging
+      console.error('Analysis error:', err);
     }
   };
 
