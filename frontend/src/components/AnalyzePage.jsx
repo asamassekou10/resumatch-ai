@@ -10,6 +10,7 @@ import JobDescriptionInput from './ui/JobDescriptionInput';
 import BlurredSection from './pricing/BlurredSection';
 import PricingModal from './pricing/PricingModal';
 import PaymentModal from './pricing/PaymentModal';
+import { fetchWithRetry } from '../utils/fetchWithTimeout';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -520,8 +521,6 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
         }
       } else {
         // Fallback to regular endpoint with timeout and retry
-        const { fetchWithRetry } = await import('../../utils/fetchWithTimeout');
-        
         const response = await fetchWithRetry(
           `${API_URL}/analyze`,
           {
