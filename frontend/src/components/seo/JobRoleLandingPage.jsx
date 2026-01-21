@@ -115,8 +115,24 @@ const JobRoleLandingPage = () => {
     ];
   }, [jobRole, seoContent]);
 
-  if (!jobRole || !seoContent) {
-    return null;
+  if (!jobRole) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-400">Loading job role guide...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!seoContent) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-400">Loading content...</p>
+        </div>
+      </div>
+    );
   }
 
   const seoMetadata = {

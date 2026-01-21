@@ -19,13 +19,23 @@ const BlogPost = () => {
 
   // Redirect if post not found
   useEffect(() => {
-    if (!post) {
-      navigate('/blog', { replace: true });
+    if (!post && slug) {
+      // Small delay to allow for potential async loading
+      const timer = setTimeout(() => {
+        navigate('/blog', { replace: true });
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [post, navigate]);
+  }, [post, slug, navigate]);
 
   if (!post) {
-    return null;
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-400">Loading blog post...</p>
+        </div>
+      </div>
+    );
   }
 
   // Generate Article schema

@@ -8,6 +8,26 @@ import { getRecentBlogPosts } from '../../utils/blogContent';
 const BlogList = () => {
   const blogPosts = getRecentBlogPosts(100); // Show all blog posts
 
+  if (!blogPosts || blogPosts.length === 0) {
+    return (
+      <>
+        <SEO
+          title="Resume Tips & Career Advice Blog"
+          description="Expert resume tips, ATS optimization guides, and career advice to help you land your dream job."
+          url="https://resumeanalyzerai.com/blog"
+        />
+        <div className="max-w-6xl mx-auto px-4 py-12 relative z-10">
+          <div className="text-center">
+            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 font-display">
+              Resume Tips & Career Advice
+            </h1>
+            <p className="text-lg text-gray-400">No blog posts available at this time.</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <SEO
