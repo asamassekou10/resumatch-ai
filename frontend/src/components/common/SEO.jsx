@@ -8,23 +8,27 @@ import {
  * SEO Component
  *
  * Manages page-specific meta tags for SEO optimization.
- * Handles:
- * - Page titles
- * - Meta descriptions
- * - Open Graph tags (social media sharing)
+ * Features:
+ * - Dynamic page titles with brand suffix
+ * - Meta descriptions (max 160 chars recommended)
+ * - Open Graph tags (Facebook, LinkedIn)
  * - Twitter Card tags
- * - Canonical URLs
- * - Keywords (optional)
+ * - Canonical URL management (duplicate prevention)
+ * - Keywords (optional, for legacy support)
  * - Structured data (JSON-LD)
+ * - Robots directives
  *
  * @param {Object} props
  * @param {string} props.title - Page title (will be appended with " | ResumeAnalyzer AI")
- * @param {string} props.description - Page meta description
+ * @param {string} props.description - Page meta description (max 160 chars)
  * @param {string} props.keywords - Comma-separated keywords (optional)
  * @param {string} props.image - Social media share image URL (optional)
- * @param {string} props.url - Canonical URL for this page (optional)
- * @param {string} props.type - Open Graph type (default: "website")
+ * @param {string} props.url - Canonical URL for this page (required for proper SEO)
+ * @param {string} props.type - Open Graph type (default: "website", use "article" for blog)
  * @param {Object} props.structuredData - Additional structured data schemas (optional)
+ * @param {boolean} props.noindex - Set to true to prevent indexing (default: false)
+ * @param {string} props.publishedTime - ISO date string for article published time
+ * @param {string} props.modifiedTime - ISO date string for article modified time
  */
 const SEO = ({
   title,
@@ -33,7 +37,10 @@ const SEO = ({
   image,
   url,
   type = 'website',
-  structuredData = null
+  structuredData = null,
+  noindex = false,
+  publishedTime,
+  modifiedTime
 }) => {
   // Default values
   const siteUrl = 'https://www.resumeanalyzerai.com';
@@ -45,8 +52,38 @@ const SEO = ({
   // Construct final values
   const pageTitle = title ? `${title} | ${siteName}` : defaultTitle;
   const pageDescription = description || defaultDescription;
-  const pageUrl = url || siteUrl;
   const pageImage = image || defaultImage;
+
+  // Canonical URL handling - normalize to prevent duplicates
+  // Always use www version and remove trailing slashes (except for root)
+  const normalizeUrl = (inputUrl) => {
+    if (!inputUrl) return siteUrl;
+
+    let normalized = inputUrl;
+
+    // Ensure https://www. prefix
+    if (normalized.startsWith('https://resumeanalyzerai.com')) {
+      normalized = normalized.replace('https://resumeanalyzerai.com', 'https://www.resumeanalyzerai.com');
+    }
+
+    // Remove trailing slash except for homepage
+    if (normalized !== siteUrl && normalized.endsWith('/')) {
+      normalized = normalized.slice(0, -1);
+    }
+
+    // Remove query parameters and hash for canonical
+    const urlObj = new URL(normalized);
+    normalized = `${urlObj.origin}${urlObj.pathname}`;
+
+    return normalized;
+  };
+
+  const pageUrl = normalizeUrl(url);
+
+  // Robots directive
+  const robotsContent = noindex
+    ? 'noindex, nofollow'
+    : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 
   // Generate default structured data
   const defaultStructuredData = [
@@ -87,13 +124,28 @@ const SEO = ({
       <meta name="twitter:site" content="@resumatchai" />
       <meta name="twitter:creator" content="@resumatchai" />
 
-      {/* Canonical URL */}
+      {/* Canonical URL - Critical for duplicate prevention */}
       <link rel="canonical" href={pageUrl} />
 
+      {/* Robots directive with enhanced settings */}
+      <meta name="robots" content={robotsContent} />
+      <meta name="googlebot" content={robotsContent} />
+
       {/* Additional Meta Tags */}
-      <meta name="robots" content="index, follow" />
       <meta name="author" content="ResumeAnalyzer AI" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta name="format-detection" content="telephone=no" />
+
+      {/* Article timestamps for blog posts */}
+      {type === 'article' && publishedTime && (
+        <meta property="article:published_time" content={publishedTime} />
+      )}
+      {type === 'article' && modifiedTime && (
+        <meta property="article:modified_time" content={modifiedTime} />
+      )}
+      {type === 'article' && (
+        <meta property="article:author" content="ResumeAnalyzer AI" />
+      )}
 
       {/* Theme Color for Mobile Browsers */}
       <meta name="theme-color" content="#0f172a" />

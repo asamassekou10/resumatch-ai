@@ -22,6 +22,10 @@ const VerifySuccess = lazy(() => import('../VerifySuccess'));
 
 // SEO Pages
 const JobRoleLandingPage = lazy(() => import('../seo/JobRoleLandingPage'));
+const ResumeGuidesIndex = lazy(() => import('../seo/ResumeGuidesIndex'));
+
+// Error Pages
+const NotFound = lazy(() => import('../NotFound'));
 
 // Blog Pages
 const BlogLayout = lazy(() => import('../blog/BlogLayout'));
@@ -136,7 +140,13 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) 
             element={<VerifySuccess setToken={setToken} />}
           />
 
-          {/* Programmatic SEO: Job Role Landing Pages */}
+          {/* Programmatic SEO: Resume Guides Hub Page */}
+          <Route
+            path="/resume-for"
+            element={<ResumeGuidesIndex />}
+          />
+
+          {/* Programmatic SEO: Job Role Landing Pages (Spokes) */}
           <Route
             path="/resume-for/:roleSlug"
             element={<JobRoleLandingPage />}
@@ -414,13 +424,21 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) 
         />
 
         {/* ============================================ */}
-        {/* 404 NOT FOUND - Redirect to Landing         */}
+        {/* 404 NOT FOUND - SEO-Friendly Error Page     */}
         {/* ============================================ */}
 
         <Route
-          path="*"
-          element={<Navigate to={ROUTES.LANDING} replace />}
-        />
+          element={
+            <PublicLayout
+              userProfile={userProfile}
+              token={token}
+              handleLogout={handleLogout}
+              handleLogin={handleLogin}
+            />
+          }
+        >
+          <Route path="*" element={<NotFound />} />
+        </Route>
       </Routes>
     </Suspense>
   );

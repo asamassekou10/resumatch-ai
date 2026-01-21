@@ -1,7 +1,13 @@
 /**
  * Structured Data Utility
- * 
+ *
  * Generates JSON-LD structured data for SEO
+ * Supports: Organization, WebApplication, BreadcrumbList, FAQPage,
+ * Product, Service, Article, HowTo, WebPage, and more.
+ *
+ * Usage:
+ * import { generateFAQSchema, generateHowToSchema } from './structuredData';
+ * const schemas = [generateFAQSchema(faqs), generateHowToSchema(steps)];
  */
 
 const SITE_URL = 'https://www.resumeanalyzerai.com';
@@ -131,35 +137,104 @@ export const generateServiceSchema = () => ({
 });
 
 /**
- * Generate JobPosting schema for role pages
- * @param {Object} jobData - Job information
+ * Generate HowTo schema for resume writing guides
+ * Better suited for programmatic SEO pages than JobPosting
+ * @param {Object} howToData - HowTo information
  */
-export const generateJobPostingSchema = (jobData) => ({
+export const generateHowToSchema = (howToData) => ({
   '@context': 'https://schema.org',
-  '@type': 'JobPosting',
-  title: jobData.title,
-  description: jobData.description || `Resume optimization and analysis services for ${jobData.title} positions`,
-  industry: jobData.industry,
-  skills: jobData.skills || [],
-  employmentType: 'FULL_TIME',
-  jobLocation: {
-    '@type': 'Place',
-    address: {
-      '@type': 'PostalAddress',
-      addressCountry: 'US',
-    },
-  },
-  baseSalary: {
+  '@type': 'HowTo',
+  name: howToData.name || `How to Write a ${howToData.role} Resume`,
+  description: howToData.description || `Step-by-step guide to creating a professional ${howToData.role} resume that passes ATS screening and impresses hiring managers.`,
+  totalTime: 'PT30M',
+  estimatedCost: {
     '@type': 'MonetaryAmount',
     currency: 'USD',
+    value: '0'
   },
-  datePosted: new Date().toISOString(),
-  validThrough: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 days from now
-  hiringOrganization: {
-    '@type': 'Organization',
+  supply: howToData.supplies || [
+    { '@type': 'HowToSupply', name: 'Your work experience details' },
+    { '@type': 'HowToSupply', name: 'Education and certifications' },
+    { '@type': 'HowToSupply', name: 'Skills and achievements' }
+  ],
+  tool: [
+    { '@type': 'HowToTool', name: 'ResumeAnalyzer AI (free)' },
+    { '@type': 'HowToTool', name: 'Word processor or resume builder' }
+  ],
+  step: (howToData.steps || []).map((step, index) => ({
+    '@type': 'HowToStep',
+    position: index + 1,
+    name: step.name,
+    text: step.text,
+    url: `${SITE_URL}/resume-for/${howToData.slug}#step-${index + 1}`
+  }))
+});
+
+/**
+ * Generate WebPage schema for programmatic SEO pages
+ * @param {Object} pageData - Page information
+ */
+export const generateWebPageSchema = (pageData) => ({
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: pageData.name,
+  description: pageData.description,
+  url: pageData.url,
+  isPartOf: {
+    '@type': 'WebSite',
     name: SITE_NAME,
-    sameAs: SITE_URL,
+    url: SITE_URL
   },
+  about: {
+    '@type': 'Thing',
+    name: pageData.about || pageData.name
+  },
+  mainEntity: pageData.mainEntity || undefined,
+  breadcrumb: pageData.breadcrumb || undefined,
+  speakable: {
+    '@type': 'SpeakableSpecification',
+    cssSelector: ['h1', '.article-prose']
+  },
+  datePublished: pageData.datePublished || new Date().toISOString().split('T')[0],
+  dateModified: pageData.dateModified || new Date().toISOString().split('T')[0]
+});
+
+/**
+ * Generate Occupation schema for role pages (alternative to JobPosting)
+ * More appropriate for resume guide pages
+ * @param {Object} occupationData - Occupation information
+ */
+export const generateOccupationSchema = (occupationData) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Occupation',
+  name: occupationData.name,
+  description: occupationData.description,
+  occupationLocation: {
+    '@type': 'Country',
+    name: 'United States'
+  },
+  skills: occupationData.skills?.join(', ') || '',
+  qualifications: occupationData.qualifications || `Experience in ${occupationData.industry}`,
+  responsibilities: occupationData.responsibilities || occupationData.description,
+  occupationalCategory: occupationData.industry
+});
+
+/**
+ * Generate ItemList schema for listing pages (blog index, role index)
+ * @param {Array} items - Array of items with name and url
+ * @param {string} listName - Name of the list
+ */
+export const generateItemListSchema = (items, listName) => ({
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: listName,
+  numberOfItems: items.length,
+  itemListElement: items.map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.name || item.title,
+    url: item.url
+  }))
 });
 
 /**
@@ -200,7 +275,10 @@ const structuredData = {
   generateFAQSchema,
   generateProductSchema,
   generateServiceSchema,
-  generateJobPostingSchema,
+  generateHowToSchema,
+  generateWebPageSchema,
+  generateOccupationSchema,
+  generateItemListSchema,
   generateArticleSchema,
 };
 

@@ -1,17 +1,8 @@
+# ResumeAnalyzer AI - robots.txt
+# https://www.resumeanalyzerai.com
+
 # Allow all search engines
 User-agent: *
-Allow: /
-
-# Disallow private pages
-Disallow: /dashboard
-Disallow: /admin
-Disallow: /analyze
-Disallow: /result
-Disallow: /checkout
-Disallow: /profile
-Disallow: /settings
-Disallow: /billing
-Disallow: /market
 
 # Allow public pages
 Allow: /
@@ -22,9 +13,16 @@ Allow: /help/terms
 Allow: /help/privacy
 Allow: /login
 Allow: /register
+
+# Allow all blog content
 Allow: /blog
 Allow: /blog/*
+
+# Allow all resume guides (programmatic SEO hub-and-spoke)
+Allow: /resume-for
 Allow: /resume-for/*
+
+# Allow all resource pages
 Allow: /resources/*
 
 # Allow static assets
@@ -38,9 +36,40 @@ Allow: /*.gif
 Allow: /*.svg
 Allow: /*.webp
 Allow: /*.ico
+Allow: /*.woff
+Allow: /*.woff2
+
+# Disallow private/authenticated pages
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /analyze
+Disallow: /result
+Disallow: /checkout
+Disallow: /profile
+Disallow: /settings
+Disallow: /billing
+Disallow: /market
+Disallow: /download
+
+# Disallow utility pages
+Disallow: /verify-success
+Disallow: /unsubscribe
+
+# Disallow URL parameters to prevent duplicate content indexing
+Disallow: /*?*
 
 # Sitemap location
 Sitemap: https://www.resumeanalyzerai.com/sitemap.xml
 
-# Crawl delay (optional, be nice to servers)
+# Crawl delay (be nice to servers)
+Crawl-delay: 1
+
+# Google-specific rules (no crawl delay for better indexing)
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Bing-specific rules
+User-agent: Bingbot
+Allow: /
 Crawl-delay: 1
