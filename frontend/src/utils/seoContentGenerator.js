@@ -270,7 +270,6 @@ export const generateInternalLinks = (jobRole, allRoles, blogPosts = []) => {
  * @returns {string} Intro paragraph
  */
 export const generateIntroParagraph = (jobRole) => {
-  const hub = getIndustryHub(jobRole.slug);
   const year = new Date().getFullYear();
 
   const intros = [
@@ -335,7 +334,7 @@ export const calculateContentMetrics = (jobRole) => {
   };
 };
 
-export default {
+const seoContentGenerator = {
   INDUSTRY_HUBS,
   getIndustryHub,
   getRelatedRoles,
@@ -348,3 +347,5 @@ export default {
   generateHowToSteps,
   calculateContentMetrics
 };
+
+export default seoContentGenerator;
