@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Loader, AlertCircle, User, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Loader, AlertCircle, ArrowRight } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 

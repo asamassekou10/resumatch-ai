@@ -332,7 +332,6 @@ const PaymentModal = ({
   onError,
   guestToken
 }) => {
-  const navigate = useNavigate();
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [isGuestCheckout, setIsGuestCheckout] = useState(true); // Default to guest checkout
