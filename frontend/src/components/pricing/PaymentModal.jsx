@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CreditCard, Lock, AlertCircle, CheckCircle, Loader, Mail, User } from 'lucide-react';
 import InlineLoginForm from './InlineLoginForm';
