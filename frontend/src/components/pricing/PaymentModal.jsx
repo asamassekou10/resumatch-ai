@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CreditCard, Lock, AlertCircle, CheckCircle, Loader, Mail, User } from 'lucide-react';
+import InlineLoginForm from './InlineLoginForm';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -330,17 +332,61 @@ const PaymentModal = ({
   onError,
   guestToken
 }) => {
-  const token = localStorage.getItem('token');
+  const navigate = useNavigate();
+  const [token, setToken] = useState(localStorage.getItem('token'));
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [isGuestCheckout, setIsGuestCheckout] = useState(false);
+  const [isGuestCheckout, setIsGuestCheckout] = useState(true); // Default to guest checkout
+  const [showLoginForm, setShowLoginForm] = useState(false);
 
-  // Reset success state when modal closes
+  // Update token state when localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setToken(localStorage.getItem('token'));
+    };
+    window.addEventListener('storage', handleStorageChange);
+    // Also check periodically in case storage event doesn't fire (same tab)
+    const interval = setInterval(() => {
+      const currentToken = localStorage.getItem('token');
+      if (currentToken !== token) {
+        setToken(currentToken);
+      }
+    }, 500);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [token]);
+
+  // Check for token changes (e.g., after login)
+  useEffect(() => {
+    const currentToken = localStorage.getItem('token');
+    if (currentToken && !token) {
+      // Token was just added (user logged in)
+      setShowLoginForm(false);
+      setIsGuestCheckout(false);
+    }
+  }, [token]);
+
+  // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
       setPaymentSuccess(false);
-      setIsGuestCheckout(false);
+      setShowLoginForm(false);
+      // Default to guest checkout if no token
+      const currentToken = localStorage.getItem('token');
+      setIsGuestCheckout(!currentToken);
+    } else {
+      // When modal opens, default to guest checkout if no token
+      const currentToken = localStorage.getItem('token');
+      if (!currentToken) {
+        setIsGuestCheckout(true);
+        setShowLoginForm(false);
+      } else {
+        setIsGuestCheckout(false);
+        setShowLoginForm(false);
+      }
     }
-  }, [isOpen, selectedPlan, token]);
+  }, [isOpen, selectedPlan]);
 
   const handleSuccess = (data) => {
     setPaymentSuccess(true);
@@ -389,28 +435,46 @@ const PaymentModal = ({
           </div>
 
           {/* Guest Checkout Toggle (for weekly pass purchases) */}
-          {selectedPlan?.type === 'weekly_pass' && !token && (
+          {selectedPlan?.type === 'weekly_pass' && (
             <div className="px-6 pt-4 pb-2 border-b border-white/10">
               <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                 <div className="flex-1">
                   <p className="text-white text-sm font-medium">Checkout Options</p>
-                  <p className="text-gray-400 text-xs mt-1">
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className={`flex-1 text-xs px-2 py-1 rounded ${isGuestCheckout ? 'bg-cyan-500/20 text-cyan-400' : 'text-gray-400'}`}>
+                      {isGuestCheckout ? '✓ Guest Checkout' : 'Guest Checkout'}
+                    </div>
+                    <div className={`flex-1 text-xs px-2 py-1 rounded ${!isGuestCheckout ? 'bg-purple-500/20 text-purple-400' : 'text-gray-400'}`}>
+                      {!isGuestCheckout ? '✓ Sign In' : 'Sign In'}
+                    </div>
+                  </div>
+                  <p className="text-gray-400 text-xs mt-2">
                     {isGuestCheckout 
-                      ? 'Pay as guest - No account required'
-                      : 'Sign in to save results in your account'}
+                      ? 'No account required - Fast checkout'
+                      : token 
+                        ? 'Your results will be saved to your account'
+                        : 'Sign in to save results and access them anytime'}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => {
                     if (!token && !isGuestCheckout) {
-                      // Redirect to login if trying to use authenticated checkout without token
-                      window.location.href = `/login?redirect=payment&plan=${selectedPlan.type}`;
-                      return;
+                      // Show inline login form instead of redirecting
+                      setShowLoginForm(true);
+                      setIsGuestCheckout(false);
+                    } else if (!token && isGuestCheckout) {
+                      // Switch to login mode - show inline login
+                      setShowLoginForm(true);
+                      setIsGuestCheckout(false);
+                    } else {
+                      // User is logged in - just toggle between modes
+                      setIsGuestCheckout(!isGuestCheckout);
+                      setShowLoginForm(false);
                     }
-                    setIsGuestCheckout(!isGuestCheckout);
                   }}
-                  className="relative inline-flex h-6 w-11 items-center rounded-full bg-cyan-500/20 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+                  className="relative ml-3 inline-flex h-6 w-11 items-center rounded-full bg-cyan-500/20 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+                  title={isGuestCheckout ? 'Switch to Sign In' : 'Switch to Guest Checkout'}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -453,9 +517,24 @@ const PaymentModal = ({
                 </div>
               </motion.div>
             ) : (
-              // Payment Form - Show guest or authenticated form
+              // Payment Form - Show login form, guest, or authenticated form
               <>
-                {isGuestCheckout && selectedPlan?.type === 'weekly_pass' ? (
+                {showLoginForm && !token ? (
+                  <InlineLoginForm
+                    onLoginSuccess={(newToken, user) => {
+                      // After successful login, switch to authenticated payment
+                      setShowLoginForm(false);
+                      setIsGuestCheckout(false);
+                      // Force re-render by updating state
+                      // The token is already in localStorage, just need to refresh component
+                    }}
+                    onContinueAsGuest={() => {
+                      setShowLoginForm(false);
+                      setIsGuestCheckout(true);
+                    }}
+                    onError={onError}
+                  />
+                ) : isGuestCheckout && selectedPlan?.type === 'weekly_pass' && !token ? (
                   <GuestPaymentForm
                     selectedPlan={selectedPlan}
                     guestToken={guestToken}

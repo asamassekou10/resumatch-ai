@@ -58,6 +58,30 @@ const GuestAnalyze = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
 
+  // Handle payment redirect - open payment modal
+  useEffect(() => {
+    const paymentParam = searchParams.get('payment');
+    const planParam = searchParams.get('plan');
+    
+    if (paymentParam === 'open' && planParam) {
+      // Set selected plan based on query parameter
+      const planData = {
+        type: planParam,
+        price: planParam === 'weekly_pass' ? 6.99 : planParam === 'monthly_pro' ? 19.99 : null,
+        description: planParam === 'weekly_pass' 
+          ? '7 days unlimited scans' 
+          : planParam === 'monthly_pro'
+          ? 'Full Pro features + templates'
+          : 'Pro subscription'
+      };
+      setSelectedPlan(planData);
+      setShowPaymentModal(true);
+      // Clear query params
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
+
+  // Handle payment success redirect
   useEffect(() => {
     const paymentStatus = searchParams.get('payment');
     if (paymentStatus !== 'success') {

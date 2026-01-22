@@ -34,6 +34,36 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
   const [passwordError, setPasswordError] = useState('');
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [paymentContext, setPaymentContext] = useState({ show: false, plan: null, message: '' });
+
+  // Handle payment redirect parameters on mount
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const redirect = searchParams.get('redirect');
+    const plan = searchParams.get('plan');
+    
+    if (redirect === 'payment' && plan) {
+      // Store plan info for after login
+      const planData = {
+        type: plan,
+        price: plan === 'weekly_pass' ? 6.99 : plan === 'monthly_pro' ? 19.99 : null,
+        description: plan === 'weekly_pass' 
+          ? '7 days unlimited scans' 
+          : plan === 'monthly_pro'
+          ? 'Full Pro features + templates'
+          : 'Pro subscription'
+      };
+      localStorage.setItem('selected_plan', JSON.stringify(planData));
+      localStorage.setItem('redirect_after_auth', 'payment');
+      
+      // Show payment context banner
+      setPaymentContext({
+        show: true,
+        plan: planData,
+        message: `Sign in to complete your $${planData.price} ${planData.description} purchase`
+      });
+    }
+  }, [location.search]);
 
   // Password validation function
   const validatePassword = (password) => {
@@ -152,12 +182,18 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
           localStorage.removeItem('redirect_after_auth');
         }
         
-        // If redirect is payment (micro-purchase), go to analyze page which will show payment modal
-        if (redirect === 'payment' && selectedPlan) {
-          // Keep selected_plan in localStorage for AnalyzePage to pick up
-          // skip_trial flag is already set, will be used by backend
-          navigate(ROUTES.ANALYZE, { replace: true });
-          return;
+        // If redirect is payment (micro-purchase), redirect to guest analyze with payment modal
+        if (redirect === 'payment') {
+          const planType = searchParams.get('plan') || (selectedPlan ? JSON.parse(selectedPlan).type : null);
+          if (planType) {
+            // Clear selected_plan after use
+            if (selectedPlan) {
+              localStorage.removeItem('selected_plan');
+            }
+            // Redirect to guest analyze page with payment modal open
+            navigate(`${ROUTES.GUEST_ANALYZE}?payment=open&plan=${planType}`, { replace: true });
+            return;
+          }
         }
         
         // If redirect is checkout and we have a selected plan, go to checkout
@@ -295,12 +331,19 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
         localStorage.removeItem('redirect_after_auth');
       }
       
-      // If redirect is payment (micro-purchase), go to analyze page which will show payment modal
-      if (redirect === 'payment' && selectedPlan) {
-        // Keep selected_plan in localStorage for AnalyzePage to pick up
-        // skip_trial flag is already set, will be used by backend
-        navigate(ROUTES.ANALYZE, { replace: true });
-        return;
+      // If redirect is payment (micro-purchase), redirect to guest analyze with payment modal
+      if (redirect === 'payment') {
+        const searchParams = new URLSearchParams(window.location.search);
+        const planType = searchParams.get('plan') || (selectedPlan ? JSON.parse(selectedPlan).type : null);
+        if (planType) {
+          // Clear selected_plan after use
+          if (selectedPlan) {
+            localStorage.removeItem('selected_plan');
+          }
+          // Redirect to guest analyze page with payment modal open
+          navigate(`${ROUTES.GUEST_ANALYZE}?payment=open&plan=${planType}`, { replace: true });
+          return;
+        }
       }
       
       // If redirect is checkout and we have a selected plan, go to checkout
@@ -415,6 +458,45 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
                 </div>
               </div>
             </div>
+
+            {/* Payment Context Banner */}
+            {paymentContext.show && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6 relative z-10"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex-1">
+                    <h3 className="text-white font-semibold mb-1 text-sm">
+                      Complete Your Purchase
+                    </h3>
+                    <p className="text-gray-300 text-xs mb-3">
+                      {paymentContext.message}
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const planType = paymentContext.plan?.type || 'weekly_pass';
+                          navigate(`${ROUTES.GUEST_ANALYZE}?payment=open&plan=${planType}`, { replace: true });
+                        }}
+                        className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white text-xs font-medium transition"
+                      >
+                        Continue as Guest
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentContext({ show: false, plan: null, message: '' })}
+                        className="px-3 py-1.5 text-gray-400 hover:text-white text-xs transition"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
             {error && (
               <div className="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg mb-6 relative z-10">
