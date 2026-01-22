@@ -3,7 +3,7 @@
  * Edit parsed resume data with section-based organization
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   User, Mail, Phone, MapPin, Linkedin, Globe,
@@ -11,7 +11,7 @@ import {
   ChevronDown, ChevronUp
 } from 'lucide-react';
 
-const ResumeEditor = ({ data, onSave, saving }) => {
+const ResumeEditor = ({ data, onSave, onDataChange, saving }) => {
   const [formData, setFormData] = useState(data);
   const [expandedSections, setExpandedSections] = useState({
     contact: true,
@@ -23,11 +23,33 @@ const ResumeEditor = ({ data, onSave, saving }) => {
     projects: false
   });
   const [hasChanges, setHasChanges] = useState(false);
+  const debounceTimerRef = useRef(null);
 
   useEffect(() => {
     setFormData(data);
     setHasChanges(false);
   }, [data]);
+
+  // Debounced callback to notify parent of changes
+  useEffect(() => {
+    if (onDataChange && formData && formData !== data) {
+      // Clear existing timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      
+      // Set new timer
+      debounceTimerRef.current = setTimeout(() => {
+        onDataChange(formData);
+      }, 500); // 500ms debounce
+    }
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [formData, onDataChange, data]);
 
   const updateField = (path, value) => {
     setFormData(prev => {
@@ -113,34 +135,49 @@ const ResumeEditor = ({ data, onSave, saving }) => {
     </button>
   );
 
-  const InputField = ({ label, value, onChange, placeholder, type = 'text', icon: Icon }) => (
-    <div>
-      <label className="block text-sm text-gray-400 mb-1 flex items-center gap-2">
-        {Icon && <Icon className="w-4 h-4" />}
-        {label}
-      </label>
-      <input
-        type={type}
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition text-sm"
-      />
-    </div>
-  );
+  const InputField = ({ label, value, onChange, placeholder, type = 'text', icon: Icon, fieldKey }) => {
+    // Use useMemo to prevent unnecessary re-renders
+    const handleChange = (e) => {
+      onChange(e.target.value);
+    };
+    
+    return (
+      <div>
+        <label className="block text-sm text-gray-400 mb-1 flex items-center gap-2">
+          {Icon && <Icon className="w-4 h-4" />}
+          {label}
+        </label>
+        <input
+          key={fieldKey || label}
+          type={type}
+          value={value || ''}
+          onChange={handleChange}
+          placeholder={placeholder}
+          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition text-sm"
+        />
+      </div>
+    );
+  };
 
-  const TextAreaField = ({ label, value, onChange, placeholder, rows = 3 }) => (
-    <div>
-      <label className="block text-sm text-gray-400 mb-1">{label}</label>
-      <textarea
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={rows}
-        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition text-sm resize-none"
-      />
-    </div>
-  );
+  const TextAreaField = ({ label, value, onChange, placeholder, rows = 3, fieldKey }) => {
+    const handleChange = (e) => {
+      onChange(e.target.value);
+    };
+    
+    return (
+      <div>
+        <label className="block text-sm text-gray-400 mb-1">{label}</label>
+        <textarea
+          key={fieldKey || label}
+          value={value || ''}
+          onChange={handleChange}
+          placeholder={placeholder}
+          rows={rows}
+          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition text-sm resize-none"
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -169,6 +206,7 @@ const ResumeEditor = ({ data, onSave, saving }) => {
         {expandedSections.contact && (
           <div className="p-4 pt-0 grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputField
+              fieldKey="contact-name"
               label="Full Name"
               icon={User}
               value={formData.contact?.name}
@@ -176,6 +214,7 @@ const ResumeEditor = ({ data, onSave, saving }) => {
               placeholder="John Doe"
             />
             <InputField
+              fieldKey="contact-email"
               label="Email"
               icon={Mail}
               type="email"
@@ -184,6 +223,7 @@ const ResumeEditor = ({ data, onSave, saving }) => {
               placeholder="john@example.com"
             />
             <InputField
+              fieldKey="contact-phone"
               label="Phone"
               icon={Phone}
               value={formData.contact?.phone}
@@ -191,6 +231,7 @@ const ResumeEditor = ({ data, onSave, saving }) => {
               placeholder="+1 (555) 123-4567"
             />
             <InputField
+              fieldKey="contact-location"
               label="Location"
               icon={MapPin}
               value={formData.contact?.location}
@@ -198,6 +239,7 @@ const ResumeEditor = ({ data, onSave, saving }) => {
               placeholder="San Francisco, CA"
             />
             <InputField
+              fieldKey="contact-linkedin"
               label="LinkedIn"
               icon={Linkedin}
               value={formData.contact?.linkedin}
@@ -205,6 +247,7 @@ const ResumeEditor = ({ data, onSave, saving }) => {
               placeholder="linkedin.com/in/johndoe"
             />
             <InputField
+              fieldKey="contact-website"
               label="Website"
               icon={Globe}
               value={formData.contact?.website}
@@ -224,6 +267,7 @@ const ResumeEditor = ({ data, onSave, saving }) => {
         {expandedSections.summary && (
           <div className="p-4 pt-0">
             <TextAreaField
+              fieldKey="summary"
               label="Summary"
               value={formData.summary}
               onChange={(v) => updateField('summary', v)}
@@ -260,18 +304,21 @@ const ResumeEditor = ({ data, onSave, saving }) => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <InputField
+                    fieldKey={`exp-${idx}-title`}
                     label="Job Title"
                     value={exp.title}
                     onChange={(v) => updateField(`experience.${idx}.title`, v)}
                     placeholder="Software Engineer"
                   />
                   <InputField
+                    fieldKey={`exp-${idx}-company`}
                     label="Company"
                     value={exp.company}
                     onChange={(v) => updateField(`experience.${idx}.company`, v)}
                     placeholder="Tech Corp"
                   />
                   <InputField
+                    fieldKey={`exp-${idx}-location`}
                     label="Location"
                     value={exp.location}
                     onChange={(v) => updateField(`experience.${idx}.location`, v)}
@@ -279,12 +326,14 @@ const ResumeEditor = ({ data, onSave, saving }) => {
                   />
                   <div className="grid grid-cols-2 gap-2">
                     <InputField
+                      fieldKey={`exp-${idx}-start`}
                       label="Start Date"
                       value={exp.start_date}
                       onChange={(v) => updateField(`experience.${idx}.start_date`, v)}
                       placeholder="Jan 2020"
                     />
                     <InputField
+                      fieldKey={`exp-${idx}-end`}
                       label="End Date"
                       value={exp.end_date}
                       onChange={(v) => updateField(`experience.${idx}.end_date`, v)}
@@ -295,6 +344,7 @@ const ResumeEditor = ({ data, onSave, saving }) => {
                 <div className="mt-3">
                   <label className="block text-sm text-gray-400 mb-1">Achievements (one per line)</label>
                   <textarea
+                    key={`exp-${idx}-achievements`}
                     value={exp.achievements?.join('\n') || ''}
                     onChange={(e) => updateField(`experience.${idx}.achievements`, e.target.value.split('\n'))}
                     placeholder="Led team of 5 engineers...&#10;Increased performance by 40%..."
@@ -348,36 +398,42 @@ const ResumeEditor = ({ data, onSave, saving }) => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <InputField
+                    fieldKey={`edu-${idx}-degree`}
                     label="Degree"
                     value={edu.degree}
                     onChange={(v) => updateField(`education.${idx}.degree`, v)}
                     placeholder="Bachelor of Science"
                   />
                   <InputField
+                    fieldKey={`edu-${idx}-field`}
                     label="Field of Study"
                     value={edu.field}
                     onChange={(v) => updateField(`education.${idx}.field`, v)}
                     placeholder="Computer Science"
                   />
                   <InputField
+                    fieldKey={`edu-${idx}-institution`}
                     label="Institution"
                     value={edu.institution}
                     onChange={(v) => updateField(`education.${idx}.institution`, v)}
                     placeholder="MIT"
                   />
                   <InputField
+                    fieldKey={`edu-${idx}-graduation`}
                     label="Graduation Date"
                     value={edu.graduation_date}
                     onChange={(v) => updateField(`education.${idx}.graduation_date`, v)}
                     placeholder="2020"
                   />
                   <InputField
+                    fieldKey={`edu-${idx}-gpa`}
                     label="GPA (optional)"
                     value={edu.gpa}
                     onChange={(v) => updateField(`education.${idx}.gpa`, v)}
                     placeholder="3.8"
                   />
                   <InputField
+                    fieldKey={`edu-${idx}-honors`}
                     label="Honors (optional)"
                     value={edu.honors}
                     onChange={(v) => updateField(`education.${idx}.honors`, v)}
@@ -415,6 +471,7 @@ const ResumeEditor = ({ data, onSave, saving }) => {
             <div>
               <label className="block text-sm text-gray-400 mb-1">Technical Skills (comma separated)</label>
               <textarea
+                key="skills-technical"
                 value={formData.skills?.technical?.join(', ') || ''}
                 onChange={(e) => updateField('skills.technical', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
                 placeholder="Python, React, AWS, Docker..."
@@ -425,6 +482,7 @@ const ResumeEditor = ({ data, onSave, saving }) => {
             <div>
               <label className="block text-sm text-gray-400 mb-1">Soft Skills (comma separated)</label>
               <textarea
+                key="skills-soft"
                 value={formData.skills?.soft?.join(', ') || ''}
                 onChange={(e) => updateField('skills.soft', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
                 placeholder="Leadership, Communication, Problem Solving..."
@@ -435,6 +493,7 @@ const ResumeEditor = ({ data, onSave, saving }) => {
             <div>
               <label className="block text-sm text-gray-400 mb-1">Languages (comma separated)</label>
               <textarea
+                key="skills-languages"
                 value={formData.skills?.languages?.join(', ') || ''}
                 onChange={(e) => updateField('skills.languages', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
                 placeholder="English, Spanish, Mandarin..."
@@ -472,18 +531,21 @@ const ResumeEditor = ({ data, onSave, saving }) => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <InputField
+                    fieldKey={`cert-${idx}-name`}
                     label="Certification Name"
                     value={cert.name}
                     onChange={(v) => updateField(`certifications.${idx}.name`, v)}
                     placeholder="AWS Solutions Architect"
                   />
                   <InputField
+                    fieldKey={`cert-${idx}-issuer`}
                     label="Issuer"
                     value={cert.issuer}
                     onChange={(v) => updateField(`certifications.${idx}.issuer`, v)}
                     placeholder="Amazon"
                   />
                   <InputField
+                    fieldKey={`cert-${idx}-date`}
                     label="Date"
                     value={cert.date}
                     onChange={(v) => updateField(`certifications.${idx}.date`, v)}

@@ -61,6 +61,7 @@ const DownloadPage = ({ token }) => {
       const analysisData = await analysisRes.json();
       setAnalysis(analysisData.data);
       setStructuredResume(analysisData.data.structured_resume);
+      setCurrentFormData(analysisData.data.structured_resume);
 
       if (analysisData.data.selected_resume_template) {
         setSelectedTemplate(analysisData.data.selected_resume_template);
@@ -136,6 +137,9 @@ const DownloadPage = ({ token }) => {
     }
   }, [loading, analysis, structuredResume, parsing, handleParseResume]);
 
+  // Track current form data for real-time preview updates
+  const [currentFormData, setCurrentFormData] = useState(null);
+
   // Save edited resume data
   const handleSaveResume = async (updatedData) => {
     try {
@@ -160,6 +164,7 @@ const DownloadPage = ({ token }) => {
       }
 
       setStructuredResume(updatedData);
+      setCurrentFormData(updatedData);
       setSuccessMessage('Changes saved!');
       setTimeout(() => setSuccessMessage(''), 3000);
 
@@ -169,6 +174,11 @@ const DownloadPage = ({ token }) => {
     } finally {
       setSaving(false);
     }
+  };
+
+  // Update current form data for real-time preview
+  const handleFormDataChange = (updatedData) => {
+    setCurrentFormData(updatedData);
   };
 
   // Render loading state
@@ -344,6 +354,7 @@ const DownloadPage = ({ token }) => {
                     <ResumeEditor
                       data={structuredResume}
                       onSave={handleSaveResume}
+                      onDataChange={handleFormDataChange}
                       saving={saving}
                     />
                   )}
@@ -376,7 +387,7 @@ const DownloadPage = ({ token }) => {
                 documentType={activeTab === 'resume' ? 'resume' : 'cover_letter'}
                 templateId={activeTab === 'resume' ? selectedTemplate : selectedCLTemplate}
                 token={token}
-                structuredResume={structuredResume}
+                structuredResume={currentFormData || structuredResume}
                 disabled={activeTab === 'resume' && !structuredResume}
               />
 

@@ -27,40 +27,52 @@ const TemplatePreview = ({
   useEffect(() => {
     if (disabled || !templateId) return;
 
-    const fetchPreview = async () => {
-      try {
-        setLoading(true);
-        setError('');
+    // Debounce preview updates to avoid too many API calls
+    const timeoutId = setTimeout(() => {
+      const fetchPreview = async () => {
+        try {
+          setLoading(true);
+          setError('');
 
-        const response = await fetch(`${API_URL}/analyze/${analysisId}/preview-html`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
+          const requestBody = {
             document_type: documentType,
             template_id: templateId
-          })
-        });
+          };
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to load preview');
+          // Include structured resume data if provided for real-time preview
+          if (structuredResume && documentType === 'resume') {
+            requestBody.structured_resume = structuredResume;
+          }
+
+          const response = await fetch(`${API_URL}/analyze/${analysisId}/preview-html`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(requestBody)
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to load preview');
+          }
+
+          const data = await response.json();
+          setHtml(data.data.html);
+
+        } catch (err) {
+          setError(err.message || 'Failed to load preview');
+          console.error('Preview error:', err);
+        } finally {
+          setLoading(false);
         }
+      };
 
-        const data = await response.json();
-        setHtml(data.data.html);
+      fetchPreview();
+    }, 500); // 500ms debounce for real-time updates
 
-      } catch (err) {
-        setError(err.message || 'Failed to load preview');
-        console.error('Preview error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPreview();
+    return () => clearTimeout(timeoutId);
   }, [analysisId, documentType, templateId, token, disabled, structuredResume]);
 
   if (disabled) {
