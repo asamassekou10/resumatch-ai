@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, FileText, Calendar, Star, Briefcase, ArrowRight } from 'lucide-react';
+import { CheckCircle, FileText, Calendar, Star, Briefcase, ArrowRight, Award, Users } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import ShimmerButton from './ui/ShimmerButton';
@@ -296,7 +296,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
         </motion.div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-12 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-12 relative z-10 items-stretch">
           {plans.map((plan, i) => {
             const IconComponent = plan.icon;
             const price = calculatePrice(plan);
@@ -306,7 +306,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
             return (
               <motion.div
                 key={i}
-                className="relative"
+                className="relative flex"
                 initial="hidden"
                 animate="visible"
                 variants={fadeInUp}
@@ -321,39 +321,54 @@ const PricingPageV2 = ({ token, userProfile }) => {
                 )}
 
                 <SpotlightCard
-                  className={`relative rounded-2xl p-6 transition-all duration-300 flex flex-col min-h-[520px] ${
+                  className={`relative rounded-2xl p-6 transition-all duration-300 flex flex-col h-full w-full ${
                     plan.highlighted
                       ? 'border-2 border-blue-500/50 shadow-2xl shadow-blue-900/20 scale-105'
                       : ''
                   }`}
                 >
                   <div className="relative z-10 flex flex-col h-full">
-                    {/* Badge - Show custom badge if present, otherwise show "POPULAR" for highlighted */}
-                    {(plan.badge || plan.highlighted) && (
-                      <motion.div
-                        className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20 whitespace-nowrap"
-                        initial={{ y: -20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.3 }}
-                      >
-                        <span className={`${plan.badge ? 'bg-gradient-to-r from-cyan-600 to-blue-600' : 'bg-blue-600'} text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg`}>
-                          {plan.badge || 'POPULAR'}
-                        </span>
-                      </motion.div>
-                    )}
-
                     {/* Plan Header */}
-                    <div className="flex items-center gap-3 mb-4 relative z-10">
-                      <motion.div
-                        className={`w-12 h-12 bg-gradient-to-br ${plan.highlighted ? 'from-blue-500 to-cyan-500' : 'from-blue-500 to-blue-600'} rounded-lg flex items-center justify-center flex-shrink-0`}
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                      >
-                        <IconComponent className="w-6 h-6 text-white" />
-                      </motion.div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className={`text-xl font-bold ${plan.highlighted ? 'text-white' : 'text-white'} font-display relative z-10`}>{plan.name}</h3>
-                        <p className="text-sm text-gray-400 relative z-10 truncate">{plan.description}</p>
+                    <div className="mb-4 relative z-10">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <motion.div
+                            className={`w-12 h-12 bg-gradient-to-br ${plan.highlighted ? 'from-blue-500 to-cyan-500' : 'from-blue-500 to-blue-600'} rounded-lg flex items-center justify-center flex-shrink-0`}
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                          >
+                            <IconComponent className="w-6 h-6 text-white" />
+                          </motion.div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className={`text-xl font-bold ${plan.highlighted ? 'text-white' : 'text-white'} font-display relative z-10`}>{plan.name}</h3>
+                            <p className="text-sm text-gray-400 relative z-10 truncate">{plan.description}</p>
+                          </div>
+                        </div>
+                        {/* Professional Badge - Integrated into header */}
+                        {plan.badge && (
+                          <motion.div
+                            className="flex-shrink-0"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.2 }}
+                          >
+                            {plan.badge === 'BEST VALUE' ? (
+                              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/30 rounded-md">
+                                <Award className="w-3.5 h-3.5 text-blue-400" />
+                                <span className="text-xs font-semibold text-blue-300">Best Value</span>
+                              </div>
+                            ) : plan.badge.includes('Limited') ? (
+                              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30 rounded-md">
+                                <Users className="w-3.5 h-3.5 text-amber-400" />
+                                <span className="text-xs font-semibold text-amber-300">Limited</span>
+                              </div>
+                            ) : null}
+                          </motion.div>
+                        )}
                       </div>
+                      {/* Badge description text if needed */}
+                      {plan.badge && plan.badge.includes('Limited') && (
+                        <p className="text-xs text-amber-400/80 ml-[60px] mt-1">First 100 members only</p>
+                      )}
                     </div>
 
                     {/* Price */}
@@ -405,7 +420,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
                     </div>
 
                     {/* Features */}
-                    <div className="space-y-3 border-t border-white/10 pt-5 relative z-10 flex-1 mb-6">
+                    <div className="space-y-3 border-t border-white/10 pt-5 relative z-10 flex-1">
                       {/* Included Features */}
                       {plan.features.map((feature, j) => (
                         <motion.div
