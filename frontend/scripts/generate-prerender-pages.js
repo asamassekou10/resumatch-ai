@@ -633,10 +633,10 @@ const STATIC_PAGES = [
   {
     path: '/pricing',
     title: 'Pricing Plans',
-    description: 'Start free with 1 scan, then get unlimited scans for 7 days at $6.99 or subscribe monthly. AI-powered resume analysis with ATS scoring.',
-    keywords: 'pricing, resume analyzer pricing, affordable resume analysis',
-    heading: 'Simple, Transparent Pricing',
-    content: '<p>Free: 1 scan | 7-Day Pass: $6.99 unlimited | Pro: $19.99/mo</p>'
+    description: 'Start free, then get unlimited scans for 7 days at $6.99 or subscribe monthly. No long-term commitments required. AI-powered resume analysis with ATS scoring.',
+    keywords: 'pricing, resume analyzer pricing, AI career tools pricing, affordable resume analysis, 7-day pass, unlimited resume scans',
+    heading: 'Simple, flexible pricing',
+    content: '<p>Start free. Then get unlimited scans for 7 days at $6.99, or subscribe monthly for ongoing access. No long-term commitments.</p>'
   },
   {
     path: '/help',

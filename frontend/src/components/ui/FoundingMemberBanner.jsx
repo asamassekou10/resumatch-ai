@@ -75,12 +75,12 @@ const FoundingMemberBanner = ({ className = '' }) => {
       animate={{ opacity: 1, y: 0 }}
       className={`relative overflow-hidden rounded-xl backdrop-blur-sm border ${className}`}
       style={{
-        background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
-        borderColor: urgencyLevel === 'high' ? 'rgba(251, 146, 60, 0.3)' : 'rgba(139, 92, 246, 0.3)'
+        background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)',
+        borderColor: urgencyLevel === 'high' ? 'rgba(251, 146, 60, 0.3)' : 'rgba(59, 130, 246, 0.3)'
       }}
     >
       {/* Animated gradient border effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-pink-500/20 opacity-50 blur-xl" />
+      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-blue-600/20 opacity-50 blur-xl" />
 
       <div className="relative p-5">
         <div className="flex items-start justify-between gap-4 mb-3">
@@ -133,7 +133,7 @@ const FoundingMemberBanner = ({ className = '' }) => {
           </div>
           <div className="relative h-2 bg-white/5 rounded-full overflow-hidden border border-white/10">
             <motion.div
-              className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-pink-500"
+              className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-blue-600"
               initial={{ width: 0 }}
               animate={{ width: `${percentClaimed}%` }}
               transition={{ duration: 1.5, ease: 'easeOut' }}
