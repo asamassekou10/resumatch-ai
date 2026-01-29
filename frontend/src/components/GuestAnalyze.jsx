@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 // Framer Motion removed to fix animation compatibility issues
-import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, Clock, FileText, Download, Sparkles, Mail, Infinity, Shield, Lock, ChevronDown, ChevronUp, Target, Search } from 'lucide-react';
+import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, Clock, FileText, Download, Sparkles, Mail, Infinity, Shield, Lock, ChevronDown, ChevronUp, Target, Search, Star } from 'lucide-react';
 import guestService from '../services/guestService';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
@@ -13,6 +13,9 @@ import { isPrerendering } from '../utils/prerender';
 import BlurredSection from './pricing/BlurredSection';
 import PricingModal from './pricing/PricingModal';
 import PaymentModal from './pricing/PaymentModal';
+import ExitIntentModal from './ui/ExitIntentModal';
+import ResultsUpsellBanner from './ui/ResultsUpsellBanner';
+import TrustSignals from './ui/TrustSignals';
 
 // FAQ Accordion Component - Using CSS transitions instead of Framer Motion
 const FAQItem = ({ question, answer, isOpen, onClick }) => (
@@ -452,6 +455,29 @@ const GuestAnalyze = () => {
               </p>
             </div>
 
+            {/* Why Choose Us Section */}
+            <div className="mb-10 relative z-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { icon: Clock, title: 'Fast Results', description: 'Get your ATS score in 10 seconds' },
+                  { icon: Target, title: 'ATS-Optimized', description: 'Beat applicant tracking systems' },
+                  { icon: Sparkles, title: 'AI-Powered', description: 'Advanced AI analysis technology' },
+                  { icon: CheckCircle, title: 'Free First Scan', description: 'No credit card required' },
+                ].map((benefit, index) => {
+                  const Icon = benefit.icon;
+                  return (
+                    <SpotlightCard key={index} className="p-4 text-center">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mx-auto mb-3">
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-white font-semibold text-sm mb-1">{benefit.title}</h3>
+                      <p className="text-gray-400 text-xs">{benefit.description}</p>
+                    </SpotlightCard>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Error Message */}
             {error && (
               <div className="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-6 flex items-start gap-3 relative z-10 max-w-4xl mx-auto">
@@ -459,6 +485,11 @@ const GuestAnalyze = () => {
                 <p className="text-red-400 text-sm relative z-10">{error}</p>
               </div>
             )}
+
+            {/* Social Proof Banner */}
+            <div className="mb-6 relative z-10">
+              <SocialProofBanner />
+            </div>
 
             {/* Two Column Layout: Form + What You Get */}
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 relative z-10">
@@ -549,7 +580,7 @@ const GuestAnalyze = () => {
                                 </div>
                                 {loadingMessage}
                               </span>
-                              <span className="text-gray-400 text-sm">{Math.round(loadingProgress)}%</span>
+                              <span className="text-gray-400 text-sm font-semibold">{Math.round(loadingProgress)}% complete</span>
                             </div>
                             <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
                               <div
@@ -557,13 +588,28 @@ const GuestAnalyze = () => {
                                 style={{ width: `${loadingProgress}%` }}
                               />
                             </div>
-                            {/* Loading step indicators */}
-                            <div className="flex justify-between text-xs text-gray-500 pt-2">
-                              <span className={loadingProgress >= 20 ? 'text-blue-400' : ''}>Parsing</span>
-                              <span className={loadingProgress >= 40 ? 'text-blue-400' : ''}>Analyzing</span>
-                              <span className={loadingProgress >= 60 ? 'text-cyan-400' : ''}>Matching</span>
-                              <span className={loadingProgress >= 80 ? 'text-green-400' : ''}>Scoring</span>
+                            {/* Enhanced step indicators with progress */}
+                            <div className="grid grid-cols-4 gap-2 text-xs pt-2">
+                              <div className={`text-center ${loadingProgress >= 20 ? 'text-blue-400' : 'text-gray-500'}`}>
+                                <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${loadingProgress >= 20 ? 'bg-blue-400' : 'bg-gray-600'}`} />
+                                <span>Parsing</span>
+                              </div>
+                              <div className={`text-center ${loadingProgress >= 40 ? 'text-blue-400' : 'text-gray-500'}`}>
+                                <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${loadingProgress >= 40 ? 'bg-blue-400' : 'bg-gray-600'}`} />
+                                <span>Analyzing</span>
+                              </div>
+                              <div className={`text-center ${loadingProgress >= 60 ? 'text-cyan-400' : 'text-gray-500'}`}>
+                                <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${loadingProgress >= 60 ? 'bg-cyan-400' : 'bg-gray-600'}`} />
+                                <span>Matching</span>
+                              </div>
+                              <div className={`text-center ${loadingProgress >= 80 ? 'text-green-400' : 'text-gray-500'}`}>
+                                <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${loadingProgress >= 80 ? 'bg-green-400' : 'bg-gray-600'}`} />
+                                <span>Scoring</span>
+                              </div>
                             </div>
+                            <p className="text-center text-xs text-gray-500 mt-2">
+                              Analyzing resume... {Math.round(loadingProgress)}% complete
+                            </p>
                           </div>
                         )}
                       </div>
@@ -571,33 +617,35 @@ const GuestAnalyze = () => {
 
                     {/* Analyze Button */}
                     {!loading && (
-                      <div className="pt-2">
+                      <div className="space-y-3 pt-2">
                         <ShimmerButton
                           onClick={handleAnalyze}
                           disabled={loading || !resumeFile || !jobDescription}
                           className="w-full h-14 text-lg"
                         >
                           <Search className="w-5 h-5" />
-                          Scan My Resume
+                          Get Your Free ATS Score Now
                           <ArrowRight className="w-5 h-5" />
                         </ShimmerButton>
+                        
+                        {/* Secondary CTA */}
+                        <button
+                          onClick={() => navigate(ROUTES.PRICING)}
+                          className="w-full px-4 py-3 rounded-lg text-sm font-semibold text-gray-300 border border-white/10 hover:bg-white/5 hover:text-white hover:border-white/20 transition"
+                        >
+                          See Pricing Plans
+                        </button>
+                        
+                        {/* Urgency Text */}
+                        <p className="text-center text-xs text-gray-400">
+                          Start optimizing your resume in 30 seconds
+                        </p>
                       </div>
                     )}
 
-                    {/* Trust Badges */}
-                    <div className="flex flex-wrap justify-center gap-4 md:gap-6 pt-4 border-t border-white/10">
-                      <div className="flex items-center gap-2 text-gray-400 text-sm">
-                        <Lock className="w-4 h-4 text-green-400" />
-                        <span>Private & Secure</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-400 text-sm">
-                        <Shield className="w-4 h-4 text-blue-400" />
-                        <span>No Sign-up Required</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-400 text-sm">
-                        <FileText className="w-4 h-4 text-blue-400" />
-                        <span>PDF or DOCX</span>
-                      </div>
+                    {/* Trust Signals */}
+                    <div className="pt-4 border-t border-white/10">
+                      <TrustSignals variant="horizontal" />
                     </div>
                   </div>
                 </SpotlightCard>
@@ -715,6 +763,12 @@ const GuestAnalyze = () => {
               <p className="text-slate-400">Comprehensive resume evaluation & ATS optimization</p>
             </div>
 
+            {/* Results Upsell Banner - Prominently positioned at top */}
+            <ResultsUpsellBanner 
+              visibleKeywords={3}
+              totalKeywords={12}
+            />
+
             {/* Overall Score Card */}
             <div className="bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-600 rounded-lg p-4 sm:p-6 md:p-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -747,8 +801,6 @@ const GuestAnalyze = () => {
                 />
               </div>
             )}
-
-            {/* Match Breakdown */}
             {analysisResults.match_analysis && analysisResults.match_analysis.match_breakdown && (
               <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 sm:p-6">
                 <h3 className="text-white font-semibold mb-4">Match Breakdown</h3>
@@ -1063,6 +1115,9 @@ const GuestAnalyze = () => {
         onError={handlePaymentError}
         guestToken={guestToken}
       />
+      
+      {/* Exit Intent Modal - Show after first analysis */}
+      {step === 'results' && <ExitIntentModal pageName="guest_analyze" />}
     </>
   );
 };

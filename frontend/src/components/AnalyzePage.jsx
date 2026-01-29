@@ -10,7 +10,11 @@ import JobDescriptionInput from './ui/JobDescriptionInput';
 import BlurredSection from './pricing/BlurredSection';
 import PricingModal from './pricing/PricingModal';
 import PaymentModal from './pricing/PaymentModal';
+import ResultsUpsellBanner from './ui/ResultsUpsellBanner';
+import RescanUpsellModal from './ui/RescanUpsellModal';
 import { fetchWithRetry } from '../utils/fetchWithTimeout';
+import { trackAnalysisStarted, trackAnalysisCompleted } from '../utils/conversionTracking';
+import { trackAnalysisStarted, trackAnalysisCompleted } from '../utils/conversionTracking';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -56,6 +60,8 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [showRescanUpsell, setShowRescanUpsell] = useState(false);
+  const [isFirstAnalysis, setIsFirstAnalysis] = useState(false);
 
   // Job Application Tracking state
   const [trackingApplication, setTrackingApplication] = useState(false);
@@ -74,6 +80,20 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
 
       const data = await response.json();
       setAnalysisData(data);
+
+      // Check if this is user's first analysis
+      const analysesResponse = await fetch(`${API_URL}/analyses`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (analysesResponse.ok) {
+        const analysesData = await analysesResponse.json();
+        const analysesArray = analysesData.analyses || (Array.isArray(analysesData) ? analysesData : []);
+        const isFirst = analysesArray.length === 1;
+        setIsFirstAnalysis(isFirst);
+        
+        // Track analysis completion
+        trackAnalysisCompleted(isFirst, data.match_score);
+      }
 
       // Load existing AI-generated content if available
       // Optimized resume
@@ -412,8 +432,20 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
 
     // Check credits
     if (userProfile && userProfile.credits <= 0) {
-      setError('You have no credits remaining. Please upgrade your plan.');
+      // Show rescan upsell modal instead of error
+      setShowRescanUpsell(true);
       return;
+    }
+
+    // Track analysis start
+    const analysesResponse = await fetch(`${API_URL}/analyses`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (analysesResponse.ok) {
+      const analysesData = await analysesResponse.json();
+      const analysesArray = analysesData.analyses || (Array.isArray(analysesData) ? analysesData : []);
+      const isFirst = analysesArray.length === 0;
+      trackAnalysisStarted(isFirst);
     }
 
     setLoading(true);
@@ -706,6 +738,21 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
             }
             return null;
           })()}
+
+          {/* Results Upsell Banner - Show after first analysis for free users */}
+          {analysisData && userProfile && userProfile.subscription_tier === 'free' && isFirstAnalysis && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mb-6"
+            >
+              <ResultsUpsellBanner 
+                visibleKeywords={3}
+                totalKeywords={12}
+              />
+            </motion.div>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -1648,6 +1695,12 @@ const AnalyzePage = ({ userProfile, viewMode = 'analyze' }) => {
         selectedPlan={selectedPlan}
         onSuccess={handlePaymentSuccess}
         onError={handlePaymentError}
+      />
+
+      {/* Rescan Upsell Modal */}
+      <RescanUpsellModal
+        isOpen={showRescanUpsell}
+        onClose={() => setShowRescanUpsell(false)}
       />
     </div>
   );

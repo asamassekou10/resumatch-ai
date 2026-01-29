@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, TrendingUp, BookOpen, Code, Stethoscope, DollarSign, GraduationCap, Palette, Heart, Globe, Clipboard, ChevronDown, ChevronUp, Play, Link2, Edit3, Eye, Clock, MessageSquare } from 'lucide-react';
+import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, TrendingUp, BookOpen, Code, Stethoscope, DollarSign, GraduationCap, Palette, Heart, Globe, Clipboard, ChevronDown, ChevronUp, Play, Link2, Edit3, Eye, Clock, MessageSquare, Star } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import ShimmerButton from './ui/ShimmerButton';
@@ -9,8 +9,12 @@ import EntranceOverlay from './ui/EntranceOverlay';
 import Footer from './ui/Footer';
 import SpotlightCard from './ui/SpotlightCard';
 import FreeTrialBanner from './ui/FreeTrialBanner';
+import ExitIntentModal from './ui/ExitIntentModal';
+import StickyCTABar from './ui/StickyCTABar';
+import FloatingCTAButton from './ui/FloatingCTAButton';
 import { generateFAQSchema } from '../utils/structuredData';
 import BLOG_POSTS from '../utils/blogContent';
+import { trackPageView } from '../utils/conversionTracking';
 
 
 
@@ -252,35 +256,74 @@ const LandingPageV2 = ({ token }) => {
               Beat the ATS and land your dream job. Our advanced AI analyzes your resume against millions of data points to ensure you stand out.
             </motion.p>
 
-            {/* Free Credits Badge */}
+            {/* Free Credits Badge & Social Proof */}
             <motion.div
               className="mb-8 max-w-2xl mx-auto relative z-10"
               variants={fadeInUp}
               custom={2.5}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20">
-                <CheckCircle className="w-5 h-5 text-green-400" />
-                <span className="text-white font-semibold">First Scan Free</span>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20">
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  <span className="text-white font-semibold">First Scan Free</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-300">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <span className="text-white font-semibold">4.8/5</span>
+                  <span className="text-gray-500">from 500+ reviews</span>
+                </div>
               </div>
+              {/* Urgency Element */}
+              <motion.div
+                className="mt-4 text-center"
+                variants={fadeInUp}
+                custom={2.7}
+              >
+                <p className="text-sm text-gray-400">
+                  Join <span className="text-cyan-400 font-semibold">10,000+</span> job seekers this month
+                </p>
+              </motion.div>
             </motion.div>
 
-            {/* CTA Buttons */}
+            {/* CTA Buttons - Enhanced */}
             <motion.div
               className="flex flex-col sm:flex-row gap-4 justify-center items-center relative z-10"
               variants={fadeInUp}
               custom={3}
             >
-              <ShimmerButton onClick={() => navigate(ROUTES.GUEST_ANALYZE)}>
-                Try For Free <ArrowRight size={16} />
+              <ShimmerButton 
+                onClick={() => navigate(ROUTES.GUEST_ANALYZE)}
+                className="px-10 py-4 text-lg font-bold"
+              >
+                Try For Free <ArrowRight size={18} />
               </ShimmerButton>
 
               <motion.button
                 onClick={() => navigate(ROUTES.PRICING)}
-                className="px-8 py-3 rounded-full font-bold text-sm text-gray-300 border border-white/10 hover:bg-white/5 hover:text-white transition-all hover:border-white/30 relative z-10"
+                className="px-8 py-4 rounded-full font-bold text-base text-gray-300 border-2 border-white/20 hover:bg-white/10 hover:text-white transition-all hover:border-white/40 relative z-10"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 View Pricing
+              </motion.button>
+
+              <motion.button
+                onClick={() => {
+                  const videoSection = document.querySelector('[data-video-section]');
+                  if (videoSection) {
+                    videoSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="px-6 py-4 rounded-full font-semibold text-sm text-gray-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all flex items-center gap-2 relative z-10"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Play className="w-4 h-4" />
+                See How It Works
               </motion.button>
             </motion.div>
 
@@ -299,6 +342,7 @@ const LandingPageV2 = ({ token }) => {
 
           {/* Demo Video Section */}
           <motion.div
+            data-video-section
             className="mt-16 mx-auto max-w-4xl"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -459,6 +503,20 @@ const LandingPageV2 = ({ token }) => {
               );
             })}
           </div>
+
+          {/* CTA after Features */}
+          <motion.div
+            className="text-center mt-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            custom={4}
+          >
+            <ShimmerButton onClick={() => navigate(ROUTES.GUEST_ANALYZE)} className="px-8 py-3">
+              Start Analyzing Your Resume <ArrowRight size={16} />
+            </ShimmerButton>
+          </motion.div>
         </div>
       </div>
 
@@ -879,6 +937,15 @@ const LandingPageV2 = ({ token }) => {
       <Footer />
       </div>
       )}
+
+      {/* Exit Intent Modal */}
+      <ExitIntentModal pageName="landing" />
+
+      {/* Sticky CTA Bar (Mobile) */}
+      <StickyCTABar />
+
+      {/* Floating CTA Button (Desktop) */}
+      <FloatingCTAButton />
     </>
   );
 };

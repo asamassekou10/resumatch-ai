@@ -6,6 +6,8 @@ import { CheckCircle, X, ArrowRight } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import { getCreditsDisplay } from '../utils/credits';
 import TrialOfferBanner from './ui/TrialOfferBanner';
+import ProTrialBanner from './ui/ProTrialBanner';
+import { trackPageView } from '../utils/conversionTracking';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -58,6 +60,11 @@ const Dashboard = ({ userProfile }) => {
       }, 8000);
     }
   }, [searchParams, userProfile, setSearchParams]);
+
+  // Track dashboard view
+  useEffect(() => {
+    trackPageView('dashboard');
+  }, []);
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
@@ -289,39 +296,9 @@ const Dashboard = ({ userProfile }) => {
         </motion.div>
       )}
 
-      {/* Trial Conversion Banner for Free Users */}
+      {/* Professional Pro Trial Banner for Free Users */}
       {userProfile && userProfile.subscription_tier === 'free' && !userProfile.trial_start_date && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-blue-600/90 to-cyan-600/90 backdrop-blur-sm border border-blue-400/50 rounded-xl p-4 md:p-5 mb-6"
-        >
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3">
-              <div className="animate-pulse">
-                <svg className="w-6 h-6 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-white font-bold text-base md:text-lg">
-                  Start Your 7-Day Free Trial
-                </p>
-                <p className="text-white/80 text-sm">
-                  Get 10 credits and access to all Pro features - Try it free!
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                navigate(`${ROUTES.CHECKOUT}?tier=pro_founding`);
-              }}
-              className="px-4 py-2 rounded-lg bg-white text-blue-600 hover:bg-blue-50 font-semibold text-sm transition-all hover:scale-105 active:scale-95"
-            >
-              Start Free Trial
-            </button>
-          </div>
-        </motion.div>
+        <ProTrialBanner className="mb-6" />
       )}
 
       {/* Trial Offer Banner for Low Credit Users */}

@@ -14,6 +14,7 @@ import bcrypt
 
 from models import db, User, Purchase, Analysis, GuestSession
 from services.subscription_service import SubscriptionService
+from email_service import email_service
 
 payments_bp = Blueprint('payments', __name__, url_prefix='/api/payments')
 logger = logging.getLogger(__name__)
@@ -201,6 +202,17 @@ def confirm_micro_purchase():
         db.session.commit()
 
         logger.info(f"Confirmed {purchase_type} purchase for user {user.id}")
+
+        # Send post-purchase email
+        try:
+            recipient_name = user.name or user.email.split('@')[0]
+            email_service.send_post_purchase_email(
+                user.email,
+                recipient_name,
+                purchase_type
+            )
+        except Exception as e:
+            logger.error(f"Failed to send post-purchase email: {str(e)}")
 
         return jsonify({
             'success': True,

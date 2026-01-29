@@ -248,7 +248,7 @@ class EmailService:
                         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                     }}
                     .header {{ 
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
                         color: white; 
                         padding: 40px 20px; 
                         text-align: center;
@@ -265,9 +265,16 @@ class EmailService:
                         color: #333;
                         margin-bottom: 20px;
                     }}
+                    .urgency-box {{
+                        background: #fef3c7;
+                        border-left: 4px solid #f59e0b;
+                        padding: 15px;
+                        margin: 20px 0;
+                        border-radius: 4px;
+                    }}
                     .cta-button {{
                         display: inline-block;
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
                         color: white !important;
                         padding: 16px 40px;
                         text-decoration: none;
@@ -275,18 +282,27 @@ class EmailService:
                         font-weight: bold;
                         font-size: 16px;
                         margin: 30px 0;
-                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
                     }}
                     .cta-container {{
                         text-align: center;
                         margin: 30px 0;
                     }}
                     .info-box {{
-                        background: #f8f9fa;
+                        background: #f0f9ff;
                         padding: 20px;
                         border-radius: 8px;
                         margin: 20px 0;
-                        border-left: 4px solid #667eea;
+                        border-left: 4px solid #3b82f6;
+                    }}
+                    .social-proof {{
+                        background: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 8px;
+                        margin: 20px 0;
+                        text-align: center;
+                        font-size: 14px;
+                        color: #666;
                     }}
                     .footer {{ 
                         text-align: center; 
@@ -298,7 +314,7 @@ class EmailService:
                     }}
                     .link-text {{
                         word-break: break-all;
-                        color: #667eea;
+                        color: #3b82f6;
                         font-size: 12px;
                     }}
                 </style>
@@ -315,6 +331,10 @@ class EmailService:
                         
                         <p>Thank you for signing up! We're excited to help you optimize your resume and land your dream job.</p>
                         
+                        <div class="urgency-box">
+                            <p style="margin: 0; font-weight: 600; color: #78350f;"><strong>⏰ Verify within 24 hours to secure your account</strong></p>
+                        </div>
+                        
                         <p><strong>To get started, please verify your email address by clicking the button below:</strong></p>
                         
                         <div class="cta-container">
@@ -324,14 +344,19 @@ class EmailService:
                         </div>
                         
                         <div class="info-box">
-                            <p style="margin: 0 0 10px 0;"><strong>What you'll get:</strong></p>
+                            <p style="margin: 0 0 10px 0;"><strong>What you'll get after verification:</strong></p>
                             <ul style="margin: 0; padding-left: 20px;">
-                                <li>AI-powered resume analysis</li>
+                                <li>AI-powered resume analysis with ATS scoring</li>
                                 <li>Keyword optimization for ATS systems</li>
                                 <li>Personalized improvement suggestions</li>
                                 <li>Cover letter generation</li>
                                 <li>Resume optimization tools</li>
+                                <li>Secure account protection</li>
                             </ul>
+                        </div>
+                        
+                        <div class="social-proof">
+                            <p style="margin: 0;"><strong>Join 10,000+ verified users</strong> who are optimizing their resumes and landing interviews!</p>
                         </div>
                         
                         <p style="margin-top: 30px; font-size: 14px; color: #666;">
@@ -340,7 +365,7 @@ class EmailService:
                         <p class="link-text">{verification_link}</p>
                         
                         <p style="margin-top: 30px; font-size: 14px; color: #666;">
-                            This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.
+                            This verification link will expire in 7 days. If you didn't create an account, you can safely ignore this email.
                         </p>
                     </div>
                     
@@ -403,6 +428,199 @@ class EmailService:
             elif 'rate limit' in error_msg.lower():
                 logger.error("Resend rate limit exceeded")
             
+            return False
+
+    def send_verification_reminder_email(self, recipient_email: str, recipient_name: str, verification_link: str, reminder_number: int = 1) -> bool:
+        """Send verification reminder email to unverified users"""
+        if not self.resend:
+            if not self.resend_api_key:
+                logger.error("Resend API key not configured. Set RESEND_API_KEY environment variable.")
+            elif not RESEND_AVAILABLE:
+                logger.error("Resend package not installed. Run: pip install resend")
+            else:
+                logger.error("Resend not configured. Cannot send email.")
+            return False
+
+        try:
+            # Different subject based on reminder number
+            if reminder_number == 1:
+                subject = "Don't miss out - Verify your email to get started"
+                urgency_text = "It's been 24 hours since you signed up"
+            elif reminder_number == 2:
+                subject = "Last chance to verify - Your account is waiting"
+                urgency_text = "It's been 3 days since you signed up"
+            else:
+                subject = "Final reminder - Verify your email now"
+                urgency_text = "It's been 7 days since you signed up"
+            
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Verify Your Email</title>
+                <style>
+                    body {{ 
+                        font-family: Arial, sans-serif; 
+                        line-height: 1.6; 
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                        background-color: #f4f4f4;
+                    }}
+                    .container {{ 
+                        max-width: 600px; 
+                        margin: 20px auto; 
+                        background: white;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }}
+                    .header {{ 
+                        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                        color: white; 
+                        padding: 40px 20px; 
+                        text-align: center;
+                    }}
+                    .header h1 {{
+                        margin: 0 0 10px 0;
+                        font-size: 28px;
+                    }}
+                    .content {{ 
+                        padding: 40px 30px;
+                    }}
+                    .urgency-box {{
+                        background: #fef3c7;
+                        border-left: 4px solid #f59e0b;
+                        padding: 15px;
+                        margin: 20px 0;
+                        border-radius: 4px;
+                    }}
+                    .cta-button {{
+                        display: inline-block;
+                        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                        color: white !important;
+                        padding: 16px 40px;
+                        text-decoration: none;
+                        border-radius: 25px;
+                        font-weight: bold;
+                        font-size: 16px;
+                        margin: 30px 0;
+                        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+                    }}
+                    .cta-container {{
+                        text-align: center;
+                        margin: 30px 0;
+                    }}
+                    .benefits-box {{
+                        background: #f0f9ff;
+                        padding: 20px;
+                        border-radius: 8px;
+                        margin: 20px 0;
+                        border-left: 4px solid #3b82f6;
+                    }}
+                    .footer {{ 
+                        text-align: center; 
+                        padding: 20px;
+                        background: #f8f9fa;
+                        color: #6c757d; 
+                        font-size: 13px;
+                        border-top: 1px solid #dee2e6;
+                    }}
+                    .link-text {{
+                        word-break: break-all;
+                        color: #3b82f6;
+                        font-size: 12px;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Verify Your Email</h1>
+                        <p style="margin: 0; opacity: 0.9;">Complete Your Registration</p>
+                    </div>
+                    
+                    <div class="content">
+                        <p>Hi {recipient_name},</p>
+                        
+                        <p>We noticed you haven't verified your email address yet. {urgency_text}.</p>
+                        
+                        <div class="urgency-box">
+                            <p style="margin: 0; font-weight: 600; color: #78350f;"><strong>⚠️ Action Required:</strong> Verify your email to access all features and secure your account.</p>
+                        </div>
+                        
+                        <p><strong>To get started, please verify your email address by clicking the button below:</strong></p>
+                        
+                        <div class="cta-container">
+                            <a href="{verification_link}" class="cta-button">
+                                Verify Email Address Now
+                            </a>
+                        </div>
+                        
+                        <div class="benefits-box">
+                            <p style="margin: 0 0 10px 0;"><strong>What you'll get after verification:</strong></p>
+                            <ul style="margin: 0; padding-left: 20px;">
+                                <li>Full access to AI-powered resume analysis</li>
+                                <li>ATS keyword optimization</li>
+                                <li>Personalized improvement suggestions</li>
+                                <li>Cover letter generation</li>
+                                <li>Resume optimization tools</li>
+                                <li>Secure account protection</li>
+                            </ul>
+                        </div>
+                        
+                        <p style="margin-top: 30px; font-size: 14px; color: #666;">
+                            If the button doesn't work, copy and paste this link into your browser:
+                        </p>
+                        <p class="link-text">{verification_link}</p>
+                        
+                        <p style="margin-top: 30px; font-size: 14px; color: #666;">
+                            This verification link will expire in 7 days. If you didn't create an account, you can safely ignore this email.
+                        </p>
+                    </div>
+                    
+                    <div class="footer">
+                        <p><strong>ResumeAnalyzer AI</strong></p>
+                        <p>This is an automated message, please do not reply to this email.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            logger.info(f"Attempting to send verification reminder email #{reminder_number} to {recipient_email}")
+            
+            response = self.resend.Emails.send({
+                "from": self.from_email,
+                "to": [recipient_email],
+                "subject": subject,
+                "html": html_content,
+                "reply_to": self.reply_to
+            })
+            
+            if response:
+                if isinstance(response, dict):
+                    if 'id' in response:
+                        logger.info(f"Verification reminder email #{reminder_number} sent successfully to {recipient_email} (ID: {response.get('id')})")
+                        return True
+                    elif 'error' in response:
+                        logger.error(f"Resend API error: {response.get('error')}")
+                        return False
+                
+                email_id = getattr(response, 'id', None)
+                if email_id:
+                    logger.info(f"Verification reminder email #{reminder_number} sent successfully to {recipient_email} (ID: {email_id})")
+                    return True
+            
+            logger.error(f"Failed to send verification reminder email. Unexpected response format: {response}")
+            return False
+                
+        except Exception as e:
+            error_type = type(e).__name__
+            error_msg = str(e)
+            logger.error(f"Exception sending verification reminder email to {recipient_email}: {error_type}: {error_msg}", exc_info=True)
             return False
 
 
@@ -1429,6 +1647,283 @@ class EmailService:
             logger.error(f"Error sending trial expiry email to {recipient_email}: {str(e)}")
             return False
 
+    def send_abandoned_cart_email(self, recipient_email: str, recipient_name: str, plan_type: str, price: float, checkout_link: str, is_followup: bool = False, unsubscribe_link: str = None) -> bool:
+        """Send abandoned cart recovery email"""
+        if not self.resend:
+            logger.warning("Resend not configured. Cannot send abandoned cart email.")
+            return False
+
+        try:
+            discount = 0.20 if is_followup else 0  # 20% discount on follow-up
+            discounted_price = price * (1 - discount)
+            
+            subject = f"{'Special Offer: ' if is_followup else ''}Complete Your Resume Analyzer Purchase"
+            
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Complete Your Purchase</title>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }}
+                    .container {{ max-width: 600px; margin: 20px auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+                    .header {{ background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; }}
+                    .content {{ padding: 30px; }}
+                    .cta-button {{ display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); color: white; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }}
+                    .discount-badge {{ background: #10b981; color: white; padding: 8px 16px; border-radius: 4px; font-weight: bold; display: inline-block; margin: 10px 0; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Don't Miss Out!</h1>
+                    </div>
+                    <div class="content">
+                        <p>Hi {recipient_name},</p>
+                        <p>We noticed you were interested in our <strong>{plan_type.replace('_', ' ').title()}</strong> plan (${price:.2f}), but didn't complete your purchase.</p>
+                        {"<div class='discount-badge'>🎉 Special Offer: 20% Off - Now ${discounted_price:.2f}</div>" if is_followup else ""}
+                        <p>Complete your purchase now and unlock:</p>
+                        <ul>
+                            <li>Unlimited resume scans</li>
+                            <li>AI-powered optimization</li>
+                            <li>Priority support</li>
+                        </ul>
+                        <div style="text-align: center;">
+                            <a href="{checkout_link}" class="cta-button">Complete Purchase</a>
+                        </div>
+                        <p style="font-size: 12px; color: #666; margin-top: 30px;">
+                            This offer expires in 24 hours. <a href="{unsubscribe_link or '#'}">Unsubscribe</a>
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            response = self.resend.Emails.send({
+                "from": self.from_email,
+                "to": [recipient_email],
+                "subject": subject,
+                "html": html_content
+            })
+
+            if response and isinstance(response, dict) and 'id' in response:
+                logger.info(f"Abandoned cart email sent to {recipient_email}")
+                return True
+            else:
+                logger.error(f"Failed to send abandoned cart email. Response: {response}")
+                return False
+
+        except Exception as e:
+            logger.error(f"Error sending abandoned cart email to {recipient_email}: {str(e)}")
+            return False
+
+    def send_onboarding_day1_email(self, recipient_email: str, recipient_name: str, unsubscribe_link: str = None) -> bool:
+        """Send Day 1 onboarding email with tips"""
+        if not self.resend:
+            logger.warning("Resend not configured. Cannot send onboarding email.")
+            return False
+
+        try:
+            subject = "Here's how to get the most from your analysis"
+            
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Get the Most from Your Analysis</title>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }}
+                    .container {{ max-width: 600px; margin: 20px auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+                    .header {{ background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; }}
+                    .content {{ padding: 30px; }}
+                    .cta-button {{ display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); color: white; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Maximize Your Resume Score</h1>
+                    </div>
+                    <div class="content">
+                        <p>Hi {recipient_name},</p>
+                        <p>Here are 3 tips to get the most from your resume analysis:</p>
+                        <ol>
+                            <li><strong>Focus on missing keywords</strong> - Add the top 5-10 keywords to boost your ATS score</li>
+                            <li><strong>Quantify achievements</strong> - Use numbers and metrics to show impact</li>
+                            <li><strong>Optimize for each job</strong> - Tailor your resume to each job description</li>
+                        </ol>
+                        <div style="text-align: center;">
+                            <a href="{os.getenv('FRONTEND_URL', 'https://resumeanalyzerai.com')}/dashboard" class="cta-button">View Your Dashboard</a>
+                        </div>
+                        <p style="font-size: 12px; color: #666; margin-top: 30px;">
+                            <a href="{unsubscribe_link or '#'}">Unsubscribe</a>
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            response = self.resend.Emails.send({
+                "from": self.from_email,
+                "to": [recipient_email],
+                "subject": subject,
+                "html": html_content
+            })
+
+            if response and isinstance(response, dict) and 'id' in response:
+                logger.info(f"Onboarding Day 1 email sent to {recipient_email}")
+                return True
+            else:
+                logger.error(f"Failed to send onboarding email. Response: {response}")
+                return False
+
+        except Exception as e:
+            logger.error(f"Error sending onboarding email to {recipient_email}: {str(e)}")
+            return False
+
+    def send_onboarding_day3_email(self, recipient_email: str, recipient_name: str, credits_used: int, unsubscribe_link: str = None) -> bool:
+        """Send Day 3 onboarding email with upgrade prompt"""
+        if not self.resend:
+            logger.warning("Resend not configured. Cannot send onboarding email.")
+            return False
+
+        try:
+            subject = f"You've used {credits_used} credits - here's how to get more"
+            
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Get More Credits</title>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }}
+                    .container {{ max-width: 600px; margin: 20px auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+                    .header {{ background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; }}
+                    .content {{ padding: 30px; }}
+                    .cta-button {{ display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); color: white; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Need More Scans?</h1>
+                    </div>
+                    <div class="content">
+                        <p>Hi {recipient_name},</p>
+                        <p>You've used {credits_used} credit{"s" if credits_used > 1 else ""} so far. Here's how to get unlimited scans:</p>
+                        <ul>
+                            <li><strong>7-Day Pass</strong> - $6.99 for unlimited scans (best value)</li>
+                            <li><strong>Single Scan</strong> - $1.99 for one-time analysis</li>
+                        </ul>
+                        <div style="text-align: center;">
+                            <a href="{os.getenv('FRONTEND_URL', 'https://resumeanalyzerai.com')}/pricing" class="cta-button">View Pricing</a>
+                        </div>
+                        <p style="font-size: 12px; color: #666; margin-top: 30px;">
+                            <a href="{unsubscribe_link or '#'}">Unsubscribe</a>
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            response = self.resend.Emails.send({
+                "from": self.from_email,
+                "to": [recipient_email],
+                "subject": subject,
+                "html": html_content
+            })
+
+            if response and isinstance(response, dict) and 'id' in response:
+                logger.info(f"Onboarding Day 3 email sent to {recipient_email}")
+                return True
+            else:
+                logger.error(f"Failed to send onboarding email. Response: {response}")
+                return False
+
+        except Exception as e:
+            logger.error(f"Error sending onboarding email to {recipient_email}: {str(e)}")
+            return False
+
+    def send_onboarding_day7_email(self, recipient_email: str, recipient_name: str, unsubscribe_link: str = None) -> bool:
+        """Send Day 7 onboarding email with special offer"""
+        if not self.resend:
+            logger.warning("Resend not configured. Cannot send onboarding email.")
+            return False
+
+        try:
+            subject = "Special Offer: 20% off your first purchase"
+            
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Special Offer</title>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }}
+                    .container {{ max-width: 600px; margin: 20px auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+                    .header {{ background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; }}
+                    .content {{ padding: 30px; }}
+                    .cta-button {{ display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); color: white; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }}
+                    .discount-badge {{ background: #10b981; color: white; padding: 12px 24px; border-radius: 6px; font-weight: bold; display: inline-block; margin: 20px 0; font-size: 24px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Special Offer Just For You!</h1>
+                    </div>
+                    <div class="content">
+                        <p>Hi {recipient_name},</p>
+                        <div style="text-align: center;">
+                            <div class="discount-badge">20% OFF</div>
+                        </div>
+                        <p>As a thank you for trying ResumeAnalyzer AI, here's a special offer:</p>
+                        <ul>
+                            <li><strong>7-Day Pass</strong> - Now $5.59 (was $6.99)</li>
+                            <li><strong>Single Scan</strong> - Now $1.59 (was $1.99)</li>
+                        </ul>
+                        <p><strong>This offer expires in 48 hours!</strong></p>
+                        <div style="text-align: center;">
+                            <a href="{os.getenv('FRONTEND_URL', 'https://resumeanalyzerai.com')}/pricing" class="cta-button">Claim Your Discount</a>
+                        </div>
+                        <p style="font-size: 12px; color: #666; margin-top: 30px;">
+                            <a href="{unsubscribe_link or '#'}">Unsubscribe</a>
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            response = self.resend.Emails.send({
+                "from": self.from_email,
+                "to": [recipient_email],
+                "subject": subject,
+                "html": html_content
+            })
+
+            if response and isinstance(response, dict) and 'id' in response:
+                logger.info(f"Onboarding Day 7 email sent to {recipient_email}")
+                return True
+            else:
+                logger.error(f"Failed to send onboarding email. Response: {response}")
+                return False
+
+        except Exception as e:
+            logger.error(f"Error sending onboarding email to {recipient_email}: {str(e)}")
+            return False
+
     def send_trial_expired_email(self, recipient_email: str, recipient_name: str, unsubscribe_link: str = None) -> bool:
         """Send final email after trial expired (3 days after expiry)"""
         if not self.resend:
@@ -1476,13 +1971,13 @@ class EmailService:
                         </div>
                         
                         <div class="free-tier-box">
-                            <h3 style="margin-top: 0; color: #92400e;">Free Tier Includes:</h3>
+                            <h3 style="margin-top: 0; color: #78350f;">Free Tier Includes:</h3>
                             <ul style="color: #78350f; line-height: 1.8; margin: 0;">
                                 <li>5 credits (enough for 5 analyses)</li>
                                 <li>Basic resume analysis</li>
                                 <li>Keyword matching</li>
                             </ul>
-                            <p style="color: #92400e; margin-top: 10px; margin-bottom: 0;"><strong>You'll lose:</strong> AI feedback, cover letters, resume optimization, and unlimited analyses.</p>
+                            <p style="color: #78350f; margin-top: 10px; margin-bottom: 0;"><strong>You'll lose:</strong> AI feedback, cover letters, resume optimization, and unlimited analyses.</p>
                         </div>
                         
                         <div class="cta-container">

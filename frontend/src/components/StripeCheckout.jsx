@@ -15,6 +15,12 @@ const StripeCheckout = ({ token, navigate: parentNavigate }) => {
   useEffect(() => {
     const createCheckoutSession = async () => {
       if (!token) {
+        // Store the intended checkout tier in localStorage for redirect after login
+        if (tier) {
+          localStorage.setItem('redirect_after_auth', `checkout?tier=${tier}`);
+        } else {
+          localStorage.setItem('redirect_after_auth', 'checkout');
+        }
         navigate('/login');
         return;
       }

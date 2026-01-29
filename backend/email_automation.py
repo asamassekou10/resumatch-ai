@@ -176,6 +176,103 @@ def build_unsubscribe_link(user, email_service):
     except Exception:
         return None
 
+def send_verification_reminders(app, db, User, email_service):
+    """Send verification reminder emails to unverified users"""
+    with app.app_context():
+        try:
+            from datetime import datetime, timedelta
+            now = datetime.utcnow()
+            today = now.date()
+            
+            # Find unverified users who registered 1, 3, or 7 days ago
+            # and haven't exceeded reminder limit (3 reminders or 14 days)
+            unverified_query = User.query.filter(
+                and_(
+                    User.email_verified == False,
+                    User.auth_provider == 'email',
+                    User.is_active == True,
+                    User.created_at.isnot(None)
+                )
+            )
+            
+            emails_sent = 0
+            emails_skipped = 0
+            
+            for user in unverified_query.all():
+                try:
+                    # Skip if user has exceeded reminder limit
+                    if user.verification_reminder_count >= 3:
+                        continue
+                    
+                    # Skip if more than 14 days since registration
+                    days_since_registration = (today - user.created_at.date()).days
+                    if days_since_registration > 14:
+                        continue
+                    
+                    # Determine which reminder to send (1, 3, or 7 days)
+                    reminder_days = [1, 3, 7]
+                    reminder_to_send = None
+                    reminder_number = None
+                    
+                    for i, days in enumerate(reminder_days, 1):
+                        if days_since_registration == days:
+                            # Check if we've already sent this reminder
+                            if user.verification_reminder_count < i:
+                                reminder_to_send = days
+                                reminder_number = i
+                                break
+                    
+                    if not reminder_to_send:
+                        continue
+                    
+                    # Check if we sent an email recently (within last 12 hours)
+                    if user.last_verification_email_sent:
+                        hours_since_last = (now - user.last_verification_email_sent).total_seconds() / 3600
+                        if hours_since_last < 12:
+                            emails_skipped += 1
+                            continue
+                    
+                    # Generate new token if expired or missing
+                    if not user.verification_token or (user.verification_token_expires_at and user.verification_token_expires_at < now):
+                        import secrets
+                        user.verification_token = secrets.token_urlsafe(32)
+                        user.verification_token_expires_at = now + timedelta(days=7)
+                    
+                    # Create verification link
+                    backend_url = os.getenv('BACKEND_URL', 'http://localhost:5000')
+                    verification_link = f"{backend_url}/api/auth/verify-email?user={user.id}&token={user.verification_token}"
+                    
+                    # Send reminder email
+                    recipient_name = user.name or user.email.split('@')[0]
+                    email_sent = email_service.send_verification_reminder_email(
+                        recipient_email=user.email,
+                        recipient_name=recipient_name,
+                        verification_link=verification_link,
+                        reminder_number=reminder_number
+                    )
+                    
+                    if email_sent:
+                        # Update user tracking
+                        user.verification_reminder_count = reminder_number
+                        user.last_verification_email_sent = now
+                        db.session.commit()
+                        emails_sent += 1
+                        logger.info(f"Verification reminder #{reminder_number} sent to {user.email}")
+                    else:
+                        logger.warning(f"Failed to send verification reminder to {user.email}")
+                        
+                except Exception as e:
+                    logger.error(f"Error processing verification reminder for {user.email}: {str(e)}", exc_info=True)
+                    continue
+            
+            logger.info(f"Verification reminders complete: {emails_sent} sent, {emails_skipped} skipped")
+            return {"sent": emails_sent, "skipped": emails_skipped}
+            
+        except Exception as e:
+            logger.error(f"Error in send_verification_reminders: {str(e)}", exc_info=True)
+            return {"sent": 0, "skipped": 0, "error": str(e)}
+
+
 def init_email_scheduler(app, db, User, email_service):
     """
     Initialize email automation scheduler
@@ -224,6 +321,31 @@ def init_email_scheduler(app, db, User, email_service):
         lambda: check_inactive_users(app, db, User, email_service),
         trigger=CronTrigger(hour=REENGAGEMENT_CHECK_HOUR, minute=0),
         id='reengagement_check',
+        replace_existing=True
+    )
+
+    # Verification reminder emails (daily at 10 AM UTC)
+    VERIFICATION_REMINDER_HOUR = int(os.getenv('VERIFICATION_REMINDER_HOUR', 10))
+    scheduler.add_job(
+        lambda: send_verification_reminders(app, db, User, email_service),
+        trigger=CronTrigger(hour=VERIFICATION_REMINDER_HOUR, minute=0),
+        id='verification_reminders',
+        replace_existing=True
+    )
+
+    # Abandoned cart recovery - check every hour
+    scheduler.add_job(
+        lambda: send_abandoned_cart_emails(app, db, User, email_service),
+        trigger=CronTrigger(minute=0),  # Every hour
+        id='abandoned_cart_recovery',
+        replace_existing=True
+    )
+
+    # Onboarding email sequence - check daily
+    scheduler.add_job(
+        lambda: send_onboarding_emails(app, db, User, email_service),
+        trigger=CronTrigger(hour=EMAIL_CHECK_HOUR, minute=15),  # 15 minutes after daily email check
+        id='onboarding_emails',
         replace_existing=True
     )
 
@@ -526,6 +648,254 @@ def check_inactive_users(app, db, User, email_service):
 
         except Exception as e:
             logger.error(f"Error in re-engagement check: {str(e)}", exc_info=True)
+            db.session.rollback()
+
+
+def send_abandoned_cart_emails(app, db, User, email_service):
+    """
+    Send abandoned cart recovery emails
+    - 1 hour after abandonment: "Complete your purchase"
+    - 24 hours later: Follow-up with discount offer
+    """
+    with app.app_context():
+        try:
+            from datetime import datetime, timedelta
+            now = datetime.utcnow()
+            
+            # Users who abandoned cart 1 hour ago (first reminder)
+            one_hour_ago = now - timedelta(hours=1)
+            one_hour_plus_5min = now - timedelta(hours=1, minutes=5)
+            
+            abandoned_1h = User.query.filter(
+                User.cart_abandoned_at.isnot(None),
+                User.cart_abandoned_at >= one_hour_plus_5min,
+                User.cart_abandoned_at <= one_hour_ago,
+                User.subscription_tier == 'free'  # Only free users
+            ).all()
+            
+            # Users who abandoned cart 24 hours ago (follow-up with discount)
+            twenty_four_hours_ago = now - timedelta(hours=24)
+            twenty_four_hours_plus_5min = now - timedelta(hours=24, minutes=5)
+            
+            abandoned_24h = User.query.filter(
+                User.cart_abandoned_at.isnot(None),
+                User.cart_abandoned_at >= twenty_four_hours_plus_5min,
+                User.cart_abandoned_at <= twenty_four_hours_ago,
+                User.subscription_tier == 'free'  # Only free users
+            ).all()
+            
+            emails_sent = 0
+            
+            # Send first reminder (1 hour)
+            for user in abandoned_1h:
+                try:
+                    if not can_send_email(user, 'marketing'):
+                        continue
+                    
+                    # Check if we already sent first reminder (track via email_sequence_step)
+                    if user.email_sequence_step >= 1:
+                        continue
+                    
+                    recipient_name = user.name or user.email.split('@')[0]
+                    checkout_link = f"{os.getenv('FRONTEND_URL', 'https://resumeanalyzerai.com')}/checkout?tier={user.cart_abandoned_plan}"
+                    unsubscribe_link = build_unsubscribe_link(user, email_service)
+                    
+                    if send_email_with_retry(
+                        email_service,
+                        email_service.send_abandoned_cart_email,
+                        user.email,
+                        recipient_name,
+                        user.cart_abandoned_plan or 'weekly_pass',
+                        user.cart_abandoned_price or 6.99,
+                        checkout_link,
+                        is_followup=False,
+                        unsubscribe_link=unsubscribe_link
+                    ):
+                        user.email_sequence_step = 1
+                        user.last_email_sent_date = now
+                        emails_sent += 1
+                        logger.info(f"Sent abandoned cart reminder (1h) to {user.email}")
+                        
+                except Exception as e:
+                    logger.error(f"Error sending abandoned cart email to {user.email}: {str(e)}", exc_info=True)
+                    continue
+            
+            # Send follow-up with discount (24 hours)
+            for user in abandoned_24h:
+                try:
+                    if not can_send_email(user, 'marketing'):
+                        continue
+                    
+                    # Check if we already sent follow-up (email_sequence_step >= 2)
+                    if user.email_sequence_step >= 2:
+                        continue
+                    
+                    recipient_name = user.name or user.email.split('@')[0]
+                    checkout_link = f"{os.getenv('FRONTEND_URL', 'https://resumeanalyzerai.com')}/checkout?tier={user.cart_abandoned_plan}"
+                    unsubscribe_link = build_unsubscribe_link(user, email_service)
+                    
+                    if send_email_with_retry(
+                        email_service,
+                        email_service.send_abandoned_cart_email,
+                        user.email,
+                        recipient_name,
+                        user.cart_abandoned_plan or 'weekly_pass',
+                        user.cart_abandoned_price or 6.99,
+                        checkout_link,
+                        is_followup=True,
+                        unsubscribe_link=unsubscribe_link
+                    ):
+                        user.email_sequence_step = 2
+                        user.last_email_sent_date = now
+                        emails_sent += 1
+                        logger.info(f"Sent abandoned cart follow-up (24h) to {user.email}")
+                        
+                except Exception as e:
+                    logger.error(f"Error sending abandoned cart follow-up to {user.email}: {str(e)}", exc_info=True)
+                    continue
+            
+            if emails_sent > 0:
+                db.session.commit()
+                logger.info(f"Sent {emails_sent} abandoned cart recovery emails")
+                
+        except Exception as e:
+            logger.error(f"Error in abandoned cart check: {str(e)}", exc_info=True)
+            db.session.rollback()
+
+
+def send_onboarding_emails(app, db, User, email_service):
+    """
+    Send onboarding email sequence to new users
+    - Day 1: Tips for getting the most from analysis
+    - Day 3: Upgrade prompt based on credits used
+    - Day 7: Special offer (20% off)
+    """
+    with app.app_context():
+        try:
+            from datetime import datetime, timedelta
+            now = datetime.utcnow()
+            today = now.date()
+            
+            # Day 1 emails (users who registered yesterday)
+            day1_cutoff = today - timedelta(days=1)
+            day1_users = User.query.filter(
+                User.email_verified == True,
+                func.date(User.created_at) == day1_cutoff,
+                User.email_sequence_step == 0,
+                User.subscription_tier == 'free'
+            ).all()
+            
+            # Day 3 emails (users who registered 3 days ago)
+            day3_cutoff = today - timedelta(days=3)
+            day3_users = User.query.filter(
+                User.email_verified == True,
+                func.date(User.created_at) == day3_cutoff,
+                User.email_sequence_step <= 1,
+                User.subscription_tier == 'free'
+            ).all()
+            
+            # Day 7 emails (users who registered 7 days ago)
+            day7_cutoff = today - timedelta(days=7)
+            day7_users = User.query.filter(
+                User.email_verified == True,
+                func.date(User.created_at) == day7_cutoff,
+                User.email_sequence_step <= 2,
+                User.subscription_tier == 'free'
+            ).all()
+            
+            emails_sent = 0
+            
+            # Send Day 1 emails
+            for user in day1_users:
+                try:
+                    if not can_send_email(user, 'marketing'):
+                        continue
+                    
+                    recipient_name = user.name or user.email.split('@')[0]
+                    unsubscribe_link = build_unsubscribe_link(user, email_service)
+                    
+                    if send_email_with_retry(
+                        email_service,
+                        email_service.send_onboarding_day1_email,
+                        user.email,
+                        recipient_name,
+                        unsubscribe_link=unsubscribe_link
+                    ):
+                        user.email_sequence_step = 1
+                        user.last_email_sent_date = now
+                        emails_sent += 1
+                        logger.info(f"Sent Day 1 onboarding email to {user.email}")
+                        
+                except Exception as e:
+                    logger.error(f"Error sending Day 1 onboarding email to {user.email}: {str(e)}", exc_info=True)
+                    continue
+            
+            # Send Day 3 emails
+            for user in day3_users:
+                try:
+                    if not can_send_email(user, 'marketing'):
+                        continue
+                    
+                    # Get credits used (from analyses count)
+                    try:
+                        from models import Analysis
+                        analyses_count = Analysis.query.filter_by(user_id=user.id).count()
+                    except:
+                        analyses_count = 0
+                    
+                    recipient_name = user.name or user.email.split('@')[0]
+                    unsubscribe_link = build_unsubscribe_link(user, email_service)
+                    
+                    if send_email_with_retry(
+                        email_service,
+                        email_service.send_onboarding_day3_email,
+                        user.email,
+                        recipient_name,
+                        analyses_count,
+                        unsubscribe_link=unsubscribe_link
+                    ):
+                        if user.email_sequence_step < 2:
+                            user.email_sequence_step = 2
+                        user.last_email_sent_date = now
+                        emails_sent += 1
+                        logger.info(f"Sent Day 3 onboarding email to {user.email}")
+                        
+                except Exception as e:
+                    logger.error(f"Error sending Day 3 onboarding email to {user.email}: {str(e)}", exc_info=True)
+                    continue
+            
+            # Send Day 7 emails
+            for user in day7_users:
+                try:
+                    if not can_send_email(user, 'marketing'):
+                        continue
+                    
+                    recipient_name = user.name or user.email.split('@')[0]
+                    unsubscribe_link = build_unsubscribe_link(user, email_service)
+                    
+                    if send_email_with_retry(
+                        email_service,
+                        email_service.send_onboarding_day7_email,
+                        user.email,
+                        recipient_name,
+                        unsubscribe_link=unsubscribe_link
+                    ):
+                        if user.email_sequence_step < 3:
+                            user.email_sequence_step = 3
+                        user.last_email_sent_date = now
+                        emails_sent += 1
+                        logger.info(f"Sent Day 7 onboarding email to {user.email}")
+                        
+                except Exception as e:
+                    logger.error(f"Error sending Day 7 onboarding email to {user.email}: {str(e)}", exc_info=True)
+                    continue
+            
+            if emails_sent > 0:
+                db.session.commit()
+                logger.info(f"Sent {emails_sent} onboarding emails")
+                
+        except Exception as e:
+            logger.error(f"Error in onboarding email check: {str(e)}", exc_info=True)
             db.session.rollback()
 
 

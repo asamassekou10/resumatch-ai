@@ -350,6 +350,9 @@ def auto_migrate():
                 'ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;',
                 'ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE;',
                 'ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token_expires_at TIMESTAMP;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_reminder_count INTEGER DEFAULT 0;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS last_verification_email_sent TIMESTAMP;',
                 # Subscription and credit fields
                 'ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_tier VARCHAR(50) DEFAULT \'free\';',
                 'ALTER TABLE users ADD COLUMN IF NOT EXISTS credits INTEGER DEFAULT 0;',
@@ -554,10 +557,13 @@ def register():
 
     # Generate verification token
     verification_token = generate_verification_token()
+    now = datetime.utcnow()
+    # Set token expiration to 7 days from now
+    from datetime import timedelta
+    token_expires_at = now + timedelta(days=7)
 
     # Create user (NOT verified yet)
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-    now = datetime.utcnow()
     
     # Check if skip_trial flag is set (for micro-purchases)
     skip_trial = data.get('skip_trial', False)
@@ -572,6 +578,8 @@ def register():
         auth_provider='email',
         email_verified=False,  # Not verified yet
         verification_token=verification_token,
+        verification_token_expires_at=token_expires_at,
+        last_verification_email_sent=now,
         # Free tier by default - no automatic trial
         subscription_tier='free',
         subscription_status='inactive',
@@ -903,6 +911,33 @@ def verify_email():
                 return redirect(f"{frontend_url}/verify-success?already_verified=true")
             return jsonify({'message': 'Email already verified'}), 200
 
+        # Check if token is expired
+        from datetime import timedelta
+        now = datetime.utcnow()
+        if user.verification_token_expires_at and user.verification_token_expires_at < now:
+            # Token expired - generate new one and resend email
+            logging.info(f"Verification token expired for user {user.email}, generating new token")
+            new_token = generate_verification_token()
+            user.verification_token = new_token
+            user.verification_token_expires_at = now + timedelta(days=7)
+            user.last_verification_email_sent = now
+            
+            # Resend verification email
+            verification_link = create_verification_link(user.id, new_token)
+            recipient_name = user.name or user.email.split('@')[0]
+            email_service.send_verification_email(
+                recipient_email=user.email,
+                recipient_name=recipient_name,
+                verification_link=verification_link
+            )
+            db.session.commit()
+            
+            error_msg = 'Verification link expired. A new verification email has been sent to your inbox.'
+            if request.method == 'GET':
+                frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+                return redirect(f"{frontend_url}/verify-error?error={error_msg}")
+            return jsonify({'error': error_msg, 'new_email_sent': True}), 400
+
         # Verify token matches
         if user.verification_token != token:
             logging.warning(f"Invalid verification token for user {user.email}")
@@ -915,6 +950,7 @@ def verify_email():
         # Mark as verified
         user.email_verified = True
         user.verification_token = None  # Clear token
+        user.verification_token_expires_at = None  # Clear expiration
         db.session.commit()
 
         logging.info(f"Email verified successfully for user: {user.email}")
@@ -965,8 +1001,12 @@ def resend_verification():
     if user.email_verified:
         return jsonify({'message': 'Email already verified'}), 200
     
-    # Generate new token
+    # Generate new token with expiration
+    from datetime import timedelta
+    now = datetime.utcnow()
     user.verification_token = generate_verification_token()
+    user.verification_token_expires_at = now + timedelta(days=7)
+    user.last_verification_email_sent = now
     db.session.commit()
     
     # Send email
@@ -981,6 +1021,48 @@ def resend_verification():
         logging.info(f"Verification email resent to: {email}")
     
     return jsonify({'message': 'Verification email sent'}), 200
+
+@app.route('/api/auth/regenerate-verification-token', methods=['POST'])
+@limiter.limit("5 per hour")
+def regenerate_verification_token():
+    """Regenerate verification token for unverified users"""
+    data = request.json
+    email = data.get('email', '').strip().lower()
+    
+    if not email or not validate_email(email):
+        return jsonify({'error': 'Valid email required'}), 400
+    
+    user = User.query.filter_by(email=email).first()
+    
+    if not user:
+        # Don't reveal if user exists
+        return jsonify({'message': 'If this email is registered, a verification email has been sent'}), 200
+    
+    if user.email_verified:
+        return jsonify({'message': 'Email already verified'}), 200
+    
+    # Generate new token with expiration
+    from datetime import timedelta
+    now = datetime.utcnow()
+    user.verification_token = generate_verification_token()
+    user.verification_token_expires_at = now + timedelta(days=7)
+    user.last_verification_email_sent = now
+    db.session.commit()
+    
+    # Send new verification email
+    verification_link = create_verification_link(user.id, user.verification_token)
+    recipient_name = user.name or user.email.split('@')[0]
+    email_sent = email_service.send_verification_email(
+        recipient_email=email,
+        recipient_name=recipient_name,
+        verification_link=verification_link
+    )
+    
+    if email_sent:
+        logging.info(f"Verification token regenerated and email sent to: {email}")
+        return jsonify({'message': 'New verification email sent'}), 200
+    else:
+        return jsonify({'error': 'Failed to send verification email. Please try again later.'}), 500
 
 def get_frontend_url():
     """Determine the correct frontend URL based on the request context"""

@@ -77,6 +77,9 @@ class User(db.Model):
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     email_verified = db.Column(db.Boolean, default=False, nullable=False)
     verification_token = db.Column(db.String(255), nullable=True)
+    verification_token_expires_at = db.Column(db.DateTime, nullable=True)
+    verification_reminder_count = db.Column(db.Integer, default=0, nullable=False)
+    last_verification_email_sent = db.Column(db.DateTime, nullable=True)
     # Subscription and credit fields
     subscription_tier = db.Column(db.String(50), default='free', nullable=False, index=True)
     subscription_status = db.Column(db.String(50), default='inactive', nullable=False, index=True)  # inactive, active, cancelled, expired, past_due
@@ -94,6 +97,11 @@ class User(db.Model):
     trial_expired_date = db.Column(db.DateTime, nullable=True)
     last_email_sent_date = db.Column(db.DateTime, nullable=True)
     email_sequence_step = db.Column(db.Integer, default=0, nullable=False)  # Track which email in sequence
+    
+    # Abandoned cart tracking
+    cart_abandoned_at = db.Column(db.DateTime, nullable=True, index=True)  # When user abandoned cart
+    cart_abandoned_plan = db.Column(db.String(50), nullable=True)  # Which plan they were considering
+    cart_abandoned_price = db.Column(db.Float, nullable=True)  # Price of abandoned plan
 
     # Email automation preferences and tracking
     weekly_email_start_date = db.Column(db.DateTime, nullable=True, index=True)  # Fixed reference date for weekly emails
@@ -1597,6 +1605,45 @@ class JobApplication(db.Model):
             'analysis_id': self.analysis_id,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+class ConversionEvent(db.Model):
+    """Conversion Event model for tracking user journey through conversion funnel"""
+    __tablename__ = 'conversion_events'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True, index=True)
+    event_type = db.Column(db.String(100), nullable=False, index=True)
+    session_id = db.Column(db.String(255), nullable=True, index=True)
+    page_url = db.Column(db.String(500), nullable=True)
+    referrer = db.Column(db.String(500), nullable=True)
+    metadata = db.Column(db.JSON, nullable=True)  # Store additional event data
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+    # Relationships
+    user = db.relationship('User', backref=db.backref('conversion_events', lazy='dynamic'))
+
+    # Indexes for common queries
+    __table_args__ = (
+        db.Index('idx_event_type_created', 'event_type', 'created_at'),
+        db.Index('idx_user_event_type', 'user_id', 'event_type'),
+        db.Index('idx_session_events', 'session_id', 'created_at'),
+    )
+
+    def __repr__(self):
+        return f'<ConversionEvent {self.id} - {self.event_type} - User {self.user_id}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'event_type': self.event_type,
+            'session_id': self.session_id,
+            'page_url': self.page_url,
+            'referrer': self.referrer,
+            'metadata': self.metadata,
+            'created_at': self.created_at.isoformat()
         }
 
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CreditCard, Lock, AlertCircle, CheckCircle, Loader, Mail, User } from 'lucide-react';
 import InlineLoginForm from './InlineLoginForm';
+import { trackPaymentModalOpened, trackCheckoutStarted } from '../../utils/conversionTracking';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -71,6 +72,19 @@ const GuestPaymentForm = ({ selectedPlan, guestToken, onSuccess, onError, onClos
       }
 
       if (data.checkout_url) {
+        // Track checkout started
+        trackCheckoutStarted(selectedPlan.type, selectedPlan.price);
+        
+        // Clear abandoned cart tracking (if authenticated)
+        if (token) {
+          fetch(`${API_URL}/analytics/clear-abandoned-cart`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }).catch(err => console.warn('Failed to clear abandoned cart:', err));
+        }
+        
         // Redirect to Stripe's hosted checkout page
         window.location.href = data.checkout_url;
       } else {
@@ -86,6 +100,19 @@ const GuestPaymentForm = ({ selectedPlan, guestToken, onSuccess, onError, onClos
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Progress Indicator */}
+      <div className="flex items-center gap-2 text-xs text-gray-400 mb-4">
+        <div className="flex-1 flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold">1</div>
+          <span className="text-gray-300">Payment Details</span>
+        </div>
+        <div className="w-8 h-px bg-gray-600" />
+        <div className="flex-1 flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-gray-600 text-gray-400 flex items-center justify-center text-xs">2</div>
+          <span>Complete</span>
+        </div>
+      </div>
+
       {/* Plan Summary */}
       <div className="bg-white/5 border border-cyan-500/20 rounded-lg p-4">
         <div className="flex items-center justify-between mb-2">
@@ -93,6 +120,11 @@ const GuestPaymentForm = ({ selectedPlan, guestToken, onSuccess, onError, onClos
           <span className="text-white font-bold text-lg">${selectedPlan.price}</span>
         </div>
         <p className="text-gray-300 text-sm">{selectedPlan.description}</p>
+        {selectedPlan.type === 'weekly_pass' && (
+          <div className="mt-2 text-xs text-cyan-400">
+            Unlimited scans for 7 days starting now
+          </div>
+        )}
         <div className="mt-2 flex items-center gap-2 text-xs text-cyan-400">
           <User className="w-3 h-3" />
           <span>Pay as guest - No account required</span>
@@ -137,11 +169,55 @@ const GuestPaymentForm = ({ selectedPlan, guestToken, onSuccess, onError, onClos
         </motion.div>
       )}
 
+      {/* Trust Signals */}
+      <div className="grid grid-cols-3 gap-2 py-3 border-t border-white/10">
+        <div className="flex flex-col items-center gap-1">
+          <Lock className="w-5 h-5 text-cyan-400" />
+          <p className="text-xs text-gray-400 text-center">256-bit SSL</p>
+        </div>
+        <div className="flex flex-col items-center gap-1">
+          <CheckCircle className="w-5 h-5 text-green-400" />
+          <p className="text-xs text-gray-400 text-center">Stripe Secured</p>
+        </div>
+        <div className="flex flex-col items-center gap-1">
+          <CreditCard className="w-5 h-5 text-blue-400" />
+          <p className="text-xs text-gray-400 text-center">PCI Compliant</p>
+        </div>
+      </div>
+
       {/* Security Notice */}
       <div className="flex items-center gap-2 text-xs text-gray-500">
         <Lock className="w-4 h-4" />
         <span>Secured by Stripe. Your payment info is encrypted and secure.</span>
       </div>
+
+      {/* What Happens Next */}
+      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+        <h4 className="text-white font-semibold text-sm mb-2">What happens next:</h4>
+        <ul className="space-y-1.5 text-xs text-gray-300">
+          <li className="flex items-center gap-2">
+            <CheckCircle className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+            <span>You'll be redirected to Stripe's secure checkout</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <CheckCircle className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+            <span>Complete payment with any major credit card</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <CheckCircle className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+            <span>Get instant access to unlimited scans for 7 days</span>
+          </li>
+        </ul>
+      </div>
+
+      {/* Value Reminder */}
+      {selectedPlan.type === 'weekly_pass' && (
+        <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg p-3 text-center">
+          <p className="text-sm text-cyan-300 font-semibold">
+            You're getting unlimited scans for 7 days - perfect for active job hunting!
+          </p>
+        </div>
+      )}
 
       {/* Submit Button */}
       <div className="flex gap-3">
@@ -174,7 +250,7 @@ const GuestPaymentForm = ({ selectedPlan, guestToken, onSuccess, onError, onClos
 
       {/* Money-back guarantee */}
       <p className="text-center text-xs text-gray-500">
-        100% money-back guarantee within 24 hours if you're not satisfied
+        <span className="font-semibold text-green-400">7-day money-back guarantee</span> - If you're not satisfied, contact support for a full refund
       </p>
     </form>
   );
@@ -222,6 +298,19 @@ const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
       }
 
       if (data.checkout_url) {
+        // Track checkout started
+        trackCheckoutStarted(selectedPlan.type, selectedPlan.price);
+        
+        // Clear abandoned cart tracking (if authenticated)
+        if (token) {
+          fetch(`${API_URL}/analytics/clear-abandoned-cart`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }).catch(err => console.warn('Failed to clear abandoned cart:', err));
+        }
+        
         // Redirect to Stripe's hosted checkout page
         window.location.href = data.checkout_url;
       } else {
@@ -237,6 +326,19 @@ const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Progress Indicator */}
+      <div className="flex items-center gap-2 text-xs text-gray-400 mb-4">
+        <div className="flex-1 flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold">1</div>
+          <span className="text-gray-300">Payment Details</span>
+        </div>
+        <div className="w-8 h-px bg-gray-600" />
+        <div className="flex-1 flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-gray-600 text-gray-400 flex items-center justify-center text-xs">2</div>
+          <span>Complete</span>
+        </div>
+      </div>
+
       {/* Plan Summary */}
       <div className="bg-white/5 border border-cyan-500/20 rounded-lg p-4">
         <div className="flex items-center justify-between mb-2">
@@ -267,11 +369,55 @@ const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
         </motion.div>
       )}
 
+      {/* Trust Signals */}
+      <div className="grid grid-cols-3 gap-2 py-3 border-t border-white/10">
+        <div className="flex flex-col items-center gap-1">
+          <Lock className="w-5 h-5 text-cyan-400" />
+          <p className="text-xs text-gray-400 text-center">256-bit SSL</p>
+        </div>
+        <div className="flex flex-col items-center gap-1">
+          <CheckCircle className="w-5 h-5 text-green-400" />
+          <p className="text-xs text-gray-400 text-center">Stripe Secured</p>
+        </div>
+        <div className="flex flex-col items-center gap-1">
+          <CreditCard className="w-5 h-5 text-blue-400" />
+          <p className="text-xs text-gray-400 text-center">PCI Compliant</p>
+        </div>
+      </div>
+
       {/* Security Notice */}
       <div className="flex items-center gap-2 text-xs text-gray-500">
         <Lock className="w-4 h-4" />
         <span>Secured by Stripe. Your payment info is encrypted and secure.</span>
       </div>
+
+      {/* What Happens Next */}
+      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+        <h4 className="text-white font-semibold text-sm mb-2">What happens next:</h4>
+        <ul className="space-y-1.5 text-xs text-gray-300">
+          <li className="flex items-center gap-2">
+            <CheckCircle className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+            <span>You'll be redirected to Stripe's secure checkout</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <CheckCircle className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+            <span>Complete payment with any major credit card</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <CheckCircle className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+            <span>Get instant access to unlimited scans for 7 days</span>
+          </li>
+        </ul>
+      </div>
+
+      {/* Value Reminder */}
+      {selectedPlan.type === 'weekly_pass' && (
+        <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg p-3 text-center">
+          <p className="text-sm text-cyan-300 font-semibold">
+            You're getting unlimited scans for 7 days - perfect for active job hunting!
+          </p>
+        </div>
+      )}
 
       {/* Submit Button */}
       <div className="flex gap-3">
@@ -304,7 +450,7 @@ const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
 
       {/* Money-back guarantee */}
       <p className="text-center text-xs text-gray-500">
-        100% money-back guarantee within 24 hours if you're not satisfied
+        <span className="font-semibold text-green-400">7-day money-back guarantee</span> - If you're not satisfied, contact support for a full refund
       </p>
     </form>
   );
@@ -364,6 +510,29 @@ const PaymentModal = ({
       setIsGuestCheckout(false);
     }
   }, [token]);
+
+  // Track abandoned cart when modal opens
+  useEffect(() => {
+    if (isOpen && selectedPlan) {
+      trackPaymentModalOpened(selectedPlan.type);
+      
+      // Track abandoned cart on backend
+      const currentToken = localStorage.getItem('token');
+      if (currentToken) {
+        fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/analytics/track-abandoned-cart`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentToken}`
+          },
+          body: JSON.stringify({
+            plan_type: selectedPlan.type,
+            price: selectedPlan.price
+          })
+        }).catch(err => console.warn('Failed to track abandoned cart:', err));
+      }
+    }
+  }, [isOpen, selectedPlan]);
 
   // Reset state when modal closes
   useEffect(() => {

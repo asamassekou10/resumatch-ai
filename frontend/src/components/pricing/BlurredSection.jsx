@@ -82,9 +82,14 @@ const BlurredSection = ({
               </h3>
               {blurredCount > 0 && (
                 <p className="text-gray-400 text-sm">
-                  You've seen a preview. Unlock the full analysis to optimize your resume.
+                  <span className="text-cyan-400 font-semibold">{blurredCount} more insights available</span> - Unlock the full analysis to optimize your resume.
                 </p>
               )}
+            </div>
+
+            {/* Hover Preview Hint */}
+            <div className="mt-2 text-xs text-gray-500 italic">
+              Hover to see preview
             </div>
 
             {/* Pricing Options */}

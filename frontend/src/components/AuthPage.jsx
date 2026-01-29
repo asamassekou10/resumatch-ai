@@ -6,6 +6,7 @@ import { ROUTES } from '../config/routes';
 import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
 import SEO from './common/SEO';
+import UnverifiedEmailPrompt from './UnverifiedEmailPrompt';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -35,6 +36,7 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [paymentContext, setPaymentContext] = useState({ show: false, plan: null, message: '' });
+  const [showUnverifiedPrompt, setShowUnverifiedPrompt] = useState(false);
 
   // Handle payment redirect parameters on mount
   useEffect(() => {
@@ -135,11 +137,17 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
       if (!response.ok) {
         // Handle unverified email error
         if (response.status === 403 && !data.email_verified) {
-          setError(data.error + '. Check your email for the verification link.');
+          // Show unverified prompt instead of error
+          setError('');
+          setShowUnverifiedPrompt(true);
+          setLoading(false);
           return;
         }
         throw new Error(data.error);
       }
+      
+      // Reset unverified prompt on successful login
+      setShowUnverifiedPrompt(false);
 
       // Handle registration success
       if (!isLogin && data.verification_required) {
@@ -498,21 +506,19 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
               </motion.div>
             )}
 
-            {error && (
-              <div className="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg mb-6 relative z-10">
-                {error}
-              </div>
+            {showUnverifiedPrompt && isLogin && (
+              <UnverifiedEmailPrompt 
+                email={formData.email} 
+                onResendSuccess={() => {
+                  setShowUnverifiedPrompt(false);
+                  setError('');
+                }}
+              />
             )}
 
-            {error && error.includes('verify your email') && (
-              <div className="bg-blue-900/50 border border-blue-500 text-blue-300 px-4 py-3 rounded-lg mb-6 text-center relative z-10">
-                <p className="mb-2">Didn't receive the verification email?</p>
-                <button
-                  onClick={handleResendVerification}
-                  className="text-blue-400 hover:text-blue-300 font-medium underline"
-                >
-                  Resend Verification Email
-                </button>
+            {error && !showUnverifiedPrompt && (
+              <div className="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg mb-6 relative z-10">
+                {error}
               </div>
             )}
 

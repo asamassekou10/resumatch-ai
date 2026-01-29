@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, FileText, Calendar, Star, Briefcase, ArrowRight, Award, Users } from 'lucide-react';
+import { CheckCircle, FileText, Calendar, Star, Briefcase, ArrowRight, Award, Users, Shield, Lock } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import ShimmerButton from './ui/ShimmerButton';
 import SpotlightCard from './ui/SpotlightCard';
 import Footer from './ui/Footer';
 import FoundingMemberBanner from './ui/FoundingMemberBanner';
+import ExitIntentModal from './ui/ExitIntentModal';
 import axios from 'axios';
+import { trackPricingPageView } from '../utils/conversionTracking';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -16,6 +18,11 @@ const PricingPageV2 = ({ token, userProfile }) => {
   const navigate = useNavigate();
   const [isYearly, setIsYearly] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Track page view
+  useEffect(() => {
+    trackPricingPageView();
+  }, []);
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
@@ -332,12 +339,12 @@ const PricingPageV2 = ({ token, userProfile }) => {
                     <div className="mb-4 relative z-10">
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <motion.div
+                      <motion.div
                             className={`w-12 h-12 bg-gradient-to-br ${plan.highlighted ? 'from-blue-500 to-cyan-500' : 'from-blue-500 to-blue-600'} rounded-lg flex items-center justify-center flex-shrink-0`}
-                            whileHover={{ scale: 1.1, rotate: 5 }}
-                          >
-                            <IconComponent className="w-6 h-6 text-white" />
-                          </motion.div>
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                      >
+                        <IconComponent className="w-6 h-6 text-white" />
+                      </motion.div>
                           <div className="flex-1 min-w-0">
                             <h3 className={`text-xl font-bold ${plan.highlighted ? 'text-white' : 'text-white'} font-display relative z-10`}>{plan.name}</h3>
                             <p className="text-sm text-gray-400 relative z-10 truncate">{plan.description}</p>
@@ -380,10 +387,10 @@ const PricingPageV2 = ({ token, userProfile }) => {
                         transition={{ duration: 0.3 }}
                       >
                         <div className="flex items-baseline">
-                          <span className="text-4xl font-bold text-white font-display relative z-10">${price.toFixed(2)}</span>
-                          <span className="text-gray-400 text-base font-normal font-sans ml-2 relative z-10">
-                            {price === 0 ? '' : plan.name === '7-Day Pass' ? '' : isYearly ? '/year' : '/mo'}
-                          </span>
+                        <span className="text-4xl font-bold text-white font-display relative z-10">${price.toFixed(2)}</span>
+                        <span className="text-gray-400 text-base font-normal font-sans ml-2 relative z-10">
+                          {price === 0 ? '' : plan.name === '7-Day Pass' ? '' : isYearly ? '/year' : '/mo'}
+                        </span>
                         </div>
                       </motion.div>
 
@@ -523,9 +530,73 @@ const PricingPageV2 = ({ token, userProfile }) => {
             All plans include secure payment processing via Stripe. Cancel anytime, no questions asked.
           </p>
         </motion.div>
+
+        {/* Trust Signals Section */}
+        <motion.div
+          className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          custom={1}
+        >
+          {/* Security Badge */}
+          <div className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-xl border border-white/10">
+            <Shield className="w-8 h-8 text-blue-400" />
+            <p className="text-xs text-gray-400 text-center">256-bit SSL</p>
+            <p className="text-xs text-gray-500 text-center">Encryption</p>
+          </div>
+
+          {/* Money Back Guarantee */}
+          <div className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-xl border border-white/10">
+            <CheckCircle className="w-8 h-8 text-green-400" />
+            <p className="text-xs text-gray-400 text-center">7-Day</p>
+            <p className="text-xs text-gray-500 text-center">Money-Back</p>
+          </div>
+
+          {/* Secure Checkout */}
+          <div className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-xl border border-white/10">
+            <Lock className="w-8 h-8 text-cyan-400" />
+            <p className="text-xs text-gray-400 text-center">Secure</p>
+            <p className="text-xs text-gray-500 text-center">Checkout</p>
+          </div>
+
+          {/* Trusted Users */}
+          <div className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-xl border border-white/10">
+            <Users className="w-8 h-8 text-blue-400" />
+            <p className="text-xs text-gray-400 text-center">10,000+</p>
+            <p className="text-xs text-gray-500 text-center">Users</p>
+          </div>
+        </motion.div>
+
+        {/* Payment Methods */}
+        <motion.div
+          className="mt-8 flex flex-col items-center gap-3"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          custom={2}
+        >
+          <p className="text-xs text-gray-500">Accepted Payment Methods</p>
+          <div className="flex items-center gap-4">
+            <div className="px-3 py-1.5 bg-white/5 rounded border border-white/10">
+              <span className="text-xs font-semibold text-gray-300">Visa</span>
+            </div>
+            <div className="px-3 py-1.5 bg-white/5 rounded border border-white/10">
+              <span className="text-xs font-semibold text-gray-300">Mastercard</span>
+            </div>
+            <div className="px-3 py-1.5 bg-white/5 rounded border border-white/10">
+              <span className="text-xs font-semibold text-gray-300">Stripe</span>
+            </div>
+          </div>
+        </motion.div>
         </div>
       </div>
       <Footer />
+      
+      {/* Exit Intent Modal */}
+      <ExitIntentModal pageName="pricing" />
     </>
   );
 };
