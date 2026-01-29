@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, Zap, Crown, Sparkles, ArrowRight } from 'lucide-react';
+import { CheckCircle, FileText, Calendar, Star, Briefcase, ArrowRight } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import ShimmerButton from './ui/ShimmerButton';
@@ -73,16 +73,24 @@ const PricingPageV2 = ({ token, userProfile }) => {
     if (!token) {
       if (lowerPlan === 'free') {
         return {
-          text: 'Start Free',
+          text: 'Try Free Now',
           action: () => navigate(ROUTES.GUEST_ANALYZE),
           variant: 'secondary',
           disabled: false
         };
       }
+      if (lowerPlan === '7-day pass') {
+        return {
+          text: 'Get 7-Day Pass - $6.99',
+          action: () => navigate(ROUTES.REGISTER),
+          variant: 'primary',
+          disabled: false
+        };
+      }
       return {
-        text: 'Sign Up to Purchase',
+        text: 'Sign Up to Get Started',
         action: () => navigate(ROUTES.REGISTER),
-        variant: lowerPlan === '7-day pass' ? 'primary' : 'secondary',
+        variant: 'secondary',
         disabled: false
       };
     }
@@ -98,7 +106,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
 
     if (lowerPlan === '7-day pass') {
       return {
-        text: 'Get 7-Day Pass',
+        text: 'Get Started - $6.99',
         action: () => navigate(ROUTES.ANALYZE),
         variant: 'primary',
         disabled: loading
@@ -107,7 +115,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
 
     if (lowerPlan === 'pro founding') {
       return {
-        text: 'Join as Founding Member',
+        text: 'Lock In $19.99/mo',
         action: handleUpgradeToProFounding,
         variant: 'primary',
         disabled: loading
@@ -116,7 +124,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
 
     if (lowerPlan === 'elite') {
       return {
-        text: 'Choose Elite',
+        text: 'Get Elite - $49.99/mo',
         action: handleUpgradeToElite,
         variant: 'secondary',
         disabled: loading
@@ -127,21 +135,18 @@ const PricingPageV2 = ({ token, userProfile }) => {
   const plans = [
     {
       name: 'Free',
-      description: 'Perfect to get started',
+      description: 'Try it risk-free',
       monthlyPrice: 0,
       yearlyPrice: 0,
       credits: 1,
       features: [
-        'First scan completely free',
-        'Full analysis with results',
+        '1 free analysis',
         'ATS score & feedback',
-        'See all missing keywords',
-        'AI recommendations',
-        '10 free credits to start'
+        'Top 3 missing keywords',
+        'Basic recommendations'
       ],
-      notIncluded: ['Additional scans', 'Unlimited access'],
       highlighted: false,
-      icon: Sparkles
+      icon: FileText
     },
     {
       name: '7-Day Pass',
@@ -151,16 +156,12 @@ const PricingPageV2 = ({ token, userProfile }) => {
       credits: 'unlimited',
       features: [
         'Unlimited scans for 7 days',
+        'All keywords & AI recommendations',
         'Test multiple resume versions',
-        'Try different job descriptions',
-        'Full analysis every time',
-        'All keywords & recommendations',
-        'ATS optimization included',
-        '🚀 Best value for active job seekers'
+        'Full ATS optimization'
       ],
-      notIncluded: ['Monthly subscription'],
       highlighted: true,
-      icon: Crown,
+      icon: Calendar,
       badge: 'BEST VALUE',
       specialNote: 'Perfect for testing multiple resume versions'
     },
@@ -172,18 +173,12 @@ const PricingPageV2 = ({ token, userProfile }) => {
       credits: 50,
       features: [
         '50 analyses/month',
-        'Full ATS scanning',
-        'AI feedback generation',
-        'Resume optimization',
         'Cover letter generation',
         'Unlimited templates',
-        'Priority support',
-        '🏆 Founding Member badge',
-        '🔒 Price locked forever'
+        'Priority support + Founding badge'
       ],
-      notIncluded: ['API access', 'Bulk uploads'],
       highlighted: false,
-      icon: Zap,
+      icon: Star,
       badge: 'Limited: First 100 Only',
       specialNote: 'Regular price $24.99 - Save $5/month forever'
     },
@@ -195,16 +190,12 @@ const PricingPageV2 = ({ token, userProfile }) => {
       credits: 200,
       features: [
         '200 analyses/month',
-        'Everything in Pro',
-        'API access',
-        'Bulk uploads',
+        'API access & bulk uploads',
         'White-label options',
-        'Advanced analytics',
         'Dedicated support'
       ],
-      notIncluded: [],
       highlighted: false,
-      icon: Crown
+      icon: Briefcase
     }
   ];
 
@@ -305,7 +296,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
         </motion.div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto mb-12 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-12 relative z-10">
           {plans.map((plan, i) => {
             const IconComponent = plan.icon;
             const price = calculatePrice(plan);
@@ -330,17 +321,17 @@ const PricingPageV2 = ({ token, userProfile }) => {
                 )}
 
                 <SpotlightCard
-                  className={`relative h-full rounded-2xl p-8 transition-all duration-300 flex flex-col ${
+                  className={`relative rounded-2xl p-6 transition-all duration-300 flex flex-col min-h-[520px] ${
                     plan.highlighted
-                      ? 'border-2 border-blue-500/50 shadow-2xl shadow-blue-900/20'
+                      ? 'border-2 border-blue-500/50 shadow-2xl shadow-blue-900/20 scale-105'
                       : ''
                   }`}
                 >
-                  <div className="relative z-10 flex flex-col flex-1">
+                  <div className="relative z-10 flex flex-col h-full">
                     {/* Badge - Show custom badge if present, otherwise show "POPULAR" for highlighted */}
                     {(plan.badge || plan.highlighted) && (
                       <motion.div
-                        className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20 whitespace-nowrap"
+                        className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20 whitespace-nowrap"
                         initial={{ y: -20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.3 }}
@@ -352,43 +343,45 @@ const PricingPageV2 = ({ token, userProfile }) => {
                     )}
 
                     {/* Plan Header */}
-                    <div className="flex items-center gap-3 mb-6 relative z-10">
+                    <div className="flex items-center gap-3 mb-4 relative z-10">
                       <motion.div
-                        className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center"
+                        className={`w-12 h-12 bg-gradient-to-br ${plan.highlighted ? 'from-blue-500 to-cyan-500' : 'from-blue-500 to-blue-600'} rounded-lg flex items-center justify-center flex-shrink-0`}
                         whileHover={{ scale: 1.1, rotate: 5 }}
                       >
                         <IconComponent className="w-6 h-6 text-white" />
                       </motion.div>
-                      <div>
-                        <h3 className="text-xl font-bold text-white font-display relative z-10">{plan.name}</h3>
-                        <p className="text-sm text-gray-400 relative z-10">{plan.description}</p>
+                      <div className="flex-1 min-w-0">
+                        <h3 className={`text-xl font-bold ${plan.highlighted ? 'text-white' : 'text-white'} font-display relative z-10`}>{plan.name}</h3>
+                        <p className="text-sm text-gray-400 relative z-10 truncate">{plan.description}</p>
                       </div>
                     </div>
 
                     {/* Price */}
-                    <div className="mb-6 relative z-10">
+                    <div className="mb-5 relative z-10">
                       <motion.div
                         key={`${price}-${isYearly}`}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <span className="text-4xl font-bold text-white font-display relative z-10">${price.toFixed(2)}</span>
-                        <span className="text-gray-400 text-base font-normal font-sans ml-2 relative z-10">
-                          {price === 0 ? '' : plan.name === '7-Day Pass' ? '' : isYearly ? '/year' : '/mo'}
-                        </span>
+                        <div className="flex items-baseline">
+                          <span className="text-4xl font-bold text-white font-display relative z-10">${price.toFixed(2)}</span>
+                          <span className="text-gray-400 text-base font-normal font-sans ml-2 relative z-10">
+                            {price === 0 ? '' : plan.name === '7-Day Pass' ? '' : isYearly ? '/year' : '/mo'}
+                          </span>
+                        </div>
                       </motion.div>
 
                       {/* One-time payment label */}
                       {plan.name === '7-Day Pass' && (
-                        <p className="text-cyan-400 text-sm font-semibold mt-2 relative z-10">
+                        <p className="text-cyan-400 text-xs font-semibold mt-1 relative z-10">
                           One-time payment
                         </p>
                       )}
 
                       {showSavings && (
                         <motion.p
-                          className="text-green-400 text-sm font-semibold mt-2 relative z-10"
+                          className="text-green-400 text-xs font-semibold mt-1 relative z-10"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ delay: 0.2 }}
@@ -396,77 +389,40 @@ const PricingPageV2 = ({ token, userProfile }) => {
                           Save ${savings.savings.toFixed(2)} ({savings.percentage}%)
                         </motion.p>
                       )}
-                      {/* Special savings for Pro Founding and Elite */}
+                      {/* Special savings for Pro Founding */}
                       {plan.name === 'Pro Founding' && !isYearly && (
                         <motion.div
-                          className="mt-2 relative z-10"
+                          className="mt-1 relative z-10"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ delay: 0.2 }}
                         >
-                          <p className="text-gray-400 text-sm">
-                            Regular price: <span className="line-through text-gray-500">$24.99/mo</span>
-                          </p>
-                          <p className="text-green-400 text-sm font-semibold">
-                            💰 Save $5/month forever
-                          </p>
-                        </motion.div>
-                      )}
-                      {plan.name === 'Elite' && !isYearly && (
-                        <motion.div
-                          className="mt-2 relative z-10"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 0.2 }}
-                        >
-                          <p className="text-gray-400 text-sm">
-                            Best for professionals
-                          </p>
-                          <p className="text-cyan-400 text-sm font-semibold">
-                            ⚡ Premium features included
+                          <p className="text-gray-400 text-xs">
+                            <span className="line-through text-gray-500">$24.99/mo</span> → Save $5/month
                           </p>
                         </motion.div>
                       )}
                     </div>
 
                     {/* Features */}
-                    <div className="space-y-4 border-t border-white/10 pt-8 relative z-10 flex-1">
+                    <div className="space-y-3 border-t border-white/10 pt-5 relative z-10 flex-1 mb-6">
                       {/* Included Features */}
                       {plan.features.map((feature, j) => (
                         <motion.div
                           key={j}
-                          className="flex items-center gap-2 relative z-10"
+                          className="flex items-start gap-2.5 relative z-10"
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: j * 0.05 }}
                         >
-                          <CheckCircle size={16} className={plan.highlighted ? 'text-blue-400' : 'text-white'} />
-                          <span className={`text-sm ${plan.highlighted ? 'text-gray-300' : 'text-gray-400'} relative z-10`}>{feature}</span>
+                          <CheckCircle size={18} className={`flex-shrink-0 mt-0.5 ${plan.highlighted ? 'text-blue-400' : 'text-blue-500'}`} />
+                          <span className={`text-sm leading-relaxed ${plan.highlighted ? 'text-gray-200' : 'text-gray-300'} relative z-10`}>{feature}</span>
                         </motion.div>
                       ))}
-
-                      {/* Not Included Features */}
-                      {plan.notIncluded.length > 0 && (
-                        <>
-                          <div className="border-t border-white/10 pt-4 mt-4" />
-                          {plan.notIncluded.map((feature, j) => (
-                            <motion.div
-                              key={`not-${j}`}
-                              className="flex items-center gap-2 opacity-60 relative z-10"
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 0.6, x: 0 }}
-                              transition={{ delay: (plan.features.length + j) * 0.05 }}
-                            >
-                              <CheckCircle size={16} className="text-white" />
-                              <span className="text-gray-400 text-sm relative z-10">{feature}</span>
-                            </motion.div>
-                          ))}
-                        </>
-                      )}
                     </div>
 
-                    {/* CTA Button */}
-                    <div className="mt-auto pt-6 relative z-10">
+                    {/* CTA Button - Always at bottom */}
+                    <div className="mt-auto pt-4 border-t border-white/10 relative z-10">
                       {(() => {
                         const buttonConfig = getButtonConfig(plan.name);
                         if (buttonConfig.variant === 'primary' && !buttonConfig.disabled) {
@@ -484,7 +440,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
                           <motion.button
                             onClick={buttonConfig.action}
                             disabled={buttonConfig.disabled}
-                            className={`w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all duration-300 border border-white/20 text-white hover:bg-white hover:text-black relative z-10 ${
+                            className={`w-full py-3 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-300 border ${plan.highlighted ? 'border-blue-500/50 bg-blue-500/10 text-white hover:bg-blue-500/20' : 'border-white/20 text-white hover:bg-white/10'} relative z-10 ${
                               buttonConfig.disabled ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                             whileHover={buttonConfig.disabled ? {} : { scale: 1.02 }}
