@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, FileText, Calendar, Star, Briefcase, ArrowRight, Award, Users, Shield, Lock } from 'lucide-react';

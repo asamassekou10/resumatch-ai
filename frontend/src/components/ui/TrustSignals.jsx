@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock, Shield, CheckCircle, CreditCard } from 'lucide-react';
+import { Lock, Shield, CheckCircle } from 'lucide-react';
 
 /**
  * TrustSignals Component

@@ -14,7 +14,6 @@ import ResultsUpsellBanner from './ui/ResultsUpsellBanner';
 import RescanUpsellModal from './ui/RescanUpsellModal';
 import { fetchWithRetry } from '../utils/fetchWithTimeout';
 import { trackAnalysisStarted, trackAnalysisCompleted } from '../utils/conversionTracking';
-import { trackAnalysisStarted, trackAnalysisCompleted } from '../utils/conversionTracking';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 

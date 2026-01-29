@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 // Framer Motion removed to fix animation compatibility issues
-import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, Clock, FileText, Download, Sparkles, Mail, Infinity, Shield, Lock, ChevronDown, ChevronUp, Target, Search, Star } from 'lucide-react';
+import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, Clock, FileText, Download, Sparkles, Mail, Infinity, ChevronDown, ChevronUp, Target, Search } from 'lucide-react';
 import guestService from '../services/guestService';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
@@ -16,6 +16,7 @@ import PaymentModal from './pricing/PaymentModal';
 import ExitIntentModal from './ui/ExitIntentModal';
 import ResultsUpsellBanner from './ui/ResultsUpsellBanner';
 import TrustSignals from './ui/TrustSignals';
+import SocialProofBanner from './ui/SocialProofBanner';
 
 // FAQ Accordion Component - Using CSS transitions instead of Framer Motion
 const FAQItem = ({ question, answer, isOpen, onClick }) => (

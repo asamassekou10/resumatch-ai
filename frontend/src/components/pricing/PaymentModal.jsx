@@ -76,11 +76,12 @@ const GuestPaymentForm = ({ selectedPlan, guestToken, onSuccess, onError, onClos
         trackCheckoutStarted(selectedPlan.type, selectedPlan.price);
         
         // Clear abandoned cart tracking (if authenticated)
-        if (token) {
+        const authToken = localStorage.getItem('token');
+        if (authToken) {
           fetch(`${API_URL}/analytics/clear-abandoned-cart`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${token}`
+              'Authorization': `Bearer ${authToken}`
             }
           }).catch(err => console.warn('Failed to clear abandoned cart:', err));
         }
@@ -302,11 +303,12 @@ const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
         trackCheckoutStarted(selectedPlan.type, selectedPlan.price);
         
         // Clear abandoned cart tracking (if authenticated)
-        if (token) {
+        const authToken = localStorage.getItem('token');
+        if (authToken) {
           fetch(`${API_URL}/analytics/clear-abandoned-cart`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${token}`
+              'Authorization': `Bearer ${authToken}`
             }
           }).catch(err => console.warn('Failed to clear abandoned cart:', err));
         }

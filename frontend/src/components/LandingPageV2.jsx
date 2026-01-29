@@ -14,7 +14,6 @@ import StickyCTABar from './ui/StickyCTABar';
 import FloatingCTAButton from './ui/FloatingCTAButton';
 import { generateFAQSchema } from '../utils/structuredData';
 import BLOG_POSTS from '../utils/blogContent';
-import { trackPageView } from '../utils/conversionTracking';
 
 
 

@@ -388,20 +388,6 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
     window.location.href = `${API_URL}/auth/linkedin/login`;
   };
 
-  const handleResendVerification = async () => {
-    try {
-      const response = await fetch(`${API_URL}/auth/resend-verification`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email })
-      });
-      const data = await response.json();
-      alert(data.message || 'Verification email sent!');
-    } catch (err) {
-      alert('Failed to resend email. Please try again.');
-    }
-  };
-
   const switchMode = () => {
     navigate(isLogin ? ROUTES.REGISTER : ROUTES.LOGIN);
   };

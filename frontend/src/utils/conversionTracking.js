@@ -246,7 +246,7 @@ export const getConversionFunnel = async (days = 30) => {
   }
 };
 
-export default {
+const conversionTracking = {
   trackEvent,
   trackPageView,
   trackSignupStarted,
@@ -264,3 +264,5 @@ export default {
   getConversionFunnel,
   CONVERSION_EVENTS
 };
+
+export default conversionTracking;

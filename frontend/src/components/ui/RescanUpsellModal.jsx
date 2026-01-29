@@ -30,7 +30,6 @@ const RescanUpsellModal = ({ isOpen, onClose, className = '' }) => {
   // Calculate savings
   const singleScanPrice = 1.99;
   const weeklyPassPrice = 6.99;
-  const scansForBreakEven = Math.ceil(weeklyPassPrice / singleScanPrice); // 4 scans
   const savingsAt5Scans = (singleScanPrice * 5) - weeklyPassPrice; // $3.96
 
   return (

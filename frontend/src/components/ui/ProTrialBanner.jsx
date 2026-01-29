@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Zap, CheckCircle, Star } from 'lucide-react';
+import { ArrowRight, CheckCircle, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ShimmerButton from './ShimmerButton';
