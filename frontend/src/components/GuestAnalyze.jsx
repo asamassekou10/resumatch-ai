@@ -16,7 +16,6 @@ import PaymentModal from './pricing/PaymentModal';
 import ExitIntentModal from './ui/ExitIntentModal';
 import ResultsUpsellBanner from './ui/ResultsUpsellBanner';
 import TrustSignals from './ui/TrustSignals';
-import SocialProofBanner from './ui/SocialProofBanner';
 
 // FAQ Accordion Component - Using CSS transitions instead of Framer Motion
 const FAQItem = ({ question, answer, isOpen, onClick }) => (
@@ -417,65 +416,27 @@ const GuestAnalyze = () => {
         {/* Analyze Step - Redesigned for Trust & Conversion */}
         {step === 'analyze' && (
           <div className="max-w-6xl mx-auto relative z-10">
-            {/* Welcome Banner - Gift-style messaging */}
-            <div className="bg-gradient-to-r from-emerald-600/90 to-teal-600/90 backdrop-blur-sm border border-emerald-400/50 rounded-xl p-4 md:p-5 mb-8">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="animate-pulse">
-                    <Sparkles className="w-6 h-6 text-yellow-300" />
-                  </div>
-                  <div>
-                    <p className="text-white font-bold text-base md:text-lg">Welcome! You have {guestCredits} Free Analysis available.</p>
-                    <p className="text-white/80 text-sm">No account needed. Sign up for 10 free analyses/month!</p>
-                  </div>
+            {/* Welcome Banner */}
+            <div className="bg-gradient-to-r from-emerald-600/90 to-teal-600/90 backdrop-blur-sm border border-emerald-400/50 rounded-xl p-3 md:p-4 mb-6">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-yellow-300 flex-shrink-0" />
+                  <p className="text-white font-semibold text-sm md:text-base">You have {guestCredits} Free Analysis available. <span className="text-white/80 font-normal">Sign up for 10 free/month!</span></p>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={handleSignIn}
-                    className="px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white font-semibold text-sm transition-all hover:scale-105 active:scale-95"
+                    className="px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white font-semibold text-sm transition-all"
                   >
                     Sign In
                   </button>
                   <button
                     onClick={handleUpgrade}
-                    className="px-4 py-2 rounded-lg bg-white text-emerald-600 hover:bg-emerald-50 font-semibold text-sm transition-all hover:scale-105 active:scale-95"
+                    className="px-3 py-1.5 rounded-lg bg-white text-emerald-600 hover:bg-emerald-50 font-semibold text-sm transition-all"
                   >
                     Get Unlimited
                   </button>
                 </div>
-              </div>
-            </div>
-
-            {/* Main Hero Section */}
-            <div className="text-center mb-10">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 font-display">
-                Free AI Resume Scanner
-              </h1>
-              <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-                See exactly what the ATS sees. Get your detailed score and keyword gaps in <span className="text-cyan-400 font-semibold">10 seconds</span>.
-              </p>
-            </div>
-
-            {/* Why Choose Us Section */}
-            <div className="mb-10 relative z-10">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  { icon: Clock, title: 'Fast Results', description: 'Get your ATS score in 10 seconds' },
-                  { icon: Target, title: 'ATS-Optimized', description: 'Beat applicant tracking systems' },
-                  { icon: Sparkles, title: 'AI-Powered', description: 'Advanced AI analysis technology' },
-                  { icon: CheckCircle, title: 'Free First Scan', description: 'No credit card required' },
-                ].map((benefit, index) => {
-                  const Icon = benefit.icon;
-                  return (
-                    <SpotlightCard key={index} className="p-4 text-center">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mx-auto mb-3">
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <h3 className="text-white font-semibold text-sm mb-1">{benefit.title}</h3>
-                      <p className="text-gray-400 text-xs">{benefit.description}</p>
-                    </SpotlightCard>
-                  );
-                })}
               </div>
             </div>
 
@@ -486,11 +447,6 @@ const GuestAnalyze = () => {
                 <p className="text-red-400 text-sm relative z-10">{error}</p>
               </div>
             )}
-
-            {/* Social Proof Banner */}
-            <div className="mb-6 relative z-10">
-              <SocialProofBanner />
-            </div>
 
             {/* Two Column Layout: Form + What You Get */}
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 relative z-10">
