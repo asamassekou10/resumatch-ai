@@ -1618,7 +1618,7 @@ class ConversionEvent(db.Model):
     session_id = db.Column(db.String(255), nullable=True, index=True)
     page_url = db.Column(db.String(500), nullable=True)
     referrer = db.Column(db.String(500), nullable=True)
-    metadata = db.Column(db.JSON, nullable=True)  # Store additional event data
+    event_metadata = db.Column(db.JSON, nullable=True)  # Store additional event data
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
 
     # Relationships
@@ -1642,7 +1642,7 @@ class ConversionEvent(db.Model):
             'session_id': self.session_id,
             'page_url': self.page_url,
             'referrer': self.referrer,
-            'metadata': self.metadata,
+            'metadata': self.event_metadata,  # Keep 'metadata' key in API response for backward compatibility
             'created_at': self.created_at.isoformat()
         }
 

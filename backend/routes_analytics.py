@@ -406,7 +406,7 @@ def track_conversion_event():
             session_id=session_id,
             page_url=page_url,
             referrer=referrer,
-            metadata=metadata
+            event_metadata=metadata
         )
         db.session.add(event)
         db.session.commit()
