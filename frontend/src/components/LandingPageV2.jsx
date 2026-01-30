@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, TrendingUp, BookOpen, Code, Stethoscope, DollarSign, GraduationCap, Palette, Heart, Globe, Clipboard, ChevronDown, ChevronUp, Play, Link2, Edit3, Eye, Clock, MessageSquare, Star } from 'lucide-react';
+import { CheckCircle, ArrowRight, Zap, FileText, BarChart3, Users, TrendingUp, BookOpen, Code, Stethoscope, DollarSign, GraduationCap, Palette, Heart, Globe, Clipboard, ChevronDown, ChevronUp, Link2, Edit3, Eye, Clock, MessageSquare, Star } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
 import ShimmerButton from './ui/ShimmerButton';
@@ -10,7 +10,7 @@ import Footer from './ui/Footer';
 import SpotlightCard from './ui/SpotlightCard';
 import FreeTrialBanner from './ui/FreeTrialBanner';
 import ExitIntentModal from './ui/ExitIntentModal';
-import StickyCTABar from './ui/StickyCTABar';
+
 import FloatingCTAButton from './ui/FloatingCTAButton';
 import { generateFAQSchema } from '../utils/structuredData';
 import BLOG_POSTS from '../utils/blogContent';
@@ -309,21 +309,6 @@ const LandingPageV2 = ({ token }) => {
               >
                 View Pricing
               </motion.button>
-
-              <motion.button
-                onClick={() => {
-                  const videoSection = document.querySelector('[data-video-section]');
-                  if (videoSection) {
-                    videoSection.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
-                className="px-6 py-4 rounded-full font-semibold text-sm text-gray-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all flex items-center gap-2 relative z-10"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Play className="w-4 h-4" />
-                See How It Works
-              </motion.button>
             </motion.div>
 
             {/* Speed Indicator */}
@@ -348,10 +333,6 @@ const LandingPageV2 = ({ token }) => {
             transition={{ delay: 1, duration: 0.8 }}
           >
             <div className="text-center mb-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 mb-3">
-                <Play className="w-3.5 h-3.5 text-blue-400" />
-                <span className="text-xs font-medium text-blue-300">See It In Action</span>
-              </div>
               <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 font-display">
                 Watch How It Works
               </h3>
@@ -378,20 +359,6 @@ const LandingPageV2 = ({ token }) => {
               </div>
             </div>
 
-            {/* CTA Button */}
-            <div className="text-center mt-8">
-              <ShimmerButton
-                onClick={() => navigate(token ? ROUTES.DASHBOARD : ROUTES.GUEST_ANALYZE)}
-                className="px-8 py-3 h-12 text-sm"
-              >
-                {token ? 'Go to Dashboard' : 'Start Analyzing Now'} <ArrowRight size={16} />
-              </ShimmerButton>
-              {!token && (
-                <p className="text-gray-500 text-xs mt-3">
-                  No credit card required • First scan completely free
-                </p>
-              )}
-            </div>
           </motion.div>
 
           {/* Dashboard Preview Mockup */}
@@ -503,19 +470,6 @@ const LandingPageV2 = ({ token }) => {
             })}
           </div>
 
-          {/* CTA after Features */}
-          <motion.div
-            className="text-center mt-12"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeInUp}
-            custom={4}
-          >
-            <ShimmerButton onClick={() => navigate(ROUTES.GUEST_ANALYZE)} className="px-8 py-3">
-              Start Analyzing Your Resume <ArrowRight size={16} />
-            </ShimmerButton>
-          </motion.div>
         </div>
       </div>
 
@@ -940,8 +894,6 @@ const LandingPageV2 = ({ token }) => {
       {/* Exit Intent Modal */}
       <ExitIntentModal pageName="landing" />
 
-      {/* Sticky CTA Bar (Mobile) */}
-      <StickyCTABar />
 
       {/* Floating CTA Button (Desktop) */}
       <FloatingCTAButton />
