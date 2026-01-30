@@ -358,6 +358,9 @@ def auto_migrate():
                 'ALTER TABLE users ADD COLUMN IF NOT EXISTS credits INTEGER DEFAULT 0;',
                 'ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(255);',
                 'ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_id VARCHAR(255);',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(50) DEFAULT \'inactive\';',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_start_date TIMESTAMP;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS last_credit_reset TIMESTAMP;',
                 # Admin fields
                 'ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;',
                 'ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;',
@@ -377,6 +380,17 @@ def auto_migrate():
                 'ALTER TABLE users ADD COLUMN IF NOT EXISTS email_bounce_count INTEGER DEFAULT 0;',
                 'ALTER TABLE users ADD COLUMN IF NOT EXISTS email_variant VARCHAR(50);',
                 'ALTER TABLE users ADD COLUMN IF NOT EXISTS timezone VARCHAR(50) DEFAULT \'UTC\';',
+                # Abandoned cart tracking
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS cart_abandoned_at TIMESTAMP;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS cart_abandoned_plan VARCHAR(50);',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS cart_abandoned_price FLOAT;',
+                # Market preferences for personalized insights
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS preferred_industry VARCHAR(100);',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS preferred_job_titles JSONB DEFAULT \'[]\';',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS preferred_location VARCHAR(200);',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS experience_level VARCHAR(50);',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS preferences_completed BOOLEAN DEFAULT FALSE;',
+                'ALTER TABLE users ADD COLUMN IF NOT EXISTS detected_industries JSONB DEFAULT \'[]\';',
                 # Set Google OAuth users as verified
                 'UPDATE users SET email_verified = TRUE WHERE auth_provider = \'google\';',
                 # Template system columns for Analysis table
