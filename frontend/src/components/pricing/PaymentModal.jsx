@@ -68,7 +68,9 @@ const GuestPaymentForm = ({ selectedPlan, guestToken, onSuccess, onError, onClos
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Failed to create checkout');
+        const errorMsg = data.details || data.error || data.message || 'Failed to create checkout';
+        console.error('Checkout error details:', data);
+        throw new Error(errorMsg);
       }
 
       if (data.checkout_url) {
@@ -295,7 +297,9 @@ const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Failed to create checkout');
+        const errorMsg = data.details || data.error || data.message || 'Failed to create checkout';
+        console.error('Checkout error details:', data);
+        throw new Error(errorMsg);
       }
 
       if (data.checkout_url) {
