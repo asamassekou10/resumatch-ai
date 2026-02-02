@@ -19,6 +19,7 @@ export const ROUTES = {
   HELP: '/help',
   HELP_TERMS: '/help/terms',
   HELP_PRIVACY: '/help/privacy',
+  SITEMAP: '/sitemap',
 
   // ============================================
   // PROTECTED ROUTES (Authentication Required)
@@ -118,6 +119,7 @@ export const isProtectedRoute = (path) => {
     ROUTES.HELP,
     ROUTES.HELP_TERMS,
     ROUTES.HELP_PRIVACY,
+    ROUTES.SITEMAP,
   ];
 
   return !publicRoutes.includes(path);

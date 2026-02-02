@@ -176,10 +176,22 @@ const Navigation = ({ token, onLogout, user }) => {
                     Blog
                   </Link>
                   <Link
+                    to="/resume-for"
+                    className="text-gray-300 hover:text-white transition font-medium"
+                  >
+                    Resume Guides
+                  </Link>
+                  <Link
                     to={ROUTES.PRICING}
                     className="text-gray-300 hover:text-white transition font-medium"
                   >
                     Pricing
+                  </Link>
+                  <Link
+                    to={ROUTES.SITEMAP}
+                    className="text-gray-300 hover:text-white transition font-medium"
+                  >
+                    Sitemap
                   </Link>
                   <Link
                     to={ROUTES.LOGIN}

@@ -39,7 +39,7 @@ const ResumeScoreBadge = ({
   };
 
   // Generate embed code
-  const embedCode = `<a href="https://resumeanalyzerai.com/guest-analyze?ref=badge" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;">
+  const embedCode = `<a href="https://www.resumeanalyzerai.com/guest-analyze?ref=badge" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;">
   <div style="background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:12px;padding:16px 24px;display:flex;align-items:center;gap:12px;border:1px solid rgba(139,92,246,0.3);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
     <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#10b981);display:flex;align-items:center;justify-content:center;">
       <span style="color:white;font-weight:bold;font-size:14px;">${score}</span>

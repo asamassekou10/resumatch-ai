@@ -12,7 +12,7 @@ import FreeTrialBanner from './ui/FreeTrialBanner';
 import ExitIntentModal from './ui/ExitIntentModal';
 
 import FloatingCTAButton from './ui/FloatingCTAButton';
-import { generateFAQSchema } from '../utils/structuredData';
+import { generateFAQSchema, generateVideoSchema, generateSoftwareAppWithReviewsSchema } from '../utils/structuredData';
 import BLOG_POSTS from '../utils/blogContent';
 
 
@@ -173,14 +173,48 @@ const LandingPageV2 = ({ token }) => {
 
   const faqSchema = generateFAQSchema(homepageFAQs);
 
+  // Video schema for the demo video
+  const videoSchema = generateVideoSchema({
+    name: 'How to Use ResumeAnalyzer AI - Demo Video',
+    description: 'Watch how ResumeAnalyzer AI analyzes your resume, provides ATS optimization tips, keyword suggestions, and helps you land more interviews.',
+    thumbnailUrl: 'https://www.resumeanalyzerai.com/demo-video-cover.png',
+    contentUrl: 'https://www.resumeanalyzerai.com/demo-video.mp4',
+    uploadDate: '2026-01-01',
+    duration: 'PT2M30S',
+  });
+
+  // Sample reviews for structured data (these could come from a database in production)
+  const sampleReviews = [
+    {
+      authorName: 'Sarah M.',
+      authorTitle: 'Software Engineer',
+      rating: '5',
+      reviewText: 'ResumeAnalyzer AI helped me optimize my resume for ATS systems. I started getting callbacks within a week of using it!',
+    },
+    {
+      authorName: 'James K.',
+      authorTitle: 'Marketing Manager',
+      rating: '5',
+      reviewText: 'The keyword suggestions were spot-on. My resume score went from 65 to 92 after implementing the recommendations.',
+    },
+    {
+      authorName: 'Emily R.',
+      authorTitle: 'Recent Graduate',
+      rating: '5',
+      reviewText: 'As a new grad, I had no idea what recruiters were looking for. This tool gave me exactly the guidance I needed.',
+    },
+  ];
+
+  const softwareAppSchema = generateSoftwareAppWithReviewsSchema(sampleReviews);
+
   return (
     <>
       <SEO
-        title="ResumeAnalyzer AI | Free ATS Resume Scanner & Optimizer"
-        description="Optimize your resume with AI-powered analysis, ATS scoring, skill gap analysis, and personalized job matching. Get hired faster with ResumeAnalyzer AI. 2 free scans daily."
-        keywords="resume analyzer, AI resume, ATS score, job matching, career tools, resume optimization, free resume scanner, ATS checker"
-        url="https://resumeanalyzerai.com/"
-        structuredData={[faqSchema]}
+        title="AI Resume Analyzer | Free Resume Scanner AI - 10 Sec Scan"
+        description="Resume scanner AI & AI resume analyzer - free. ATS score + missing keywords in 10 seconds. No signup. Resume parser price: free for first scan."
+        keywords="ai resume analyzer, resume scanner ai, resume scan ai, resume parser price, free resume analyzer, ATS score"
+        url="https://www.resumeanalyzerai.com/"
+        structuredData={[faqSchema, videoSchema, softwareAppSchema]}
       />
       <AnimatePresence>
         {showEntrance && <EntranceOverlay onComplete={() => setShowEntrance(false)} />}

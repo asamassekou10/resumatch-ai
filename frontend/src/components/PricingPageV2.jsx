@@ -231,7 +231,7 @@ const PricingPageV2 = ({ token, userProfile }) => {
         title="Pricing Plans"
         description="Start free, then get unlimited scans for 7 days at $6.99 or subscribe monthly. No long-term commitments required. AI-powered resume analysis with ATS scoring."
         keywords="pricing, resume analyzer pricing, AI career tools pricing, affordable resume analysis, 7-day pass, unlimited resume scans"
-        url="https://resumeanalyzerai.com/pricing"
+        url="https://www.resumeanalyzerai.com/pricing"
       />
       <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
         {/* Background atmosphere */}

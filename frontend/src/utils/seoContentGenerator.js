@@ -157,7 +157,7 @@ export const generateRoleFAQs = (jobRole) => {
 
 /**
  * Generate unique meta title for a role page
- * Prevents keyword cannibalization with variations
+ * Optimized for CTR - leads with high-intent keywords users search for
  * @param {Object} jobRole - Job role data
  * @param {string} variant - Title variant ('primary', 'guide', 'tips')
  * @returns {string} Meta title
@@ -165,10 +165,11 @@ export const generateRoleFAQs = (jobRole) => {
 export const generateMetaTitle = (jobRole, variant = 'primary') => {
   const year = new Date().getFullYear();
 
+  // Primary: Leads with "Resume Keywords for [Role]" - matches top GSC queries
   const titleVariants = {
-    primary: `${jobRole.name} Resume Examples & Guide [${year}] | Free Templates`,
+    primary: `Resume Keywords for ${jobRole.name} [${year}] | ATS List + Free Scan`,
     guide: `How to Write a ${jobRole.name} Resume That Gets Interviews`,
-    tips: `${jobRole.name} Resume Tips: Keywords, Skills & Examples`,
+    tips: `${jobRole.name} Resume Keywords & Tips: Beat ATS | Free Guide`,
     ats: `${jobRole.name} Resume: Beat the ATS & Land Interviews in ${year}`
   };
 
@@ -177,18 +178,15 @@ export const generateMetaTitle = (jobRole, variant = 'primary') => {
 
 /**
  * Generate unique meta description for a role page
+ * CTR-optimized: exact keywords, clear value, CTA
  * @param {Object} jobRole - Job role data
  * @returns {string} Meta description (max 160 characters)
  */
 export const generateMetaDescription = (jobRole) => {
-  const baseDesc = `Create a winning ${jobRole.name} resume with our expert guide. Includes ${jobRole.industry} keywords, ATS tips, and free AI-powered analysis.`;
-
-  // Ensure description is under 160 characters
-  if (baseDesc.length <= 160) {
-    return baseDesc;
-  }
-
-  return `${jobRole.name} resume guide: ${jobRole.industry} keywords, ATS tips, skills to highlight. Free AI resume analyzer included.`;
+  const topKeywords = jobRole.keywords.slice(0, 3).join(', ');
+  const shortDesc = `${jobRole.name} resume keywords list: ${topKeywords} + more. ATS-optimized. Free AI scan in 10 sec.`;
+  const longDesc = `Get the exact ${jobRole.name} resume keywords ATS scans for. ${topKeywords} + full list. Free scan.`;
+  return shortDesc.length <= 160 ? shortDesc : longDesc.length <= 160 ? longDesc : `${jobRole.name} resume keywords (ATS). ${topKeywords}. Free scan.`;
 };
 
 /**

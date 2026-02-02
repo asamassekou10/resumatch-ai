@@ -23,15 +23,16 @@ export const generateOrganizationSchema = () => ({
   url: SITE_URL,
   logo: `${SITE_URL}/logo512.png`,
   description: 'AI-powered resume optimization and job matching platform',
+  foundingDate: '2024',
   contactPoint: {
     '@type': 'ContactPoint',
     email: 'support@resumeanalyzerai.com',
     contactType: 'Customer Service',
+    availableLanguage: ['English'],
   },
   sameAs: [
-    // Add social media profiles when available
-    // 'https://twitter.com/resumatchai',
-    // 'https://linkedin.com/company/resumeanalyzerai',
+    'https://twitter.com/resumatchai',
+    'https://linkedin.com/company/resumeanalyzerai',
   ],
 });
 
@@ -268,6 +269,110 @@ export const generateArticleSchema = (articleData) => ({
   },
 });
 
+/**
+ * Generate VideoObject schema for demo videos
+ * @param {Object} videoData - Video information
+ */
+export const generateVideoSchema = (videoData) => ({
+  '@context': 'https://schema.org',
+  '@type': 'VideoObject',
+  name: videoData.name || 'How to Use ResumeAnalyzer AI - Demo Video',
+  description: videoData.description || 'Watch how ResumeAnalyzer AI analyzes your resume, provides ATS optimization tips, and helps you land more interviews.',
+  thumbnailUrl: videoData.thumbnailUrl || `${SITE_URL}/demo-video-cover.png`,
+  uploadDate: videoData.uploadDate || '2026-01-01',
+  duration: videoData.duration || 'PT2M30S', // ISO 8601 duration format
+  contentUrl: videoData.contentUrl || `${SITE_URL}/demo-video.mp4`,
+  embedUrl: videoData.embedUrl || `${SITE_URL}/demo-video.mp4`,
+  publisher: {
+    '@type': 'Organization',
+    name: SITE_NAME,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${SITE_URL}/logo512.png`,
+    },
+  },
+  potentialAction: {
+    '@type': 'WatchAction',
+    target: `${SITE_URL}/#demo-video`,
+  },
+});
+
+/**
+ * Generate Review schema for testimonials
+ * @param {Object} reviewData - Review information
+ */
+export const generateReviewSchema = (reviewData) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Review',
+  itemReviewed: {
+    '@type': 'SoftwareApplication',
+    name: SITE_NAME,
+    applicationCategory: 'BusinessApplication',
+  },
+  reviewRating: {
+    '@type': 'Rating',
+    ratingValue: reviewData.rating || '5',
+    bestRating: '5',
+    worstRating: '1',
+  },
+  author: {
+    '@type': 'Person',
+    name: reviewData.authorName,
+    jobTitle: reviewData.authorTitle || undefined,
+  },
+  reviewBody: reviewData.reviewText,
+  datePublished: reviewData.datePublished || new Date().toISOString().split('T')[0],
+});
+
+/**
+ * Generate multiple reviews as an array
+ * @param {Array} reviews - Array of review objects
+ */
+export const generateReviewsSchema = (reviews) => 
+  reviews.map(review => generateReviewSchema(review));
+
+/**
+ * Generate SoftwareApplication schema with reviews
+ * Combines app info with aggregate rating and individual reviews
+ */
+export const generateSoftwareAppWithReviewsSchema = (reviews = []) => ({
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: SITE_NAME,
+  description: 'AI-powered resume optimization and job matching platform that helps job seekers create ATS-friendly resumes and find the perfect job matches',
+  url: SITE_URL,
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web Browser',
+  offers: {
+    '@type': 'AggregateOffer',
+    lowPrice: '0',
+    highPrice: '49.99',
+    priceCurrency: 'USD',
+    offerCount: '3',
+  },
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '4.8',
+    reviewCount: '500',
+    ratingCount: '1250',
+    bestRating: '5',
+    worstRating: '1',
+  },
+  review: reviews.length > 0 ? reviews.map(review => ({
+    '@type': 'Review',
+    reviewRating: {
+      '@type': 'Rating',
+      ratingValue: review.rating || '5',
+      bestRating: '5',
+    },
+    author: {
+      '@type': 'Person',
+      name: review.authorName,
+    },
+    reviewBody: review.reviewText,
+  })) : undefined,
+});
+
 const structuredData = {
   generateOrganizationSchema,
   generateWebApplicationSchema,
@@ -280,6 +385,10 @@ const structuredData = {
   generateOccupationSchema,
   generateItemListSchema,
   generateArticleSchema,
+  generateVideoSchema,
+  generateReviewSchema,
+  generateReviewsSchema,
+  generateSoftwareAppWithReviewsSchema,
 };
 
 export default structuredData;

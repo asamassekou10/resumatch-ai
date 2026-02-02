@@ -24,8 +24,14 @@ const Footer = () => {
             <Link to="/blog" className="hover:text-white transition-colors">
               Blog
             </Link>
+            <Link to="/resume-for" className="hover:text-white transition-colors">
+              Resume Guides
+            </Link>
             <Link to={ROUTES.PRICING} className="hover:text-white transition-colors">
               Pricing
+            </Link>
+            <Link to={ROUTES.SITEMAP} className="hover:text-white transition-colors">
+              Sitemap
             </Link>
             <Link to={ROUTES.HELP_PRIVACY} className="hover:text-white transition-colors">
               Privacy Policy

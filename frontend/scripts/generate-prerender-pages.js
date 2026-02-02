@@ -299,6 +299,12 @@ function generateJobRoleHTML(role) {
  */
 function generateBlogPostHTML(post) {
   const url = `${SITE_URL}/blog/${post.slug}`;
+  const keywordList = post.keywords
+    ? post.keywords.split(',').map((item) => item.trim()).filter(Boolean)
+    : [];
+  const topKeywords = keywordList.slice(0, 8);
+  const publishedDate = post.datePublished || '2026-01-01';
+  const modifiedDate = post.dateModified || publishedDate;
 
   const structuredData = {
     '@context': 'https://schema.org',
@@ -308,7 +314,9 @@ function generateBlogPostHTML(post) {
     author: { '@type': 'Organization', name: SITE_NAME },
     publisher: { '@type': 'Organization', name: SITE_NAME, logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo512.png` } },
     url: url,
-    image: `${SITE_URL}/og-image.png`
+    image: `${SITE_URL}/og-image.png`,
+    datePublished: publishedDate,
+    dateModified: modifiedDate
   };
 
   // Get related posts
@@ -363,13 +371,21 @@ function generateBlogPostHTML(post) {
     </nav>
 
     <span class="badge">${post.category}</span>
-    <span class="meta">${post.readTime}</span>
+    <span class="meta">${post.readTime} • Updated ${modifiedDate}</span>
 
     <h1>${post.title}</h1>
 
     <p>${post.excerpt}</p>
 
     <p>${post.description}</p>
+
+    <h2>Quick Summary</h2>
+    <p>This guide covers ${topKeywords.slice(0, 4).join(', ')} and other resume optimization strategies to help you get more interviews.</p>
+
+    <h2>Key Takeaways</h2>
+    <ul>
+      ${topKeywords.map(k => `<li>${k}</li>`).join('\n      ')}
+    </ul>
 
     <a href="/guest-analyze" class="cta">Try Free Resume Analysis</a>
 
@@ -670,6 +686,80 @@ const STATIC_PAGES = [
 ];
 
 /**
+ * Generate sitemap page HTML for internal discovery
+ */
+function generateSitemapHTML() {
+  const url = `${SITE_URL}/sitemap`;
+
+  const staticLinks = [
+    { name: 'Home', url: `${SITE_URL}/` },
+    { name: 'Resume Guides', url: `${SITE_URL}/resume-for` },
+    { name: 'Blog', url: `${SITE_URL}/blog` },
+    ...STATIC_PAGES.map((page) => ({
+      name: page.title.split('|')[0].trim(),
+      url: `${SITE_URL}${page.path}`,
+    })),
+  ];
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sitemap | ${SITE_NAME}</title>
+  <meta name="description" content="Browse all ResumeAnalyzer AI pages including resume guides and blog posts.">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="${url}">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="${url}">
+  <meta property="og:title" content="Sitemap | ${SITE_NAME}">
+  <meta property="og:description" content="Browse all ResumeAnalyzer AI pages including resume guides and blog posts.">
+  <meta property="og:image" content="${SITE_URL}/og-image.png">
+
+  <link rel="icon" type="image/png" href="/favicon-96x96.png">
+
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #e5e7eb; background: #000; margin: 0; padding: 20px; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    h1 { font-size: 2.5rem; color: #fff; }
+    h2 { color: #60a5fa; margin-top: 2rem; }
+    a { color: #93c5fd; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul { padding-left: 1.2rem; }
+    li { margin: 0.4rem 0; }
+    nav { margin-bottom: 2rem; font-size: 0.875rem; color: #9ca3af; }
+    nav a { color: #9ca3af; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav><a href="/">Home</a> &gt; Sitemap</nav>
+
+    <h1>Sitemap</h1>
+    <p>Quick access to all public pages, resume guides, and blog posts.</p>
+
+    <h2>Main Pages</h2>
+    <ul>
+      ${staticLinks.map((page) => `<li><a href="${page.url.replace(SITE_URL, '')}">${page.name}</a></li>`).join('\n      ')}
+    </ul>
+
+    <h2>Resume Guides</h2>
+    <ul>
+      ${JOB_ROLES.map((role) => `<li><a href="/resume-for/${role.slug}">${role.name} Resume Guide</a></li>`).join('\n      ')}
+    </ul>
+
+    <h2>Blog Posts</h2>
+    <ul>
+      ${BLOG_POSTS.map((post) => `<li><a href="/blog/${post.slug}">${post.title}</a></li>`).join('\n      ')}
+    </ul>
+  </div>
+  <div id="root"></div>
+</body>
+</html>`;
+}
+
+/**
  * Main generator function
  */
 function generatePrerenderedPages() {
@@ -718,10 +808,16 @@ function generatePrerenderedPages() {
     generated++;
   });
 
+  // Generate sitemap page
+  const sitemapDir = path.join(buildDir, 'sitemap');
+  fs.mkdirSync(sitemapDir, { recursive: true });
+  fs.writeFileSync(path.join(sitemapDir, 'index.html'), generateSitemapHTML());
+  generated++;
+
   console.log(`\n✅ Pre-rendered ${generated} pages with FULL CONTENT for SEO`);
   console.log(`   Job role pages: ${JOB_ROLES.length}`);
   console.log(`   Blog posts: ${BLOG_POSTS.length}`);
-  console.log(`   Static pages: ${STATIC_PAGES.length + 2}`);
+  console.log(`   Static pages: ${STATIC_PAGES.length + 3}`);
 }
 
 generatePrerenderedPages();

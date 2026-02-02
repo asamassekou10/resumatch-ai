@@ -361,10 +361,10 @@ const GuestAnalyze = () => {
   return (
     <>
       <SEO
-        title="Free AI Resume Scanner | ATS Score & Missing Keywords in 10 Seconds"
-        description="Scan your resume for free. Get your ATS compatibility score, missing keywords report, and executive summary suggestions in 10 seconds. No signup required. 1 free scan for guests."
-        keywords="free resume scanner, free ATS checker, resume keyword analyzer, ATS score free, resume analysis free, AI resume checker"
-        url="https://resumeanalyzerai.com/guest-analyze"
+        title="Free AI Resume Scanner | ATS Score & Keywords in 10 Seconds"
+        description="Resume scanner AI - free. Get ATS score, missing keywords, and fix suggestions in 10 seconds. No signup. 1 free scan. Try now."
+        keywords="resume scanner ai, resume scan ai, free resume scanner, ATS score free, AI resume checker, resume parser"
+        url="https://www.resumeanalyzerai.com/guest-analyze"
         structuredData={[faqSchema]}
       />
       <div className="min-h-screen bg-black relative overflow-hidden pt-24 pb-12 px-4">

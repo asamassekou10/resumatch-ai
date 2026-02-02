@@ -23,6 +23,7 @@ const VerifySuccess = lazy(() => import('../VerifySuccess'));
 // SEO Pages
 const JobRoleLandingPage = lazy(() => import('../seo/JobRoleLandingPage'));
 const ResumeGuidesIndex = lazy(() => import('../seo/ResumeGuidesIndex'));
+const SitemapPage = lazy(() => import('../seo/SitemapPage'));
 
 // Error Pages
 const NotFound = lazy(() => import('../NotFound'));
@@ -162,6 +163,7 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) 
 
           {/* SEO Resource Pages */}
           <Route path="/resources/for-students" element={<StudentResources />} />
+          <Route path={ROUTES.SITEMAP} element={<SitemapPage />} />
         </Route>
 
         {/* ============================================ */}

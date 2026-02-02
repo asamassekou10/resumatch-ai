@@ -14,7 +14,7 @@ const BlogList = () => {
         <SEO
           title="Resume Tips & Career Advice Blog"
           description="Expert resume tips, ATS optimization guides, and career advice to help you land your dream job."
-          url="https://resumeanalyzerai.com/blog"
+          url="https://www.resumeanalyzerai.com/blog"
         />
         <div className="max-w-6xl mx-auto px-4 py-12 relative z-10">
           <div className="text-center">
@@ -34,7 +34,7 @@ const BlogList = () => {
         title="Resume Tips & Career Advice Blog"
         description="Expert resume tips, ATS optimization guides, and career advice to help you land your dream job. Learn how to create a winning resume that gets interviews."
         keywords="resume tips, career advice, resume blog, ATS optimization, job search tips, resume writing"
-        url="https://resumeanalyzerai.com/blog"
+        url="https://www.resumeanalyzerai.com/blog"
       />
       <div className="max-w-6xl mx-auto px-4 py-12 relative z-10">
         {/* Header */}

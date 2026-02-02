@@ -44,7 +44,7 @@ const BlogPost = () => {
     description: post.description,
     datePublished: post.datePublished,
     dateModified: post.dateModified,
-    url: `https://resumeanalyzerai.com/blog/${post.slug}`,
+    url: `https://www.resumeanalyzerai.com/blog/${post.slug}`,
     image: post.image,
   });
 
@@ -73,7 +73,7 @@ const BlogPost = () => {
         title={post.title}
         description={post.description}
         keywords={post.keywords}
-        url={`https://resumeanalyzerai.com/blog/${post.slug}`}
+        url={`https://www.resumeanalyzerai.com/blog/${post.slug}`}
         structuredData={structuredData}
       />
       

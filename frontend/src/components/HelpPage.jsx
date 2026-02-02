@@ -87,28 +87,28 @@ const HelpPage = ({ defaultTab = 'help' }) => {
           title: 'Share Your Feedback',
           description: 'Tell us about your experience with ResumeAnalyzer AI. Your feedback helps us improve and serve you better.',
           keywords: 'feedback, user feedback, testimonial, review, suggestions',
-          url: 'https://resumeanalyzerai.com/help?feedback=true'
+          url: 'https://www.resumeanalyzerai.com/help?feedback=true'
         };
       case 'terms':
         return {
           title: 'Terms of Service',
           description: 'Read our Terms of Service to understand the terms and conditions for using ResumeAnalyzer AI. Learn about user rights, subscription terms, and acceptable use policies.',
           keywords: 'terms of service, user agreement, legal terms, resume analyzer terms',
-          url: 'https://resumeanalyzerai.com/help/terms'
+          url: 'https://www.resumeanalyzerai.com/help/terms'
         };
       case 'privacy':
         return {
           title: 'Privacy Policy',
           description: 'Learn how ResumeAnalyzer AI protects your privacy. Our Privacy Policy explains how we collect, use, and safeguard your personal information and resume data.',
           keywords: 'privacy policy, data protection, GDPR, user privacy, resume data security',
-          url: 'https://resumeanalyzerai.com/help/privacy'
+          url: 'https://www.resumeanalyzerai.com/help/privacy'
         };
       default:
         return {
           title: 'Help & Support',
           description: 'Get help with ResumeAnalyzer AI. Find answers to frequently asked questions, learn how to use our features, and contact our support team for assistance.',
           keywords: 'help, support, FAQ, resume analyzer help, how to use, customer support',
-          url: 'https://resumeanalyzerai.com/help'
+          url: 'https://www.resumeanalyzerai.com/help'
         };
     }
   };

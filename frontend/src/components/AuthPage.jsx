@@ -397,13 +397,13 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
         title: 'Login',
         description: 'Sign in to your ResumeAnalyzer AI account to access your resume analysis, job matches, and career insights. Secure login with email, Google, or LinkedIn.',
         keywords: 'login, sign in, resume analyzer login, account access',
-        url: 'https://resumeanalyzerai.com/login'
+        url: 'https://www.resumeanalyzerai.com/login'
       }
     : {
         title: 'Create Account',
         description: 'Create a free ResumeAnalyzer AI account to start optimizing your resume with AI-powered analysis, ATS scoring, and personalized job matching.',
         keywords: 'register, sign up, create account, resume analyzer registration, free account',
-        url: 'https://resumeanalyzerai.com/register'
+        url: 'https://www.resumeanalyzerai.com/register'
       };
 
   return (
@@ -413,6 +413,7 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
         description={seoMetadata.description}
         keywords={seoMetadata.keywords}
         url={seoMetadata.url}
+        noindex={true}
       />
       <div className="min-h-screen bg-black relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
       {/* Background atmosphere */}

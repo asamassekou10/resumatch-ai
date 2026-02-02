@@ -94,6 +94,9 @@ const MobileMenu = ({ isOpen, onClose, user, handleLogout, isAdmin }) => {
     { label: 'Home', route: ROUTES.LANDING, icon: Home },
     { label: 'Try Free', route: ROUTES.GUEST_ANALYZE, icon: FileText },
     { label: 'Pricing', route: ROUTES.PRICING, icon: CreditCard },
+    { label: 'Blog', route: '/blog', icon: FileText },
+    { label: 'Resume Guides', route: '/resume-for', icon: Briefcase },
+    { label: 'Sitemap', route: ROUTES.SITEMAP, icon: HelpCircle },
     { label: 'Login', route: ROUTES.LOGIN, icon: LogIn },
     { label: 'Sign Up', route: ROUTES.REGISTER, icon: UserPlus },
   ];

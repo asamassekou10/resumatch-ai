@@ -61,19 +61,31 @@ const SEO = ({
 
     let normalized = inputUrl;
 
-    // Ensure https://www. prefix
+    // Handle relative paths (e.g. "/blog/post")
+    if (normalized.startsWith('/') && !normalized.startsWith('//')) {
+      normalized = siteUrl + normalized;
+    }
+
+    // Ensure https://www. prefix (fix non-www canonical issues)
     if (normalized.startsWith('https://resumeanalyzerai.com')) {
       normalized = normalized.replace('https://resumeanalyzerai.com', 'https://www.resumeanalyzerai.com');
     }
+    if (normalized.startsWith('http://resumeanalyzerai.com')) {
+      normalized = normalized.replace('http://resumeanalyzerai.com', 'https://www.resumeanalyzerai.com');
+    }
 
     // Remove trailing slash except for homepage
-    if (normalized !== siteUrl && normalized.endsWith('/')) {
+    if (normalized !== siteUrl && normalized !== siteUrl + '/' && normalized.endsWith('/')) {
       normalized = normalized.slice(0, -1);
     }
 
     // Remove query parameters and hash for canonical
-    const urlObj = new URL(normalized);
-    normalized = `${urlObj.origin}${urlObj.pathname}`;
+    try {
+      const urlObj = new URL(normalized);
+      normalized = `${urlObj.origin}${urlObj.pathname}`;
+    } catch {
+      return siteUrl;
+    }
 
     return normalized;
   };

@@ -55,21 +55,10 @@ Disallow: /download
 Disallow: /verify-success
 Disallow: /unsubscribe
 
-# Disallow URL parameters to prevent duplicate content indexing
-Disallow: /*?*
-
-# Sitemap location
+# Sitemap location (submit in Google Search Console)
 Sitemap: https://www.resumeanalyzerai.com/sitemap.xml
 
-# Crawl delay (be nice to servers)
-Crawl-delay: 1
+# Allow HTML sitemap for discoverability
+Allow: /sitemap
 
-# Google-specific rules (no crawl delay for better indexing)
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 0
-
-# Bing-specific rules
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 1
+# Note: Google ignores Crawl-delay. Canonical tags handle duplicate content.

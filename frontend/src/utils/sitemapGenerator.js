@@ -5,7 +5,7 @@
  * This ensures all public routes are included with proper SEO metadata.
  */
 
-const SITE_URL = 'https://resumeanalyzerai.com';
+const SITE_URL = 'https://www.resumeanalyzerai.com';
 
 /**
  * Route configuration with SEO metadata

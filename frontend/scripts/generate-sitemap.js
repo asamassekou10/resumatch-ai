@@ -102,7 +102,8 @@ const STATIC_ROUTES = [
   { path: '/help/privacy', priority: '0.5', changefreq: 'yearly', lastmod: '2026-01-01' },
   { path: '/login', priority: '0.5', changefreq: 'yearly', lastmod: '2026-01-01' },
   { path: '/register', priority: '0.7', changefreq: 'yearly', lastmod: '2026-01-01' },
-  { path: '/resources/for-students', priority: '0.8', changefreq: 'monthly', lastmod: today }
+  { path: '/resources/for-students', priority: '0.8', changefreq: 'monthly', lastmod: today },
+  { path: '/sitemap', priority: '0.6', changefreq: 'weekly', lastmod: today }
 ];
 
 // ============================================

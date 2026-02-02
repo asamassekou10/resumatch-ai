@@ -3,6 +3,20 @@
   "buildCommand": "cd frontend && npm install && npm run build && npm run postbuild",
   "outputDirectory": "frontend/build",
   "framework": "create-react-app",
+  "redirects": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "resumeanalyzerai.com" }],
+      "destination": "https://www.resumeanalyzerai.com/",
+      "permanent": true
+    },
+    {
+      "source": "/((?!api/).*)",
+      "has": [{ "type": "host", "value": "resumeanalyzerai.com" }],
+      "destination": "https://www.resumeanalyzerai.com/$1",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
@@ -49,5 +63,6 @@
         }
       ]
     }
-  ]
+  ],
+  "trailingSlash": false
 }

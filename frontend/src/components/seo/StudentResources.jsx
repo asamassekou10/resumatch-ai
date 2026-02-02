@@ -52,7 +52,7 @@ const StudentResources = () => {
         title="Student Resources - Free Resume Tools for Students"
         description="Free resume analysis tools and resources for students and recent graduates. Get AI-powered resume feedback, templates, and career advice to land your first job."
         keywords="student resume, free resume analysis, student resources, college resume, graduate resume, entry level resume"
-        url="https://resumeanalyzerai.com/resources/for-students"
+        url="https://www.resumeanalyzerai.com/resources/for-students"
       />
       <div className="min-h-screen bg-black relative overflow-hidden">
         {/* Background atmosphere */}
