@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 // Framer Motion removed to fix animation compatibility issues
 import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, Clock, FileText, Download, Sparkles, Mail, Infinity, ChevronDown, ChevronUp, Target, Search } from 'lucide-react';
+import Turnstile from '@marsidev/react-turnstile';
 import guestService from '../services/guestService';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
@@ -60,6 +61,8 @@ const GuestAnalyze = () => {
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const [creatingSession, setCreatingSession] = useState(false);
 
   // Handle payment redirect - open payment modal
   useEffect(() => {
@@ -176,24 +179,9 @@ const GuestAnalyze = () => {
           }
         }
 
-        // No valid session exists, create a new one
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Connection timeout. Please check your internet connection.')), 10000)
-        );
-
-        const response = await Promise.race([
-          guestService.createSession(),
-          timeoutPromise
-        ]);
-
-        setGuestToken(response.guest_token);
-        setGuestCredits(response.credits);
-        setSessionInfo({
-          expires_at: response.expires_at,
-          session_id: response.session_id,
-        });
-        guestService.storeGuestToken(response.guest_token, response.expires_at);
-        setStep('analyze');
+        // No valid session exists, wait for CAPTCHA verification
+        // Session creation will be triggered by handleCaptchaSuccess
+        return;
       } catch (err) {
         console.error('Guest session error:', err);
         // Handle specific error cases
@@ -227,6 +215,54 @@ const GuestAnalyze = () => {
         name: file.name,
         file: file,
       });
+    }
+  };
+
+  // Handle CAPTCHA verification success
+  const handleCaptchaSuccess = async (token) => {
+    console.log('CAPTCHA verified:', token);
+    setCaptchaToken(token);
+    setCreatingSession(true);
+    setError('');
+
+    try {
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Connection timeout. Please check your internet connection.')), 10000)
+      );
+
+      const response = await Promise.race([
+        guestService.createSession(token),
+        timeoutPromise
+      ]);
+
+      setGuestToken(response.guest_token);
+      setGuestCredits(response.credits);
+      setSessionInfo({
+        expires_at: response.expires_at,
+        session_id: response.session_id,
+      });
+      guestService.storeGuestToken(response.guest_token, response.expires_at);
+      setStep('analyze');
+    } catch (err) {
+      console.error('Guest session error:', err);
+      const errorMessage = err.message || 'Failed to start guest session. Please try again.';
+
+      guestService.clearGuestSession();
+      setCreatingSession(false);
+
+      if (errorMessage.includes('Too many guest sessions') || errorMessage.includes('RATE_LIMIT_EXCEEDED')) {
+        setError('Too many sessions created. Please try again in 24 hours or create an account.');
+      } else if (errorMessage.includes('Daily guest analysis limit') || errorMessage.includes('DAILY_LIMIT_EXCEEDED') || errorMessage.includes('DAILY_BUDGET_EXCEEDED')) {
+        setError('Daily guest limit reached. Create a free account for guaranteed access!');
+      } else if (errorMessage.includes('CAPTCHA')) {
+        setError('CAPTCHA verification failed. Please refresh the page and try again.');
+      } else if (errorMessage.includes('timed out') || errorMessage.includes('timeout')) {
+        setError('Connection timeout. Please check your internet connection and try again.');
+      } else if (errorMessage.includes('Network error') || errorMessage.includes('Failed to fetch')) {
+        setError('Unable to connect to the server. Please check your internet connection.');
+      } else {
+        setError(errorMessage);
+      }
     }
   };
 
@@ -400,12 +436,27 @@ const GuestAnalyze = () => {
                       </button>
                     </div>
                   </>
-                ) : (
+                ) : creatingSession ? (
                   <>
                     <div className="inline-block mb-4 relative z-10 animate-spin" style={{ animationDuration: '2s' }}>
                       <Clock className="w-16 h-16 text-blue-400" />
                     </div>
-                    <p className="text-gray-300 relative z-10">Initializing your guest session...</p>
+                    <p className="text-gray-300 relative z-10">Creating your guest session...</p>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-16 h-16 text-blue-400 mx-auto mb-4" />
+                    <h2 className="text-white font-bold text-xl mb-2">Verify You're Human</h2>
+                    <p className="text-gray-300 mb-6">Complete the verification to start your free analysis</p>
+                    <div className="flex justify-center mb-4">
+                      <Turnstile
+                        siteKey={process.env.REACT_APP_TURNSTILE_SITE_KEY}
+                        onSuccess={handleCaptchaSuccess}
+                        onError={() => setError('CAPTCHA verification failed. Please refresh the page and try again.')}
+                        theme="dark"
+                      />
+                    </div>
+                    <p className="text-gray-400 text-sm">Protected by Cloudflare Turnstile</p>
                   </>
                 )}
               </SpotlightCard>

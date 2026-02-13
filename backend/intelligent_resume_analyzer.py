@@ -124,8 +124,11 @@ class IntelligentResumeAnalyzer:
 
     def detect_language(self, text: str) -> str:
         """
-        Detect the primary language of the given text.
+        Detect the primary language of the given text using character analysis heuristics.
         Returns ISO 639-1 two-letter language code.
+
+        This is a ZERO-COST replacement for API-based detection.
+        Eliminates 1 of 6 API calls per analysis (17% cost reduction).
         """
         if not text or len(text.strip()) < 50:
             return 'en'
@@ -135,31 +138,114 @@ class IntelligentResumeAnalyzer:
         if cache_key in self._language_cache:
             return self._language_cache[cache_key]
 
-        text_sample = text[:1000]
-        prompt = f"""Analyze this text and determine its primary language.
-Return ONLY the ISO 639-1 two-letter language code (lowercase).
-Supported codes: en, fr, de, es, nl, pt, it, pl, ru, zh, ja, ko, ar, hi
-If unsure, return 'en'.
+        # Use heuristic detection (no API call)
+        detected = self._detect_language_heuristic(text)
+        self._language_cache[cache_key] = detected
+        logger.info(f"Detected language (heuristic): {detected}")
+        return detected
 
-Text: {text_sample}
+    def _detect_language_heuristic(self, text: str) -> str:
+        """
+        FREE language detection using character analysis and keyword matching.
+        No API calls - pure Python logic.
 
-Response (just the code):"""
-
-        try:
-            response = self.model.generate_content(
-                prompt,
-                request_options={'timeout': 10}
-            )
-            if response and response.text:
-                detected = response.text.strip().lower()[:2]
-                if detected in self.SUPPORTED_LANGUAGES:
-                    logger.info(f"Detected language: {detected}")
-                    self._language_cache[cache_key] = detected
-                    return detected
+        Detection strategy:
+        1. Character script analysis (Cyrillic, CJK, Arabic, Devanagari)
+        2. European language keyword matching (French, German, Spanish, etc.)
+        3. Default to English if uncertain
+        """
+        if not text or len(text.strip()) < 50:
             return 'en'
-        except Exception as e:
-            logger.warning(f"Language detection failed: {e}")
-            return 'en'
+
+        # Analyze first 1000 characters for speed
+        sample = text[:1000]
+
+        # Count characters by script
+        latin = cyrillic = cjk = arabic = devanagari = 0
+
+        for char in sample:
+            code = ord(char)
+            # Latin alphabet (including extended Latin for European languages)
+            if (0x0041 <= code <= 0x007A) or (0x00C0 <= code <= 0x00FF):
+                latin += 1
+            # Cyrillic (Russian, etc.)
+            elif 0x0400 <= code <= 0x04FF:
+                cyrillic += 1
+            # CJK (Chinese, Japanese, Korean)
+            elif (0x4E00 <= code <= 0x9FFF) or (0x3040 <= code <= 0x30FF):
+                cjk += 1
+            # Arabic
+            elif 0x0600 <= code <= 0x06FF:
+                arabic += 1
+            # Devanagari (Hindi)
+            elif 0x0900 <= code <= 0x097F:
+                devanagari += 1
+
+        # Non-Latin script detection
+        if cyrillic > latin * 0.3:
+            return 'ru'
+        elif cjk > latin * 0.2:
+            # Distinguish Japanese from Chinese by hiragana/katakana presence
+            if any(0x3040 <= ord(c) <= 0x30FF for c in sample[:200]):
+                return 'ja'
+            # Check for Korean Hangul
+            if any(0xAC00 <= ord(c) <= 0xD7AF for c in sample[:200]):
+                return 'ko'
+            return 'zh'
+        elif arabic > latin * 0.3:
+            return 'ar'
+        elif devanagari > latin * 0.3:
+            return 'hi'
+
+        # European language detection using keyword frequency
+        text_lower = sample.lower()
+
+        # French keywords
+        keywords_fr = ['le', 'la', 'les', 'de', 'et', 'un', 'une', 'dans', 'pour', 'avec']
+        score_fr = sum(f' {kw} ' in text_lower for kw in keywords_fr)
+
+        # German keywords
+        keywords_de = ['der', 'die', 'das', 'und', 'ist', 'für', 'mit', 'von', 'den', 'zu']
+        score_de = sum(f' {kw} ' in text_lower for kw in keywords_de)
+
+        # Spanish keywords
+        keywords_es = ['el', 'la', 'los', 'las', 'de', 'y', 'un', 'una', 'en', 'con']
+        score_es = sum(f' {kw} ' in text_lower for kw in keywords_es)
+
+        # Portuguese keywords
+        keywords_pt = ['o', 'a', 'os', 'as', 'de', 'e', 'um', 'uma', 'em', 'com', 'não']
+        score_pt = sum(f' {kw} ' in text_lower for kw in keywords_pt)
+
+        # Italian keywords
+        keywords_it = ['il', 'la', 'lo', 'i', 'gli', 'le', 'di', 'e', 'un', 'una', 'per']
+        score_it = sum(f' {kw} ' in text_lower for kw in keywords_it)
+
+        # Dutch keywords
+        keywords_nl = ['de', 'het', 'een', 'van', 'en', 'in', 'voor', 'met', 'op', 'te']
+        score_nl = sum(f' {kw} ' in text_lower for kw in keywords_nl)
+
+        # Polish keywords
+        keywords_pl = ['w', 'na', 'z', 'i', 'do', 'się', 'nie', 'o', 'że', 'jest']
+        score_pl = sum(f' {kw} ' in text_lower for kw in keywords_pl)
+
+        # Find language with highest score
+        scores = {
+            'fr': score_fr,
+            'de': score_de,
+            'es': score_es,
+            'pt': score_pt,
+            'it': score_it,
+            'nl': score_nl,
+            'pl': score_pl
+        }
+
+        # Require minimum score of 3 keywords to be confident
+        max_lang = max(scores, key=scores.get)
+        if scores[max_lang] >= 3:
+            return max_lang
+
+        # Default to English
+        return 'en'
 
     def _get_language_instruction(self, language: str) -> str:
         """Get the language instruction for prompts"""

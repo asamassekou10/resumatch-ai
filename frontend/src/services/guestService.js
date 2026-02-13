@@ -5,15 +5,19 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 const guestService = {
   /**
    * Create a new guest session
+   * @param {string} captchaToken - Cloudflare Turnstile CAPTCHA token
    * @returns {Promise<{guest_token, credits, expires_at, session_id}>}
    */
-  createSession: async () => {
+  createSession: async (captchaToken = null) => {
     try {
       const response = await fetch(`${API_URL}/guest/session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          captcha_token: captchaToken,
+        }),
       });
 
       if (!response.ok) {

@@ -93,6 +93,18 @@ def create_guest_session():
         request_data = request.get_json(silent=True) or {}
         device_fingerprint = request_data.get('device_fingerprint')
 
+        # SECURITY: Verify CAPTCHA to prevent bot abuse
+        from captcha_service import verify_turnstile, is_captcha_required
+        if is_captcha_required():
+            captcha_token = request_data.get('captcha_token')
+            is_valid, error_msg = verify_turnstile(captcha_token, ip_address)
+            if not is_valid:
+                logger.warning(f"CAPTCHA verification failed for IP {ip_address}: {error_msg}")
+                return jsonify({
+                    'error': error_msg or 'CAPTCHA verification failed',
+                    'error_type': 'CAPTCHA_REQUIRED'
+                }), 403
+
         # SECURITY: Check for abuse - limit guest sessions per IP
         # Count active sessions from this IP in the last 24 hours
         recent_sessions_count = GuestSession.query.filter(
@@ -101,9 +113,9 @@ def create_guest_session():
             GuestSession.status == 'active'
         ).count()
 
-        # Allow max 10 active sessions per IP per day to prevent abuse
+        # Allow max 3 active sessions per IP per day to prevent abuse
         # (Frontend now reuses sessions, so this limit should rarely be hit)
-        if recent_sessions_count >= 10:
+        if recent_sessions_count >= 3:
             logger.warning(f"Rate limit exceeded for IP {ip_address}: {recent_sessions_count} sessions in 24h")
             return jsonify({
                 'error': 'Too many guest sessions from this IP. Please try again later or create an account.',
@@ -118,7 +130,7 @@ def create_guest_session():
             GuestSession.created_at >= datetime.utcnow() - timedelta(hours=24)
         ).count()
 
-        if total_analyses_from_ip >= 10:  # Max 10 total analyses per IP per day across all sessions
+        if total_analyses_from_ip >= 3:  # Max 3 total analyses per IP per day across all sessions (reduced from 10 for cost control)
             logger.warning(f"Analysis limit exceeded for IP {ip_address}: {total_analyses_from_ip} analyses in 24h")
             return jsonify({
                 'error': 'Daily guest analysis limit reached. Create an account for unlimited access.',
@@ -184,6 +196,18 @@ def analyze_resume_guest():
     guest_session = g.guest_session
 
     try:
+        # CRITICAL: Check daily budget FIRST to prevent runaway costs
+        from cost_tracker import cost_tracker
+        can_proceed, budget_error_msg = cost_tracker.can_process_guest_analysis()
+        if not can_proceed:
+            logger.warning(f"Guest analysis blocked: daily budget exceeded")
+            return jsonify({
+                'error': budget_error_msg,
+                'error_type': 'DAILY_BUDGET_EXCEEDED',
+                'retry_after': '24 hours',
+                'upgrade_message': 'Sign up for a free account to get guaranteed access to 10 analyses per day!'
+            }), 503  # Service Unavailable
+
         # SECURITY: Check if guest has credits
         if not guest_session.has_credits():
             return jsonify({
@@ -299,6 +323,9 @@ def analyze_resume_guest():
         guest_session.last_activity = datetime.utcnow()
 
         db.session.commit()
+
+        # Record analysis in cost tracker for budget enforcement
+        cost_tracker.record_guest_analysis()
 
         logger.info(f"Guest analysis created: {analysis_id} for session {guest_session.id}")
 

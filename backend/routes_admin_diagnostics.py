@@ -324,3 +324,112 @@ def full_diagnostic():
     except Exception as e:
         logger.error(f"Error running full diagnostic: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+# ============== API COST MONITORING ENDPOINTS ==============
+
+@admin_diag_bp.route('/api-costs/daily', methods=['GET'])
+@jwt_required()
+def get_daily_api_costs():
+    """
+    Get today's API cost statistics.
+    Admin-only endpoint for monitoring daily spending.
+    """
+    if not is_admin():
+        return jsonify({'error': 'Admin access required'}), 403
+
+    try:
+        from cost_tracker import cost_tracker
+
+        stats = cost_tracker.get_daily_stats()
+
+        return jsonify({
+            'status': 'success',
+            'date': stats.get('date', datetime.utcnow().date().isoformat()),
+            'analyses_today': stats.get('analyses_today', 0),
+            'estimated_cost_usd': stats.get('estimated_cost_usd', 0.0),
+            'budget_usd': stats.get('budget_usd', 0.0),
+            'remaining_budget_usd': stats.get('remaining_budget_usd', 0.0),
+            'budget_exhausted': stats.get('budget_exhausted', False),
+            'percentage_used': stats.get('percentage_used', 0.0),
+            'redis_available': stats.get('redis_available', False)
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error getting daily API costs: {e}", exc_info=True)
+        return jsonify({
+            'error': 'Failed to retrieve daily cost statistics',
+            'details': str(e)
+        }), 500
+
+
+@admin_diag_bp.route('/api-costs/weekly', methods=['GET'])
+@jwt_required()
+def get_weekly_api_costs():
+    """
+    Get 7-day API cost trend statistics.
+    Admin-only endpoint for monitoring weekly spending patterns.
+    """
+    if not is_admin():
+        return jsonify({'error': 'Admin access required'}), 403
+
+    try:
+        from cost_tracker import cost_tracker
+
+        stats = cost_tracker.get_weekly_stats()
+
+        return jsonify({
+            'status': 'success',
+            'period': stats.get('period', '7_days'),
+            'total_cost_usd': stats.get('total_cost_usd', 0.0),
+            'total_analyses': stats.get('total_analyses', 0),
+            'daily_average_usd': stats.get('daily_average_usd', 0.0),
+            'projected_monthly_usd': stats.get('projected_monthly_usd', 0.0),
+            'daily_breakdown': stats.get('daily_breakdown', []),
+            'redis_available': stats.get('redis_available', False)
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Error getting weekly API costs: {e}", exc_info=True)
+        return jsonify({
+            'error': 'Failed to retrieve weekly cost statistics',
+            'details': str(e)
+        }), 500
+
+
+@admin_diag_bp.route('/api-costs/reset-counter', methods=['POST'])
+@jwt_required()
+def reset_daily_cost_counter():
+    """
+    EMERGENCY: Reset today's cost counter.
+    Admin-only endpoint for emergencies only (e.g., testing).
+
+    WARNING: This bypasses budget limits. Use with caution.
+    """
+    if not is_admin():
+        return jsonify({'error': 'Admin access required'}), 403
+
+    try:
+        from cost_tracker import cost_tracker
+
+        success = cost_tracker.reset_daily_counter()
+
+        if success:
+            logger.warning(f"Daily cost counter RESET by admin user {get_jwt_identity()}")
+            return jsonify({
+                'status': 'success',
+                'message': 'Daily cost counter reset successfully',
+                'warning': 'Budget limits are now bypassed for today. Monitor spending carefully.'
+            }), 200
+        else:
+            return jsonify({
+                'error': 'Failed to reset counter (Redis not available)',
+                'details': 'Cost tracker requires Redis connection'
+            }), 500
+
+    except Exception as e:
+        logger.error(f"Error resetting cost counter: {e}", exc_info=True)
+        return jsonify({
+            'error': 'Failed to reset cost counter',
+            'details': str(e)
+        }), 500
