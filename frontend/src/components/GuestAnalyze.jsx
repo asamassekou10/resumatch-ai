@@ -61,7 +61,6 @@ const GuestAnalyze = () => {
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [captchaToken, setCaptchaToken] = useState(null);
   const [creatingSession, setCreatingSession] = useState(false);
 
   // Handle payment redirect - open payment modal
@@ -221,7 +220,6 @@ const GuestAnalyze = () => {
   // Handle CAPTCHA verification success
   const handleCaptchaSuccess = async (token) => {
     console.log('CAPTCHA verified:', token);
-    setCaptchaToken(token);
     setCreatingSession(true);
     setError('');
 
