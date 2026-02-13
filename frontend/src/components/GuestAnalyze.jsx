@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 // Framer Motion removed to fix animation compatibility issues
 import { FileUp, ArrowRight, AlertCircle, CheckCircle, Loader, Clock, FileText, Download, Sparkles, Mail, Infinity, ChevronDown, ChevronUp, Target, Search } from 'lucide-react';
-import Turnstile from '@marsidev/react-turnstile';
+import { Turnstile } from '@marsidev/react-turnstile';
 import guestService from '../services/guestService';
 import { ROUTES } from '../config/routes';
 import SEO from './common/SEO';
