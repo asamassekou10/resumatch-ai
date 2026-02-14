@@ -10,26 +10,8 @@ An enterprise-grade AI resume optimization platform that helps job seekers land 
 
 ResumeAnalyzer AI streamlines the job search process by providing data-driven insights, identifying resume gaps, and connecting candidates with the most relevant opportunities.
 
-## 📸 Application Screenshots
-
-### Landing Page
-![Landing Page](frontend/public/RAI%20Landing%20page.jpg)
+![Landing Page](./frontend/public/RAI-Landing-page.jpg)
 *Modern, responsive landing page with clear call-to-action and feature highlights*
-
-### Resume Analysis
-![Guest Analysis Page](frontend/public/RAI%20guest%20page.jpg)
-*AI-powered resume analysis with instant ATS compatibility scoring and recommendations*
-
-### Dashboard Overview
-![Dashboard](frontend/public/RAI%20dashboard.jpg)
-*Comprehensive dashboard showing analysis history, insights, and personalized recommendations*
-
-![Dashboard Details](frontend/public/RAI%20dashboard%202.jpg)
-*Detailed analytics and performance metrics for your job search journey*
-
-### Job Application Tracker
-![Job Tracker](frontend/public/RAI%20Job%20application%20tracker.jpg)
-*Organize and track all your job applications in one centralized hub*
 
 ## ✨ Key Features
 
@@ -40,12 +22,18 @@ ResumeAnalyzer AI streamlines the job search process by providing data-driven in
 - **Gap Analysis**: Identifies missing skills and provides improvement suggestions
 - **Cover Letter Generation**: AI-generated personalized cover letters
 
+![Resume Analysis](./frontend/public/RAI-guest-page.jpg)
+*AI-powered resume analysis with instant ATS compatibility scoring and actionable recommendations*
+
 ### Job Matching & Market Intelligence
 - **Semantic Job Matching**: ML-based job recommendations using TF-IDF vectorization
 - **Market Trends Analysis**: Real-time job market insights and salary data
 - **Skills Demand Tracking**: Identify in-demand skills across industries
 - **Salary Intelligence**: Competitive salary ranges for target roles
 - **Top Companies**: Discover leading employers in your field
+
+![Job Application Tracker](./frontend/public/RAI-Job-application-tracker.jpg)
+*Track and manage all your job applications in one organized dashboard*
 
 ### Authentication & User Management
 - **JWT Authentication**: Secure token-based authentication
@@ -60,6 +48,9 @@ ResumeAnalyzer AI streamlines the job search process by providing data-driven in
 - **Email Delivery**: Results sent via Resend (on-demand)
 - **Responsive Design**: Mobile-friendly React UI
 - **Real-time Feedback**: Interactive skill verification system
+
+![Dashboard](./frontend/public/RAI-dashboard.jpg)
+*Comprehensive dashboard with analysis history, insights, and performance metrics*
 
 ## 🛠️ Technology Stack
 
@@ -175,6 +166,9 @@ npm test
 ```
 
 ## 🚀 Deployment
+
+![Dashboard Analytics](./frontend/public/RAI-dashboard-2.jpg)
+*Detailed analytics and performance tracking for your job search journey*
 
 ### Production Environment
 
