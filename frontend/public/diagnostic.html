@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cache Diagnostic</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+</head>
+<body>
+    <h1>Cache Diagnostic Page</h1>
+    <p>Timestamp: <span id="time"></span></p>
+    <p>Build Version: 2.1.0</p>
+    <p>If you see this page with an old timestamp after refreshing, you have a caching issue.</p>
+
+    <script>
+        document.getElementById('time').textContent = new Date().toISOString();
+    </script>
+
+    <h2>Test Instructions:</h2>
+    <ol>
+        <li>Note the timestamp above</li>
+        <li>Press Ctrl+Shift+R (hard refresh)</li>
+        <li>Check if timestamp updates</li>
+        <li>If it doesn't update, your browser is still caching</li>
+    </ol>
+
+    <h2>Cache Headers Check:</h2>
+    <pre id="headers"></pre>
+
+    <script>
+        fetch(window.location.href)
+            .then(r => {
+                const headers = {};
+                r.headers.forEach((value, key) => headers[key] = value);
+                document.getElementById('headers').textContent = JSON.stringify(headers, null, 2);
+            });
+    </script>
+</body>
+</html>
