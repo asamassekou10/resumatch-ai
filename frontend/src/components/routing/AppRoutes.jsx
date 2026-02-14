@@ -16,6 +16,7 @@ const LandingPageV2 = lazy(() => import('../LandingPageV2'));
 const AuthPage = lazy(() => import('../AuthPage'));
 const GuestAnalyze = lazy(() => import('../GuestAnalyze'));
 const PricingPage = lazy(() => import('../PricingPageV2'));
+const PaymentSuccess = lazy(() => import('../PaymentSuccess'));
 const HelpPage = lazy(() => import('../HelpPage'));
 const Unsubscribe = lazy(() => import('../Unsubscribe'));
 const VerifySuccess = lazy(() => import('../VerifySuccess'));
@@ -119,6 +120,11 @@ const AppRoutes = ({ userProfile, token, handleLogout, handleLogin, setToken }) 
           <Route
             path={ROUTES.PRICING}
             element={<PricingPage token={token} userProfile={userProfile} />}
+          />
+
+          <Route
+            path="/payment-success"
+            element={<PaymentSuccess token={token} userProfile={userProfile} />}
           />
 
           <Route path={ROUTES.HELP} element={<HelpPage />} />

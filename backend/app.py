@@ -2469,7 +2469,7 @@ def create_checkout_session():
                 'quantity': 1,
             }],
             'mode': 'subscription',
-            'success_url': f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/dashboard?payment=success&tier={tier_param}",
+            'success_url': f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/payment-success?session_id={{CHECKOUT_SESSION_ID}}&purchase_type={tier_param}",
             'cancel_url': f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/pricing?payment=cancel",
             'metadata': {
                 'user_id': str(user_id),

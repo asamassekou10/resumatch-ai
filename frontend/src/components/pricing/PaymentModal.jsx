@@ -172,6 +172,50 @@ const GuestPaymentForm = ({ selectedPlan, guestToken, onSuccess, onError, onClos
         </motion.div>
       )}
 
+      {/* Social Proof - Recent Activity */}
+      <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 mb-4">
+        <div className="flex items-center gap-2 text-sm">
+          <div className="flex -space-x-2">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-bold">J</div>
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-bold">M</div>
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-bold">S</div>
+          </div>
+          <div className="flex-1">
+            <p className="text-green-400 font-semibold text-xs">
+              <span className="font-bold">347 people</span> purchased in the last 24 hours
+            </p>
+            <p className="text-gray-400 text-xs">Join thousands of successful job seekers</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Testimonial */}
+      <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-4">
+        <div className="flex gap-3">
+          <div className="flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold">
+              SC
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-white font-semibold text-sm">Sarah Chen</p>
+              <div className="flex gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} className="w-3 h-3 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                  </svg>
+                ))}
+              </div>
+            </div>
+            <p className="text-gray-300 text-xs leading-relaxed">
+              "Got 3 interview callbacks within a week! The ATS optimization made a huge difference."
+            </p>
+            <p className="text-gray-500 text-xs mt-1">Product Manager • San Francisco</p>
+          </div>
+        </div>
+      </div>
+
       {/* Trust Signals */}
       <div className="grid grid-cols-3 gap-2 py-3 border-t border-white/10">
         <div className="flex flex-col items-center gap-1">
@@ -374,6 +418,50 @@ const PaymentForm = ({ selectedPlan, onSuccess, onError, onClose }) => {
           <p className="text-red-400 text-sm">{error}</p>
         </motion.div>
       )}
+
+      {/* Social Proof - Recent Activity */}
+      <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 mb-4">
+        <div className="flex items-center gap-2 text-sm">
+          <div className="flex -space-x-2">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-bold">J</div>
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-bold">M</div>
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 border-2 border-gray-900 flex items-center justify-center text-white text-xs font-bold">S</div>
+          </div>
+          <div className="flex-1">
+            <p className="text-green-400 font-semibold text-xs">
+              <span className="font-bold">347 people</span> purchased in the last 24 hours
+            </p>
+            <p className="text-gray-400 text-xs">Join thousands of successful job seekers</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Testimonial */}
+      <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-4">
+        <div className="flex gap-3">
+          <div className="flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold">
+              SC
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-white font-semibold text-sm">Sarah Chen</p>
+              <div className="flex gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} className="w-3 h-3 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                  </svg>
+                ))}
+              </div>
+            </div>
+            <p className="text-gray-300 text-xs leading-relaxed">
+              "Got 3 interview callbacks within a week! The ATS optimization made a huge difference."
+            </p>
+            <p className="text-gray-500 text-xs mt-1">Product Manager • San Francisco</p>
+          </div>
+        </div>
+      </div>
 
       {/* Trust Signals */}
       <div className="grid grid-cols-3 gap-2 py-3 border-t border-white/10">

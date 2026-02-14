@@ -9,6 +9,7 @@ import SpotlightCard from './ui/SpotlightCard';
 import Footer from './ui/Footer';
 import FoundingMemberBanner from './ui/FoundingMemberBanner';
 import ExitIntentModal from './ui/ExitIntentModal';
+import PaymentModal from './pricing/PaymentModal';
 import axios from 'axios';
 import { trackPricingPageView } from '../utils/conversionTracking';
 
@@ -18,6 +19,8 @@ const PricingPageV2 = ({ token, userProfile }) => {
   const navigate = useNavigate();
   const [isYearly, setIsYearly] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
 
   // Track page view
   useEffect(() => {
@@ -39,12 +42,30 @@ const PricingPageV2 = ({ token, userProfile }) => {
 
   // Generic handler for all tier upgrades
   const handleUpgrade = async (tier) => {
+    setLoading(true);
+
     if (!token) {
-      navigate(ROUTES.LOGIN);
+      // For unauthenticated users: Show payment modal with guest checkout
+      const tierPrices = {
+        'pro_founding': 19.99,
+        'elite': 49.99
+      };
+
+      setSelectedPlan({
+        type: tier,
+        price: tierPrices[tier] || 19.99,
+        description: tier === 'pro_founding'
+          ? 'Pro Founding Member - 50 analyses/month'
+          : tier === 'elite'
+          ? 'Elite Plan - 200 analyses/month'
+          : 'Pro subscription'
+      });
+      setShowPaymentModal(true);
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
+    // For authenticated users: Create checkout session directly
     try {
       const response = await axios.post(
         `${API_URL}/payments/create-checkout-session?tier=${tier}`,
@@ -73,6 +94,16 @@ const PricingPageV2 = ({ token, userProfile }) => {
   // Handle upgrade to Elite
   const handleUpgradeToElite = () => handleUpgrade('elite');
 
+  // Handle 7-Day Pass purchase (guest checkout enabled)
+  const handle7DayPassPurchase = () => {
+    setSelectedPlan({
+      type: 'weekly_pass',
+      price: 6.99,
+      description: '7-Day Unlimited Pass'
+    });
+    setShowPaymentModal(true);
+  };
+
   // Determine button configuration based on user's current plan
   const getButtonConfig = (planName) => {
     const lowerPlan = planName.toLowerCase();
@@ -87,16 +118,26 @@ const PricingPageV2 = ({ token, userProfile }) => {
         };
       }
       if (lowerPlan === '7-day pass') {
+        // GUEST CHECKOUT ENABLED: Open payment modal directly
         return {
           text: 'Get 7-Day Pass - $6.99',
-          action: () => navigate(ROUTES.REGISTER),
+          action: handle7DayPassPurchase,
           variant: 'primary',
           disabled: false
         };
       }
+      // For Pro/Elite without authentication, open payment modal
       return {
         text: 'Sign Up to Get Started',
-        action: () => navigate(ROUTES.REGISTER),
+        action: () => {
+          if (lowerPlan === 'pro founding') {
+            handleUpgradeToProFounding();
+          } else if (lowerPlan === 'elite') {
+            handleUpgradeToElite();
+          } else {
+            navigate(ROUTES.REGISTER);
+          }
+        },
         variant: 'secondary',
         disabled: false
       };
@@ -112,9 +153,10 @@ const PricingPageV2 = ({ token, userProfile }) => {
     }
 
     if (lowerPlan === '7-day pass') {
+      // For authenticated users: Open payment modal
       return {
-        text: 'Get Started - $6.99',
-        action: () => navigate(ROUTES.ANALYZE),
+        text: 'Get 7-Day Pass - $6.99',
+        action: handle7DayPassPurchase,
         variant: 'primary',
         disabled: loading
       };
@@ -594,9 +636,30 @@ const PricingPageV2 = ({ token, userProfile }) => {
         </div>
       </div>
       <Footer />
-      
+
       {/* Exit Intent Modal */}
       <ExitIntentModal pageName="pricing" />
+
+      {/* Payment Modal - Guest checkout enabled */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        selectedPlan={selectedPlan}
+        onSuccess={(purchaseData) => {
+          console.log('Payment successful:', purchaseData);
+          setShowPaymentModal(false);
+          // Redirect to dashboard or success page
+          if (token) {
+            navigate(ROUTES.DASHBOARD + '?payment=success');
+          } else {
+            // Guest checkout - show success message
+            navigate(ROUTES.GUEST_ANALYZE + '?payment=success');
+          }
+        }}
+        onError={(error) => {
+          console.error('Payment error:', error);
+        }}
+      />
     </>
   );
 };

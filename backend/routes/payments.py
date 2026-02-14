@@ -599,7 +599,6 @@ def create_micro_checkout_session():
 
         # Get frontend URL for redirects
         frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
-        success_path = '/guest-analyze' if guest_session else '/dashboard'
         cancel_path = '/guest-analyze' if guest_session else '/pricing'
 
         # Create Stripe Checkout Session for one-time payment
@@ -618,7 +617,7 @@ def create_micro_checkout_session():
                 'quantity': 1,
             }],
             mode='payment',  # One-time payment, not subscription
-            success_url=f"{frontend_url}{success_path}?payment=success&purchase_type={purchase_type}",
+            success_url=f"{frontend_url}/payment-success?session_id={{CHECKOUT_SESSION_ID}}&purchase_type={purchase_type}",
             cancel_url=f"{frontend_url}{cancel_path}?payment=cancel",
             metadata={
                 'user_id': str(user.id),
