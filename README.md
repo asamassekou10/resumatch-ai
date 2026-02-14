@@ -10,6 +10,27 @@ An enterprise-grade AI resume optimization platform that helps job seekers land 
 
 ResumeAnalyzer AI streamlines the job search process by providing data-driven insights, identifying resume gaps, and connecting candidates with the most relevant opportunities.
 
+## 📸 Application Screenshots
+
+### Landing Page
+![Landing Page](frontend/public/RAI%20Landing%20page.jpg)
+*Modern, responsive landing page with clear call-to-action and feature highlights*
+
+### Resume Analysis
+![Guest Analysis Page](frontend/public/RAI%20guest%20page.jpg)
+*AI-powered resume analysis with instant ATS compatibility scoring and recommendations*
+
+### Dashboard Overview
+![Dashboard](frontend/public/RAI%20dashboard.jpg)
+*Comprehensive dashboard showing analysis history, insights, and personalized recommendations*
+
+![Dashboard Details](frontend/public/RAI%20dashboard%202.jpg)
+*Detailed analytics and performance metrics for your job search journey*
+
+### Job Application Tracker
+![Job Tracker](frontend/public/RAI%20Job%20application%20tracker.jpg)
+*Organize and track all your job applications in one centralized hub*
+
 ## ✨ Key Features
 
 ### Resume Analysis & Optimization
