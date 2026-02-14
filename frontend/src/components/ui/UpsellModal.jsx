@@ -97,7 +97,7 @@ const UpsellModal = ({ isOpen, onClose, currentPlan = 'weekly_pass', token }) =>
               </button>
 
               {/* Content */}
-              <div className="p-8">
+              <div className="p-6 sm:p-8">
                 {/* Badge */}
                 <div className="flex items-center justify-center mb-4">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">

@@ -204,7 +204,7 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
           }
         }
         
-        // If redirect is checkout and we have a selected plan, go to checkout
+        // If redirect is checkout and we have a selected plan, create checkout session
         if (redirect === 'checkout' && selectedPlan) {
           try {
             const plan = JSON.parse(selectedPlan);
@@ -214,14 +214,40 @@ const AuthPage = ({ mode = 'login', onLogin }) => {
               tier = 'pro_founding';
             } else if (plan.type === 'elite') {
               tier = 'elite';
+            } else if (plan.type === 'weekly_pass') {
+              tier = 'weekly_pass';
             }
             // Clear selected_plan after use
             localStorage.removeItem('selected_plan');
-            navigate(`${ROUTES.CHECKOUT}?tier=${tier}`, { replace: true });
-            return;
+
+            // Create Stripe checkout session
+            const checkoutResponse = await fetch(`${API_URL}/payments/create-checkout-session?tier=${tier}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              }
+            });
+
+            const checkoutData = await checkoutResponse.json();
+
+            if (!checkoutResponse.ok) {
+              throw new Error(checkoutData.error || 'Failed to create checkout session');
+            }
+
+            // Redirect to Stripe checkout
+            if (checkoutData.checkout_url) {
+              window.location.href = checkoutData.checkout_url;
+              return;
+            } else {
+              throw new Error('No checkout URL received');
+            }
           } catch (e) {
-            console.error('Error parsing selected plan:', e);
+            console.error('Error creating checkout session:', e);
             localStorage.removeItem('selected_plan');
+            // Fallback to dashboard on error
+            navigate(ROUTES.DASHBOARD, { replace: true });
+            return;
           }
         }
         

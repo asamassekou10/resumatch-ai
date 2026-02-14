@@ -126,17 +126,28 @@ const PricingPageV2 = ({ token, userProfile }) => {
           disabled: false
         };
       }
-      // For Pro/Elite without authentication, open payment modal
+      // For Pro/Elite without authentication, redirect to register with plan info
       return {
         text: 'Sign Up to Get Started',
         action: () => {
+          let planType = 'pro_founding'; // Default
           if (lowerPlan === 'pro founding') {
-            handleUpgradeToProFounding();
+            planType = 'pro_founding';
           } else if (lowerPlan === 'elite') {
-            handleUpgradeToElite();
-          } else {
-            navigate(ROUTES.REGISTER);
+            planType = 'elite';
           }
+          // Store plan info for post-signup redirect
+          const planData = {
+            type: planType,
+            price: planType === 'pro_founding' ? 19.99 : 49.99,
+            description: planType === 'pro_founding'
+              ? 'Pro Founding Member - 50 analyses/month'
+              : 'Elite Plan - 200 analyses/month'
+          };
+          localStorage.setItem('selected_plan', JSON.stringify(planData));
+          localStorage.setItem('redirect_after_auth', 'checkout');
+          // Redirect to register with query params
+          navigate(`${ROUTES.REGISTER}?redirect=checkout&plan=${planType}`);
         },
         variant: 'secondary',
         disabled: false

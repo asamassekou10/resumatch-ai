@@ -188,12 +188,6 @@ const Navigation = ({ token, onLogout, user }) => {
                     Pricing
                   </Link>
                   <Link
-                    to={ROUTES.SITEMAP}
-                    className="text-gray-300 hover:text-white transition font-medium"
-                  >
-                    Sitemap
-                  </Link>
-                  <Link
                     to={ROUTES.LOGIN}
                     className="text-gray-300 hover:text-white transition font-medium"
                   >
