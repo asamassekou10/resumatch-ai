@@ -21,7 +21,6 @@ const PaymentSuccess = ({ token, userProfile }) => {
   const [showUpsellModal, setShowUpsellModal] = useState(false);
 
   const purchaseType = searchParams.get('purchase_type') || 'weekly_pass';
-  const sessionId = searchParams.get('session_id');
 
   // Show upsell modal after 2 seconds for 7-Day Pass purchases
   useEffect(() => {
