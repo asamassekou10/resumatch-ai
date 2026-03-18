@@ -97,7 +97,6 @@ allowed_origins = [
     "http://localhost:3000",
     frontend_url,
     vercel_url,
-    "https://resumatch-frontend.onrender.com",  # Old Render frontend (can remove after migration)
     "https://resumeanalyzerai.com",
     "https://www.resumeanalyzerai.com"
 ]

@@ -1,0 +1,38 @@
+www.resumeanalyzerai.com {
+    # API requests → Flask backend
+    handle /api/* {
+        reverse_proxy backend:5000
+    }
+
+    # Stripe webhook needs raw body, ensure it passes through
+    handle /api/payments/webhook {
+        reverse_proxy backend:5000
+    }
+
+    # Everything else → React frontend (Nginx)
+    handle {
+        reverse_proxy frontend:3000
+    }
+
+    # Security headers
+    header {
+        X-Frame-Options "SAMEORIGIN"
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+
+    # Logging
+    log {
+        output file /data/logs/access.log {
+            roll_size 10mb
+            roll_keep 5
+        }
+    }
+}
+
+# Redirect non-www to www
+resumeanalyzerai.com {
+    redir https://www.resumeanalyzerai.com{uri} permanent
+}

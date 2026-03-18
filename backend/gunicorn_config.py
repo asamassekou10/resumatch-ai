@@ -4,22 +4,24 @@ Gunicorn Configuration for Production
 Optimized for concurrent request handling with threads + workers.
 This prevents worker blocking when using ThreadPoolExecutor for parallel AI calls.
 
-Configuration:
-- 4 workers × 4 threads = 16 concurrent requests
-- 120 second timeout (sufficient for AI analysis)
-- gthread worker class for proper thread support
+Worker/thread count is configurable via environment variables to support
+different deployment targets (VPS with limited RAM vs larger instances).
+
+Default: 2 workers × 2 threads = 4 concurrent requests (fits 4GB VPS)
+Override: Set GUNICORN_WORKERS and GUNICORN_THREADS env vars for more capacity.
 """
 
 import multiprocessing
 import os
 
 # Number of worker processes
-# Use 4 workers for good balance (can handle 16 concurrent requests with threads)
-workers = int(os.getenv('GUNICORN_WORKERS', 4))
+# Default 2 for VPS deployments (each worker loads spaCy model ~200MB)
+# Override with GUNICORN_WORKERS env var for larger instances
+workers = int(os.getenv('GUNICORN_WORKERS', 2))
 
 # Number of threads per worker
-# 4 threads per worker = 4 workers × 4 threads = 16 concurrent requests
-threads = int(os.getenv('GUNICORN_THREADS', 4))
+# Default 2 for VPS, override with GUNICORN_THREADS for more concurrency
+threads = int(os.getenv('GUNICORN_THREADS', 2))
 
 # Worker class - use gthread for proper thread support
 worker_class = "gthread"
